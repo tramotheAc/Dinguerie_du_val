@@ -11,7 +11,7 @@
    donnee de menage. La saisie, elle, ne quitte pas la memoire de la page.
    =========================================================================== */
 
-import { verifier } from './moteur.js?v=4ced75009b';
+import { verifier } from './moteur.js?v=743faf48c0';
 
 const CLE = 'dinguerie.parametrage.brouillon';
 

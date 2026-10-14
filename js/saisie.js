@@ -2,7 +2,7 @@
    La page de saisie, construite entierement depuis le parametrage : ajouter
    une ligne de depense dans l'admin la fait apparaitre ici, sans code.
 
-   Six etapes qui se deplient sur place, une a la fois (dossier, situation,
+   Six etapes qui se deplient sur place (dossier, situation,
    dettes, ressources, charges, depenses). Une etape regroupe une ou deux
    sections du parametrage (« sur la meme ligne que la precedente »), ses
    sous-parties, cote a cote. Fermee, elle resume chaque sous-partie
@@ -18,11 +18,11 @@
    additions dans un champ (« 25+12+8 »), Entree pour passer au suivant.
    =========================================================================== */
 
-import { h, icone, vider, svg } from './dom.js?v=4ced75009b';
-import { formater } from './format.js?v=4ced75009b';
-import { signaler, apparaitre } from './animations.js?v=4ced75009b';
-import { dessinIcone, nomIcone } from './icones.js?v=4ced75009b';
-import { jaugeZones, pastilleNiveau } from './graphiques.js?v=4ced75009b';
+import { h, icone, vider, svg } from './dom.js?v=743faf48c0';
+import { formater } from './format.js?v=743faf48c0';
+import { signaler, apparaitre } from './animations.js?v=743faf48c0';
+import { dessinIcone, nomIcone } from './icones.js?v=743faf48c0';
+import { jaugeZones, pastilleNiveau } from './graphiques.js?v=743faf48c0';
 
 const FREQUENCES = [
   { id: 'sem', libelle: 'Sem.', titre: 'par semaine', vers: (x) => (x * 52) / 12 },
@@ -567,8 +567,9 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
   const blocFait = (r) => aFaire(r).length > 0 && aFaire(r).every((s) => estFaite(s, etat));
   const blocs = [];
 
-  /* Une etape : un en-tete cliquable qui se deplie sur place. Une seule
-     etape ouverte a la fois, pour que les titres bougent le moins possible. */
+  /* Une etape : un en-tete cliquable qui se deplie sur place. Plusieurs
+     etapes peuvent etre ouvertes ; aucune ne se replie toute seule : seuls
+     l'en-tete et « Etape terminee » la replient. */
   function bloc(r, i) {
     const premiere = r[0];
     const facultatif = r.every((s) => s.nominatif);
@@ -585,7 +586,7 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
           icone('ok'), derniere ? 'Terminer la saisie' : 'Étape terminée, continuer')));
     const tete = h('button', {
       type: 'button', class: 'tete-bloc', id: `tete-bloc-${i}`, 'aria-expanded': 'false', 'aria-controls': corps.id,
-      onclick: () => (ui.bloc === i ? fermerBlocs() : ouvrirBloc(i, { focus: true })),
+      onclick: () => (ui.ouverts.has(i) ? fermerBloc(i) : ouvrirBloc(i, { focus: true })),
     }, marque,
     h('span', { class: 'titres-bloc' },
       h('span', { class: 'numero-etape' }, `Étape ${i + 1}${facultatif ? ' · facultative' : ''}`),
@@ -600,60 +601,51 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
 
   function majOuverts() {
     blocs.forEach((b, i) => {
-      const ouvert = i === ui.bloc;
+      const ouvert = ui.ouverts.has(i);
       b.corps.hidden = !ouvert;
       b.el.classList.toggle('ouvert', ouvert);
       b.tete.setAttribute('aria-expanded', String(ouvert));
     });
   }
 
-  /* Ouvrir une etape ferme la precedente : on garde l'en-tete clique sous le
-     doigt (ou on l'amene en haut quand on enchaine depuis « continuer »). */
+  /* Ouvrir une etape ne touche pas aux autres ; quand on enchaine depuis
+     « continuer », on amene la suivante en haut. */
   function ouvrirBloc(i, { focus = false, defiler = false } = {}) {
     const b = blocs[i];
     if (!b) return;
-    const avant = b.tete.getBoundingClientRect().top;
-    ui.bloc = i;
+    ui.ouverts.add(i);
     majOuverts();
     if (defiler) b.el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    else {
-      window.scrollBy(0, b.tete.getBoundingClientRect().top - avant);
-      const haut = b.tete.getBoundingClientRect().top;
-      if (haut < 0 || haut > window.innerHeight - 80) b.el.scrollIntoView({ block: 'start' });
-    }
     apparaitre(b.corps);
     if (focus) setTimeout(() => b.corps.querySelector('input, .question-dettes button')?.focus({ preventScroll: true }), defiler ? 400 : 0);
     surOuverture?.(b.r[0].id);
   }
 
-  function fermerBlocs() {
-    ui.bloc = null;
+  function fermerBloc(i) {
+    ui.ouverts.delete(i);
     majOuverts();
   }
 
   /* « Etape terminee » : tout le bloc est tenu pour fait (une liste vide =
-     rien a declarer), puis la prochaine etape qui reste a faire. */
+     rien a declarer), il se replie et la prochaine etape a faire s'ouvre. */
   function terminerBloc(i) {
     for (const s of aFaire(lignes[i])) ui.terminees.add(s.id);
     surChangement();
+    fermerBloc(i);
     const ordre = [...lignes.keys()].slice(i + 1).concat([...lignes.keys()].slice(0, i));
     const suivante = ordre.find((j) => aFaire(lignes[j]).length && !blocFait(lignes[j]));
     if (suivante !== undefined) ouvrirBloc(suivante, { focus: true, defiler: true });
-    else {
-      fermerBlocs();
-      document.getElementById('fin-saisie')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    else document.getElementById('fin-saisie')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  /* « Non, aucune » dans les dettes : la sous-partie est faite ; si l'autre
-     moitie de l'etape l'est aussi, on passe a la suivante. */
+  /* « Non, aucune » dans les dettes : la sous-partie est faite, l'etape
+     reste ouverte ; le curseur va a ce qui reste (ou au bouton de fin). */
   function terminer(id) {
     ui.terminees.add(id);
     surChangement();
     const i = rangeeDe(id);
     const reste = aFaire(lignes[i]).find((s) => !estFaite(s, etat));
-    if (reste) volets.get(reste.id).detail.querySelector('input, button')?.focus();
-    else terminerBloc(i);
+    (reste ? volets.get(reste.id).detail.querySelector('input, button') : blocs[i].corps.querySelector('.terminer'))?.focus();
   }
   /* ---------------------------------------------------------- fin de saisie */
 
@@ -686,9 +678,9 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
   }));
   vider(racine, etapes, fin);
   // Au depart, la premiere etape qui reste a faire.
-  if (ui.bloc === undefined) {
+  if (!ui.ouverts) {
     const premiere = lignes.findIndex((r) => aFaire(r).length && !blocFait(r));
-    ui.bloc = premiere >= 0 ? premiere : null;
+    ui.ouverts = new Set(premiere >= 0 ? [premiere] : []);
   }
   majOuverts();
 

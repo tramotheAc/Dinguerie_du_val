@@ -8,17 +8,17 @@
    deposer dans le depot, a la place de config/parametres.json.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=4ced75009b';
-import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=4ced75009b';
-import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=4ced75009b';
-import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=4ced75009b';
-import { formater, interpoler, FORMATS } from './format.js?v=4ced75009b';
-import { champsAutorises, construireLien, genererDax } from './url.js?v=4ced75009b';
-import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=4ced75009b';
-import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=4ced75009b';
-import { apparaitre, cascade } from './animations.js?v=4ced75009b';
-import { ICONES, dessinIcone, nomIcone } from './icones.js?v=4ced75009b';
-import { versionPerimee } from './version.js?v=4ced75009b';
+import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=743faf48c0';
+import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=743faf48c0';
+import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=743faf48c0';
+import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=743faf48c0';
+import { formater, interpoler, FORMATS } from './format.js?v=743faf48c0';
+import { champsAutorises, construireLien, genererDax } from './url.js?v=743faf48c0';
+import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=743faf48c0';
+import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=743faf48c0';
+import { apparaitre, cascade } from './animations.js?v=743faf48c0';
+import { ICONES, dessinIcone, nomIcone } from './icones.js?v=743faf48c0';
+import { versionPerimee } from './version.js?v=743faf48c0';
 
 const PANNEAUX = [
   { id: 'accueil', titre: 'Vue d’ensemble', groupe: 'Paramétrage' },
