@@ -18,9 +18,13 @@ version 1.xlsm` (référentiel V1.0, juillet 2026).
 
 | Page | Rôle |
 |---|---|
-| `index.html` — **Saisie** | Le formulaire, construit depuis le paramétrage. Totaux, loyer résiduel, mois d'impayés et score se mettent à jour à la frappe. « Nouvelle situation » remplace la macro `Réinitialiser_Situation`. |
+| `index.html` — **Saisie** | Le formulaire, construit depuis le paramétrage, illustré d'une icône par section et par ligne. Une barre collée en haut donne le résumé du budget (ressources, charges, solde, score), le bouton vers la synthèse et une pastille par section, cochée dès qu'elle est remplie. Les personnes du foyer se règlent avec − / + et s'affichent en silhouettes. « Nouvelle situation » remplace la macro `Réinitialiser_Situation`. **Données de démo** remplit le formulaire avec l'un des trois ménages fictifs de `config/demo.json`. |
 | `index.html` — **Synthèse** | Chiffres clés, jauges des indicateurs, répartition des dépenses, score, points d'attention, plan d'apurement (avec simulation d'une autre mensualité), leviers, détail des calculs. Bouton **Télécharger le PDF**. |
 | `admin.html` — **Administration** | Tout le paramétrage : paramètres, formulaire, formules de calcul, barèmes, paliers des jauges et du score, points d'attention, qualifications du plan, leviers, jeu d'essai, liens et Power BI. |
+
+Les données de démonstration (`config/demo.json`) sont entièrement inventées :
+numéros de téléphone de la plage 01 99 00 xx xx réservée à la fiction, adresses
+e-mail en `example.org`. Un bandeau le rappelle quand elles sont chargées.
 
 ---
 
@@ -133,12 +137,14 @@ node --test tests/*.test.mjs
 ```
 index.html, admin.html     les pages
 config/parametres.json     le paramétrage publié (barèmes, formules, libellés)
+config/demo.json           trois ménages fictifs pour s'exercer
 css/charte/                copie de la charte visuelle Aiguillon (+ bandeau injecté)
 css/app.css, admin.css     styles propres, uniquement des jetons de la charte
 js/formules.js             l'interpréteur de formules
 js/moteur.js               le calcul complet et le contrôle du paramétrage
 js/saisie.js, synthese.js  les deux vues du calculateur
 js/graphiques.js           jauges, barres, demi-cercle (SVG)
+js/icones.js               icônes d'illustration du formulaire (SVG au trait)
 js/animations.js           animations sobres (API Web Animations), coupées si
                            le poste demande moins d'animations
 js/pdf.js                  export PDF (jsPDF + html2canvas-pro, chargés au clic)

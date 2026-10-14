@@ -9,6 +9,12 @@
 .retour-calculateur { display: block; color: #fff; font-weight: 700; margin-bottom: 8px; text-decoration: none; }
 .retour-calculateur:hover { text-decoration: underline; }
 .page-admin .nav button { font-size: 14px; padding: 9px 12px; }
+/* Douze panneaux et le theme : sur un ecran bas, le rail defile au lieu de
+   pousser son pied hors de la vue. */
+@media (min-width: 901px) { .page-admin .rail { overflow-y: auto; gap: 18px; } }
+.choix-icone { display: flex; align-items: center; gap: 6px; }
+.choix-icone .icone { width: 18px; height: 18px; color: var(--encre-doux); flex: none; }
+.choix-icone select { min-width: 120px; }
 
 /* Barre d'etat collee en haut : on sait toujours si l'on est en brouillon. */
 .barre-admin {

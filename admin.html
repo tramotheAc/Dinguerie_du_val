@@ -31,6 +31,13 @@
         </button>
       </div>
       <ul class="nav" id="nav-admin"></ul>
+      <ul class="nav nav-affichage">
+        <li class="nav-groupe">Affichage</li>
+        <li><button type="button" id="bascule-theme" class="bascule-theme nav-theme" data-effectif="light" aria-label="Passer au thème sombre">
+          <svg class="i-soleil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2.1 2.1M16.9 16.9 19 19M19 5l-2.1 2.1M7.1 16.9 5 19"/></svg>
+          <svg class="i-lune" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5Z"/></svg>
+          <span>Thème clair / sombre</span></button></li>
+      </ul>
       <div class="rail-pied">
         <a class="retour-calculateur" href="index.html">← Retour au calculateur</a>
         Les réglages ne contiennent aucune donnée de ménage : seulement des barèmes, des seuils et des formules.
@@ -41,14 +48,6 @@
       <div class="barre-admin" id="barre-admin"></div>
       <div id="panneau" class="panneau"></div>
     </main>
-  </div>
-
-  <div class="parametres" role="group" aria-label="Réglages d'affichage">
-    <span class="parametres-titre">Affichage</span>
-    <button type="button" id="bascule-theme" class="bascule-theme" data-effectif="light" aria-label="Passer au thème sombre">
-      <svg class="i-soleil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2.1 2.1M16.9 16.9 19 19M19 5l-2.1 2.1M7.1 16.9 5 19"/></svg>
-      <svg class="i-lune" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5Z"/></svg>
-    </button>
   </div>
 
   <script src="js/bouton-theme.js"></script>

@@ -4,9 +4,12 @@
    =========================================================================== */
 
 .icone { width: 16px; height: 16px; flex: none; }
+/* Cale en haut a gauche : sans ancetre positionne, un element absolu reste a
+   sa place « naturelle » - au bout d'un tableau defilant, il elargissait la
+   page entiere sur telephone. */
 .visuellement-cache {
-  position: absolute; width: 1px; height: 1px; overflow: hidden;
-  clip: rect(0 0 0 0); white-space: nowrap;
+  position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
 }
 .bouton, .bouton-discret { display: inline-flex; align-items: center; gap: 7px; }
 .bouton { padding: 8px 15px; font-size: 13px; }
@@ -31,7 +34,7 @@
 .nav .nav-lien svg { width: 19px; height: 19px; flex: none; }
 .rail-pied .version { display: block; margin-top: 8px; opacity: .85; }
 
-.scene { padding-bottom: 110px; }
+.scene { padding-bottom: 48px; }
 .actions-entete { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .entete h2:focus { outline: none; }
 
@@ -66,24 +69,100 @@
   background: var(--nuit); color: #fff; font-size: 12px; letter-spacing: 0;
 }
 
-.section-saisie > header { padding: 11px 16px; background: var(--surface); }
-.section-saisie > header h3 { font-size: 14.5px; }
-.section-saisie .corps { padding: 12px 16px 14px; }
-.total-section {
-  font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; color: var(--chiffre);
-  background: var(--taupe-fond); padding: 3px 10px; border-radius: 999px; display: inline-block;
+/* Barre du haut : le resume du budget et les sections, collee sous le haut
+   de l'ecran. Elle ne recouvre rien : elle est dans le flux, et les sections
+   gardent une marge d'ancrage egale a sa hauteur. */
+.barre-saisie {
+  position: sticky; top: 8px; z-index: 30;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 10px 12px; border-radius: var(--radius-md);
+  background: var(--surface); border: 1px solid var(--bord-fort);
+  box-shadow: var(--ombre), 0 8px 24px rgb(20 40 80 / 8%);
 }
+.ligne-resume { display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; padding: 0 6px; }
+.resume { display: flex; gap: 8px 28px; margin: 0; flex-wrap: wrap; }
+.resume div { display: flex; flex-direction: column; min-width: 0; }
+.resume dt { font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--encre-tres-doux); font-weight: 700; white-space: nowrap; }
+.resume dd { margin: 0; font-size: 17px; font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.resume dd.negatif { color: var(--rouge); }
+.resume dd[data-niveau="vert"] { color: var(--vert); }
+.resume dd[data-niveau="ambre"] { color: var(--ambre); }
+.resume dd[data-niveau="rouge"] { color: var(--rouge); }
 
-.grille-champs { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; }
-.champ { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.etapes-saisie {
+  display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 4px; scrollbar-width: thin;
+  border-top: 1px solid var(--bord); padding-top: 8px;
+}
+.etape {
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+  padding: 5px 10px 5px 8px; border-radius: 999px; border: 1px solid var(--bord-fort);
+  background: var(--surface); color: var(--encre-doux); font-size: 12.5px; font-weight: 600;
+  text-decoration: none; white-space: nowrap; transition: background .15s, color .15s, border-color .15s;
+}
+.etape .icone { width: 15px; height: 15px; }
+.etape:hover { color: var(--encre); border-color: var(--encre-tres-doux); }
+.etape[aria-current] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.etape .coche {
+  display: none; place-items: center; width: 15px; height: 15px; border-radius: 50%;
+  background: var(--vert); color: var(--surface);
+}
+.etape .coche .icone { width: 10px; height: 10px; stroke-width: 3; }
+.etape.rempli .coche { display: grid; }
+.etape[aria-current] .coche { background: var(--surface); color: var(--accent); }
+.section-saisie { scroll-margin-top: 136px; }
+
+/* Cartes de section : un medaillon illustre, un compteur, un total. */
+.section-saisie > header { padding: 12px 16px; background: var(--surface); align-items: flex-start; flex-wrap: nowrap; }
+.section-saisie > header .titres { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.section-saisie > header h3 { font-size: 15px; }
+.section-saisie > header p { margin: 0; }
+.section-saisie .corps { padding: 12px 16px 16px; }
+.medaillon {
+  display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 12px;
+  background: var(--petrole-fond); color: var(--petrole);
+}
+.medaillon .icone { width: 21px; height: 21px; }
+.ton-entree .medaillon { background: var(--vert-fond); color: var(--vert); }
+.ton-sortie .medaillon { background: var(--taupe-fond); color: var(--taupe); }
+.compte-section { font-size: 11.5px; color: var(--encre-tres-doux); font-weight: 600; }
+.compte-section.complet { color: var(--vert); }
+.compte-section.complet::before { content: '✓ '; }
+.total-section {
+  flex: none; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; color: var(--chiffre);
+  background: var(--taupe-fond); padding: 4px 11px; border-radius: 999px; white-space: nowrap; margin-top: 4px;
+}
+.ton-entree .total-section { background: var(--vert-fond); color: var(--vert); }
+
+/* La frise du foyer : une silhouette par personne. */
+.frise {
+  display: flex; align-items: flex-end; gap: 4px; flex-wrap: wrap; min-height: 52px;
+  padding: 10px 16px; border-bottom: 1px solid var(--bord);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--petrole-fond) 100%);
+}
+.silhouette {
+  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--surface); color: var(--petrole); border: 1.5px solid var(--petrole);
+  animation: surgir .25s cubic-bezier(.22,.8,.3,1) backwards;
+}
+.silhouette .icone { width: 19px; height: 19px; }
+.silhouette.s-enfants_moins_14 { width: 26px; height: 26px; color: var(--taupe); border-color: var(--taupe); }
+.silhouette.s-enfants_moins_14 .icone { width: 15px; height: 15px; }
+.silhouette.s-enfants_14_plus { width: 30px; height: 30px; color: var(--accent); border-color: var(--accent); }
+.silhouette.plus { font-size: 12px; font-weight: 700; color: var(--encre-doux); border-color: var(--bord-fort); }
+.frise-vide { font-size: 12.5px; color: var(--encre-doux); align-self: center; }
+.frise-total { margin-left: auto; align-self: center; font-size: 12.5px; font-weight: 700; color: var(--petrole); }
+
+.grille-champs { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 14px; }
+.champ { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .champ label, .etiquette-calcul {
   font-size: 12px; font-weight: 600; color: var(--encre-doux);
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 6px; min-width: 0;
 }
+.texte-label { min-width: 0; overflow-wrap: anywhere; }
 .champ .aide { font-size: 11.5px; color: var(--encre-tres-doux); }
-.jeton.mini { font-size: 10px; padding: 0 6px; letter-spacing: .02em; }
+.jeton.mini { font-size: 10px; padding: 0 6px; letter-spacing: .02em; flex: none; }
 
-input[type="text"], input[type="date"], input[type="number"], input:not([type]), textarea {
+input[type="text"], input[type="date"], input[type="number"], input[type="search"], input:not([type]), textarea {
   width: 100%; padding: 7px 10px; border-radius: var(--radius-sm);
   border: 1px solid var(--bord-fort); background: var(--surface); font-size: 13.5px;
   transition: border-color .12s, box-shadow .12s, background .3s;
@@ -93,13 +172,35 @@ input:focus, textarea:focus { outline: none; border-color: var(--focus); box-sha
 input[aria-invalid] { border-color: var(--rouge); background: var(--rouge-fond); }
 input.prerempli { background: var(--petrole-fond); border-color: var(--petrole); }
 
-.saisie-nombre { position: relative; display: block; }
+/* Champ precede d'une icone, dans le champ lui-meme. */
+.saisie-icone { position: relative; display: block; min-width: 0; }
+.saisie-icone > .icone {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 1;
+  width: 16px; height: 16px; color: var(--encre-tres-doux); pointer-events: none; transition: color .15s;
+}
+.saisie-icone input { padding-left: 34px; }
+.saisie-icone:focus-within > .icone { color: var(--focus); }
+
+.saisie-nombre { position: relative; display: block; min-width: 0; }
 .saisie-nombre input { text-align: right; font-variant-numeric: tabular-nums; }
 .saisie-nombre.euro input { padding-right: 26px; }
 .saisie-nombre.euro::after {
   content: '€'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
   color: var(--encre-tres-doux); font-size: 12.5px; pointer-events: none;
 }
+
+/* Compteur − / + pour les personnes du foyer. */
+.compteur { display: grid; grid-template-columns: 38px minmax(0, 1fr) 38px; align-items: stretch; }
+.compteur input { text-align: center; border-radius: 0; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; position: relative; }
+.compteur input:focus { z-index: 1; }
+.compteur .pas {
+  display: grid; place-items: center; border: 1px solid var(--bord-fort); background: var(--surface-2);
+  color: var(--chiffre); cursor: pointer; padding: 0; transition: background .12s;
+}
+.compteur .pas:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); border-right: 0; }
+.compteur .pas:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; border-left: 0; }
+.compteur .pas:hover { background: var(--blue-100); }
+.compteur .pas:active { transform: scale(.94); }
 
 /* Les lignes de budget se lisent comme le classeur : libelle a gauche,
    montant a droite, une ligne par poste. */
@@ -109,56 +210,92 @@ input.prerempli { background: var(--petrole-fond); border-color: var(--petrole);
   padding: 5px 0; border-bottom: 1px solid var(--bord);
 }
 .lignes-budget > :last-child { border-bottom: 0; }
-.ligne-budget label { font-size: 13px; font-weight: 500; color: var(--encre); }
+.ligne-budget label { font-size: 13px; font-weight: 500; color: var(--encre); gap: 10px; }
 .ligne-budget input { padding: 5px 26px 5px 8px; }
+.ligne-budget .aide { grid-column: 1 / -1; }
+.puce-icone {
+  display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 8px;
+  background: var(--surface-2); color: var(--encre-doux); transition: background .15s, color .15s;
+}
+.puce-icone .icone { width: 15px; height: 15px; }
+.ligne-budget:focus-within .puce-icone { background: var(--blue-100); color: var(--chiffre); }
+.ton-entree .ligne-budget:focus-within .puce-icone { background: var(--vert-fond); color: var(--vert); }
 .champ.calcule { justify-content: space-between; }
 .grille-champs .calcule {
   padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-2);
-  border: 1px dashed var(--bord-fort);
+  border: 1px dashed var(--bord-fort); flex-direction: row; align-items: center; flex-wrap: wrap; gap: 6px 10px;
 }
-.valeur-calculee { font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; text-align: right; }
+.grille-champs .calcule .puce-icone { background: var(--surface); }
+.valeur-calculee { font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .lignes-budget .calcule .valeur-calculee { padding-right: 26px; }
-.lignes-budget .calcule .etiquette-calcul { font-size: 13px; font-weight: 500; font-style: italic; }
+.lignes-budget .calcule .etiquette-calcul { font-size: 13px; font-weight: 500; font-style: italic; gap: 10px; }
 
 .table-dettes table { font-size: 13px; }
 .table-dettes thead th { position: static; padding: 7px 8px; font-size: 11.5px; }
 .table-dettes thead th:first-child { border-radius: var(--radius-sm) 0 0 0; }
-.table-dettes thead th:last-child { border-radius: 0 var(--radius-sm) 0 0; width: 36px; }
+.table-dettes thead th:last-child { border-radius: 0 var(--radius-sm) 0 0; width: 40px; }
 .table-dettes tbody td { padding: 4px 4px; vertical-align: middle; }
 .table-dettes tbody td:first-child { max-width: none; }
 .table-dettes td input { padding: 5px 8px; }
-.table-dettes td.num input { text-align: right; }
+.table-dettes td.num input { text-align: right; padding-right: 24px; }
+.table-dettes .saisie-nombre.euro::after { right: 8px; }
 .table-dettes tfoot th, .table-dettes tfoot td {
   padding: 7px 8px; font-weight: 700; border-top: 2px solid var(--bord-fort);
   font-variant-numeric: tabular-nums; text-align: left;
 }
-.table-dettes tfoot td.num { text-align: right; }
+.table-dettes tfoot td.num { text-align: right; padding-right: 30px; }
 .ajout { margin-top: 10px; }
 
-/* Barre de resume : toujours sous les yeux pendant la saisie. */
-.barre-resume {
-  position: fixed; left: calc(var(--rail) + 24px); right: 24px; bottom: 14px; z-index: 30;
-  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-  padding: 10px 12px 10px 18px; border-radius: var(--radius-md);
-  background: var(--surface); border: 1px solid var(--bord-fort); box-shadow: var(--ombre), 0 10px 30px rgb(20 40 80 / 12%);
+/* Menu des donnees de demonstration. */
+.menu-demo-ancre { position: relative; }
+.menu-demo {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 50; width: min(360px, calc(100vw - 32px));
+  padding: 8px; border-radius: var(--radius-md); background: var(--surface);
+  border: 1px solid var(--bord-fort); box-shadow: var(--ombre), 0 18px 40px rgb(20 40 80 / 18%);
+  display: flex; flex-direction: column; gap: 4px;
 }
-.resume { display: flex; gap: 26px; margin: 0; flex-wrap: wrap; }
-.resume div { display: flex; flex-direction: column; }
-.resume dt { font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--encre-tres-doux); font-weight: 700; }
-.resume dd { margin: 0; font-size: 17px; font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; display: inline-block; }
-.resume dd.negatif { color: var(--rouge); }
-.resume dd[data-niveau="vert"] { color: var(--vert); }
-.resume dd[data-niveau="ambre"] { color: var(--ambre); }
-.resume dd[data-niveau="rouge"] { color: var(--rouge); }
-/* La barre de resume chevaucherait les reglages d'affichage : ils montent. */
-body:has(.barre-resume:not([hidden])) .parametres { bottom: 92px; }
+.menu-titre { margin: 4px 8px 6px; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--encre-doux); }
+.menu-pied { margin: 6px 8px 2px; font-size: 11.5px; color: var(--encre-doux); }
+.choix-demo {
+  display: flex; gap: 12px; align-items: center; text-align: left; width: 100%;
+  padding: 9px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; background: transparent; cursor: pointer;
+}
+.choix-demo:hover, .choix-demo:focus-visible { background: var(--surface-2); border-color: var(--bord); }
+.choix-demo .medaillon { width: 36px; height: 36px; border-radius: 10px; }
+.choix-demo .textes { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.choix-demo strong { font-size: 13px; color: var(--encre); }
+.choix-demo small { font-size: 12px; color: var(--encre-doux); }
+.bandeau.taupe { background: var(--taupe-fond); border-color: transparent; }
+.bandeau.taupe .icone { color: var(--taupe); }
+
+/* Le bouton de theme vit dans le rail, comme une entree de navigation. */
+.nav .nav-theme {
+  width: 100%; height: auto; display: flex; align-items: center; justify-content: flex-start; gap: 12px;
+  padding: 11px 12px; border-radius: var(--radius-md); color: #fff; font-size: 15px;
+}
+.nav .nav-theme:hover { background: rgb(143 170 220 / 34%); color: #fff; }
+.nav .nav-theme svg { width: 19px; height: 19px; }
+
 @media (max-width: 900px) {
-  .barre-resume { left: 8px; right: 8px; bottom: 8px; padding: 8px 10px; gap: 8px; }
-  .resume { display: grid; grid-template-columns: repeat(4, auto); gap: 4px 12px; width: 100%; justify-content: space-between; }
-  .resume dt { font-size: 9px; letter-spacing: .04em; }
-  .resume dd { font-size: 13.5px; }
-  .barre-resume .bouton { width: 100%; justify-content: center; padding: 7px 12px; }
-  body:has(.barre-resume:not([hidden])) .parametres { bottom: auto; }
+  .barre-saisie { top: calc(var(--rail-replie) + 6px); padding: 8px; gap: 6px; }
+  .ligne-resume { padding: 0 2px; gap: 8px; flex-wrap: nowrap; }
+  .resume { display: grid; grid-template-columns: repeat(4, minmax(0, auto)); gap: 2px 10px; flex: 1; min-width: 0; justify-content: space-between; }
+  .resume dt { font-size: 9px; letter-spacing: .03em; }
+  .resume dt .long { display: none; }
+  .resume dd { font-size: 13px; }
+  /* Sur telephone, le bouton se reduit a sa fleche : la barre garde sa
+     place pour les chiffres. */
+  .bouton-synthese { flex: none; width: 40px; height: 40px; padding: 0; justify-content: center; border-radius: 50%; }
+  .bouton-synthese .texte-bouton { display: none; }
+  .etapes-saisie { padding-top: 6px; mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 22px), transparent 100%); }
+  .section-saisie { scroll-margin-top: 200px; }
+  .section-saisie > header { padding: 10px 12px; gap: 10px; }
+  .section-saisie .corps { padding: 10px 12px 14px; }
+  .medaillon { width: 34px; height: 34px; }
+  .actions-entete { width: 100%; }
+  .actions-entete .bouton { flex: 1 1 auto; justify-content: center; }
+  .menu-demo-ancre { flex: 1 1 auto; display: flex; }
+  .menu-demo { left: 0; right: auto; }
 }
 
 /* ----------------------------------------------------------------- synthese */
@@ -302,9 +439,9 @@ body:has(.barre-resume:not([hidden])) .parametres { bottom: 92px; }
 .dialogue[open] { animation: surgir .2s cubic-bezier(.22,.8,.3,1); }
 @keyframes surgir { from { opacity: 0; transform: translateY(8px) scale(.98); } }
 
-.annonces { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 90; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+.annonces { position: fixed; left: 50%; bottom: 20px; width: max-content; max-width: calc(100vw - 32px); transform: translateX(-50%); z-index: 90; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
 .annonce {
-  padding: 9px 16px; border-radius: 999px; background: var(--nuit); color: #fff; font-size: 13px; font-weight: 600;
+  padding: 9px 16px; border-radius: 18px; text-align: center; background: var(--nuit); color: #fff; font-size: 13px; font-weight: 600;
   box-shadow: var(--ombre); animation: surgir .22s cubic-bezier(.22,.8,.3,1); transition: opacity .3s, transform .3s;
 }
 .annonce.ok { background: var(--vert); color: var(--surface); }

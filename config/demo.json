@@ -1,0 +1,65 @@
+{
+  "avertissement": "Données entièrement fictives, pour l'exercice. Les numéros 01 99 00 xx xx sont réservés à la fiction, le domaine example.org aussi.",
+  "profils": [
+    {
+      "id": "monoparentale",
+      "libelle": "Famille monoparentale, dette importante",
+      "resume": "1 adulte, 3 enfants · dette de 5 600 € · l'exemple du classeur",
+      "icone": "famille",
+      "valeurs": {
+        "nom": "Démo-Lefèvre", "prenom": "Camille", "reference": "DEMO-001",
+        "adresse": "12 rue des Lilas, 35000 Rennes", "telephone": "01 99 00 12 34",
+        "email": "camille.demo@example.org", "conseiller": "Alex Démo",
+        "adultes": 1, "enfants_moins_14": 3, "enfants_14_plus": 0,
+        "loyer": 980, "charges": 0, "apl": 0, "dette_locative": 5600,
+        "salaire_1": 2500, "rsa": 520, "pension_recue": 150,
+        "energie": 180, "eau": 55, "internet": 35, "telephonie": 30, "assurance_habitation": 18, "assurances": 60,
+        "credits": 320, "impots": 35, "autres_charges_fixes": 120,
+        "alimentation": 700, "carburant": 120, "sante": 80, "habillement": 60, "transports": 40, "enfants": 16, "autres_vie_courante": 80,
+        "autres_facultatives": 40
+      },
+      "dettes": []
+    },
+    {
+      "id": "couple",
+      "libelle": "Couple avec deux enfants, budget tendu",
+      "resume": "2 adultes, 2 enfants · crédits · dette de 2 300 €",
+      "icone": "maison",
+      "valeurs": {
+        "nom": "Démo-Martin", "prenom": "Sam et Jo", "reference": "DEMO-002",
+        "adresse": "4 allée des Tilleuls, 44000 Nantes", "telephone": "01 99 00 56 78",
+        "email": "famille.martin.demo@example.org", "conseiller": "Alex Démo",
+        "adultes": 2, "enfants_moins_14": 1, "enfants_14_plus": 1,
+        "loyer": 720, "charges": 110, "apl": 160, "dette_locative": 2300,
+        "salaire_1": 1650, "salaire_2": 1100, "caf": 310,
+        "energie": 160, "eau": 45, "internet": 30, "telephonie": 55, "assurance_habitation": 22, "assurances": 95,
+        "credits": 610, "impots": 60,
+        "alimentation": 820, "carburant": 180, "sante": 45, "habillement": 70, "transports": 30, "enfants": 85, "autres_vie_courante": 50,
+        "tabac": 90, "streaming": 35, "restaurants": 60, "loisirs": 40, "vacances": 50
+      },
+      "dettes": [
+        { "type": "Découvert bancaire", "montant": 850, "mensualite": 80, "echeance": "12/2027" },
+        { "type": "Prêt familial", "montant": 600, "mensualite": 50, "echeance": "" }
+      ]
+    },
+    {
+      "id": "seul",
+      "libelle": "Personne seule, petite dette",
+      "resume": "1 adulte · retraite · dette de 640 €",
+      "icone": "utilisateur",
+      "valeurs": {
+        "nom": "Démo-Bernard", "prenom": "Dominique", "reference": "DEMO-003",
+        "adresse": "27 boulevard de la Plage, 56100 Lorient", "telephone": "01 99 00 90 12",
+        "email": "d.bernard.demo@example.org", "conseiller": "Alex Démo",
+        "adultes": 1, "enfants_moins_14": 0, "enfants_14_plus": 0,
+        "loyer": 430, "charges": 60, "apl": 120, "dette_locative": 640,
+        "retraite": 1380, "autres_ressources": 40,
+        "energie": 75, "eau": 25, "internet": 25, "telephonie": 15, "assurance_habitation": 12, "assurances": 45,
+        "impots": 20,
+        "alimentation": 330, "sante": 60, "habillement": 25, "transports": 30, "autres_vie_courante": 40,
+        "streaming": 12, "loisirs": 30
+      },
+      "dettes": []
+    }
+  ]
+}

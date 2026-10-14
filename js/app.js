@@ -12,9 +12,10 @@ import { chargerConfig } from './config.js';
 import { calculerTout } from './moteur.js';
 import { formater } from './format.js';
 import { lirePrerempli } from './url.js';
-import { creerSaisie, etatVide } from './saisie.js';
+import { creerSaisie, etatVide, avancement } from './saisie.js';
+import { dessinIcone, nomIcone } from './icones.js';
 import { rendreSynthese, saisieVide, identite } from './synthese.js';
-import { apparaitre, signaler } from './animations.js';
+import { apparaitre, signaler, cascade } from './animations.js';
 
 let config;
 let etat = etatVide();
@@ -80,6 +81,94 @@ async function demarrer() {
 
 function construireSaisie(prerempli) {
   saisieUI = creerSaisie({ config, racine: $('formulaire'), etat, prerempli, surChangement: () => { touchee = true; recalculer(); } });
+  construireEtapes();
+}
+
+/* --------------------------------------------------------------- etapes */
+/* Une pastille par section, en haut : on voit ce qui est rempli et on y
+   saute d'un clic. La section a l'ecran est mise en avant. */
+let observateur;
+function construireEtapes() {
+  const nav = $('etapes');
+  vider(nav, config.sections.map((s) => h('a', {
+    href: `#section-${s.id}`, class: 'etape', 'data-section': s.id, 'aria-label': s.titre,
+    onclick: (e) => {
+      e.preventDefault();
+      const cible = $(`section-${s.id}`);
+      cible?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      cible?.querySelector('input, button')?.focus({ preventScroll: true });
+    },
+  title: s.titre }, dessinIcone(nomIcone(s, 'dossier')), h('span', { class: 'nom' }, s.court || s.titre), h('span', { class: 'coche', 'aria-hidden': 'true' }, icone('ok')))));
+  observateur?.disconnect();
+  observateur = new IntersectionObserver((entrees) => {
+    for (const e of entrees) {
+      if (!e.isIntersecting) continue;
+      const id = e.target.id.replace('section-', '');
+      for (const a of nav.querySelectorAll('.etape')) a.toggleAttribute('aria-current', a.dataset.section === id);
+      const actif = nav.querySelector(`[data-section="${id}"]`);
+      // La pastille active reste visible dans la barre qui defile horizontalement
+      if (actif && nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: actif.offsetLeft - nav.clientWidth / 2 + actif.clientWidth / 2, behavior: 'smooth' });
+    }
+  }, { rootMargin: '-35% 0px -60% 0px' });
+  for (const sec of document.querySelectorAll('.section-saisie')) observateur.observe(sec);
+}
+
+function majEtapes() {
+  for (const a of document.querySelectorAll('#etapes .etape')) {
+    const s = config.sections.find((x) => x.id === a.dataset.section);
+    const { remplis } = avancement(s, etat);
+    a.classList.toggle('rempli', remplis > 0);
+  }
+}
+
+/* ------------------------------------------------------------------ demo */
+let demos;
+async function ouvrirMenuDemo() {
+  const menu = $('menu-demo');
+  const bouton = $('bouton-demo');
+  if (!menu.hidden) { fermerMenuDemo(); return; }
+  try {
+    demos ??= await (await fetch('config/demo.json', { cache: 'no-cache' })).json();
+  } catch {
+    annoncer('Les données de démonstration sont introuvables.', 'alerte');
+    return;
+  }
+  vider(menu,
+    h('p', { class: 'menu-titre' }, 'Remplir avec un ménage fictif'),
+    demos.profils.map((p) => h('button', { type: 'button', class: 'choix-demo', onclick: () => chargerDemo(p) },
+      h('span', { class: 'medaillon' }, dessinIcone(nomIcone({ icone: p.icone }, 'famille'))),
+      h('span', { class: 'textes' }, h('strong', {}, p.libelle), h('small', {}, p.resume)))),
+    h('p', { class: 'menu-pied' }, 'Données entièrement inventées, pour s’exercer.'));
+  menu.hidden = false;
+  bouton.setAttribute('aria-expanded', 'true');
+  apparaitre(menu, 'zoom');
+  menu.querySelector('button')?.focus();
+}
+
+function fermerMenuDemo() {
+  $('menu-demo').hidden = true;
+  $('bouton-demo').setAttribute('aria-expanded', 'false');
+}
+
+async function chargerDemo(profil) {
+  fermerMenuDemo();
+  if (touchee && !saisieVide(etat) && !await confirmer({
+    titre: 'Remplacer la saisie en cours ?', texte: 'Les informations déjà saisies seront remplacées par le ménage fictif.', oui: 'Remplacer', danger: true,
+  })) return;
+  const connus = new Set(config.sections.flatMap((s) => (s.champs ?? []).map((c) => c.id)));
+  etat = etatVide();
+  for (const [k, v] of Object.entries(profil.valeurs)) if (connus.has(k)) etat.valeurs[k] = v;
+  etat.valeurs.date_entretien ??= new Date().toISOString().slice(0, 10);
+  if (profil.dettes?.length) etat.dettes = [...profil.dettes.map((d) => ({ ...d })), { type: '', montant: '', mensualite: '', echeance: '' }];
+  touchee = false;
+  history.replaceState(null, '', location.pathname);
+  vider($('bandeaux'), [...$('bandeaux').children].filter((b) => !b.classList.contains('petrole') && !b.classList.contains('demo')),
+    bandeau('taupe demo', icone('alerte'), h('div', {}, h('strong', {}, 'Données de démonstration fictives : '), profil.libelle, '. Elles ne correspondent à aucun locataire.')));
+  construireSaisie(null);
+  recalculer();
+  if (vue !== 'saisie') montrer('saisie');
+  cascade(document.querySelectorAll('.section-saisie'), 35);
+  annoncer(`Ménage fictif chargé : ${profil.libelle}`, 'ok');
 }
 
 const precedent = {};
@@ -89,7 +178,8 @@ function majResume() {
     'r-ressources': formater(v.total_ressources, 'euro'),
     'r-charges': formater(v.total_charges_avec_dettes, 'euro'),
     'r-solde': formater(v.solde_apres_dettes, 'euro'),
-    'r-score': resultat.score ? `${formater(resultat.score.valeur, 'nombre')} / ${resultat.score.max}` : '—',
+    // Un score sur une saisie vide ne veut rien dire : on attend.
+    'r-score': resultat.score && !saisieVide(etat) ? `${formater(resultat.score.valeur, 'nombre')} / ${resultat.score.max}` : '—',
   };
   for (const [id, t] of Object.entries(champs)) {
     const el = $(id);
@@ -99,13 +189,14 @@ function majResume() {
   }
   $('r-solde').classList.toggle('negatif', (v.solde_apres_dettes ?? 0) < 0);
   const p = resultat.score?.palier;
-  $('r-score').dataset.niveau = p?.niveau ?? '';
+  $('r-score').dataset.niveau = saisieVide(etat) ? '' : (p?.niveau ?? '');
 }
 
 function recalculer() {
   resultat = calculerTout(config, etat);
   saisieUI.rafraichir(resultat);
   majResume();
+  majEtapes();
 }
 
 function dessinerSynthese(animer = true) {
@@ -130,7 +221,6 @@ function montrer(nom) {
   vue = nom;
   for (const v of document.querySelectorAll('.vue')) v.classList.toggle('actif', v.id === `vue-${nom}`);
   for (const b of document.querySelectorAll('.nav [data-vue]')) b.setAttribute('aria-current', String(b.dataset.vue === nom));
-  $('barre-resume').hidden = nom !== 'saisie';
   if (nom === 'synthese') dessinerSynthese(true);
   apparaitre($(`vue-${nom}`).querySelector('.entete'));
   $('rail').classList.remove('ouvert');
@@ -149,7 +239,7 @@ async function nouvelleSituation() {
   touchee = false;
   // Le lien a ete consomme : l'oublier evite qu'une actualisation le reapplique.
   history.replaceState(null, '', location.pathname);
-  vider($('bandeaux'), [...$('bandeaux').children].filter((b) => !b.classList.contains('petrole')));
+  vider($('bandeaux'), [...$('bandeaux').children].filter((b) => !b.classList.contains('petrole') && !b.classList.contains('demo')));
   construireSaisie(null);
   recalculer();
   montrer('saisie');
@@ -181,6 +271,9 @@ function brancher() {
   for (const b of document.querySelectorAll('[data-vue]')) b.addEventListener('click', () => montrer(b.dataset.vue));
   for (const b of document.querySelectorAll('[data-aller]')) b.addEventListener('click', () => montrer(b.dataset.aller));
   $('nouvelle-situation').addEventListener('click', nouvelleSituation);
+  $('bouton-demo').addEventListener('click', ouvrirMenuDemo);
+  document.addEventListener('click', (e) => { if (!e.target.closest('.menu-demo-ancre')) fermerMenuDemo(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('menu-demo').hidden) { fermerMenuDemo(); $('bouton-demo').focus(); } });
   $('telecharger-pdf').addEventListener('click', telechargerPdf);
   $('formulaire').addEventListener('submit', (e) => e.preventDefault());
   const bascule = document.querySelector('.bascule-nav');

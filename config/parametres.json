@@ -48,6 +48,7 @@
     {
       "id": "dossier",
       "titre": "Dossier locataire",
+      "court": "Identité",
       "type": "champs",
       "colonne": "dossier",
       "nominatif": true,
@@ -99,6 +100,7 @@
     {
       "id": "composition",
       "titre": "Composition familiale",
+      "court": "Foyer",
       "type": "champs",
       "colonne": "dossier",
       "champs": [
@@ -126,6 +128,7 @@
     {
       "id": "logement",
       "titre": "Situation logement",
+      "court": "Logement",
       "type": "champs",
       "colonne": "dossier",
       "champs": [
@@ -158,6 +161,7 @@
     {
       "id": "dette",
       "titre": "Dette locative",
+      "court": "Dette locative",
       "type": "champs",
       "colonne": "dossier",
       "champs": [
@@ -178,6 +182,7 @@
     {
       "id": "dettes",
       "titre": "Dettes et engagements en cours",
+      "court": "Autres dettes",
       "type": "dettes",
       "colonne": "dossier",
       "description": "Dettes hors crédits déjà déclarés en charges fixes (dettes familiales, découverts, plans en cours…)."
@@ -185,6 +190,7 @@
     {
       "id": "ressources",
       "titre": "Ressources mensuelles",
+      "court": "Ressources",
       "type": "budget",
       "colonne": "budget",
       "total": "total_ressources",
@@ -240,6 +246,7 @@
     {
       "id": "charges_fixes",
       "titre": "Charges fixes",
+      "court": "Charges fixes",
       "type": "budget",
       "colonne": "budget",
       "total": "total_charges_fixes",
@@ -305,6 +312,7 @@
     {
       "id": "vie_courante",
       "titre": "Vie courante (semi-fixes)",
+      "court": "Vie courante",
       "type": "budget",
       "colonne": "budget",
       "total": "total_vie_courante",
@@ -350,6 +358,7 @@
     {
       "id": "facultatives",
       "titre": "Dépenses facultatives",
+      "court": "Facultatives",
       "type": "budget",
       "colonne": "budget",
       "total": "total_facultatives",

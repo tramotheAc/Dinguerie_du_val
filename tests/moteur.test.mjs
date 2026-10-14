@@ -77,3 +77,12 @@ test('un calcul circulaire est detecte', () => {
   c.indicateurs.push({ id: 'x', libelle: 'x', formule: 'y + 1' }, { id: 'y', libelle: 'y', formule: 'x + 1' });
   assert.ok(verifier(c).some((p) => /circulaire/.test(p.message)));
 });
+
+test('les profils de démo ne citent que des champs du formulaire et se calculent sans erreur', () => {
+  const demo = JSON.parse(readFileSync(new URL('../config/demo.json', import.meta.url), 'utf8'));
+  const champs = new Set(config.sections.flatMap((s) => (s.champs ?? []).map((c) => c.id)));
+  for (const p of demo.profils) {
+    for (const k of Object.keys(p.valeurs)) assert.ok(champs.has(k), `${p.id} : champ inconnu « ${k} »`);
+    assert.deepEqual(calculerTout(config, p).erreurs, {}, p.id);
+  }
+});

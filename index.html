@@ -41,6 +41,11 @@
         <li><a class="nav-lien" href="admin.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
           Administration</a></li>
+        <li class="nav-groupe">Affichage</li>
+        <li><button type="button" id="bascule-theme" class="bascule-theme nav-theme" data-effectif="light" aria-label="Passer au thème sombre">
+          <svg class="i-soleil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2.1 2.1M16.9 16.9 19 19M19 5l-2.1 2.1M7.1 16.9 5 19"/></svg>
+          <svg class="i-lune" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5Z"/></svg>
+          <span>Thème clair / sombre</span></button></li>
       </ul>
       <div class="rail-pied">
         <b>Rien n'est conservé.</b> La saisie vit dans cette page seulement : la fermer ou l'actualiser efface tout.
@@ -58,11 +63,31 @@
             <p>Les totaux et la synthèse se calculent au fil de la saisie. Les montants sont mensuels.</p>
           </div>
           <div class="actions-entete">
+            <div class="menu-demo-ancre">
+              <button type="button" class="bouton second" id="bouton-demo" aria-haspopup="true" aria-expanded="false" aria-controls="menu-demo">
+                <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 15.5A2 2 0 0 0 8.5 14.1L2.4 12.5a.5.5 0 0 1 0-1l6.1-1.6a2 2 0 0 0 1.4-1.4l1.6-6.1a.5.5 0 0 1 1 0l1.6 6.1a2 2 0 0 0 1.4 1.4l6.1 1.6a.5.5 0 0 1 0 1l-6.1 1.6a2 2 0 0 0-1.4 1.4l-1.6 6.1a.5.5 0 0 1-1 0Z"/></svg>
+                Données de démo</button>
+              <div class="menu-demo" id="menu-demo" hidden></div>
+            </div>
             <button type="button" class="bouton second" id="nouvelle-situation">
               <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
               Nouvelle situation</button>
 
           </div>
+        </div>
+        <div class="barre-saisie" id="barre-saisie" role="region" aria-label="Résumé du budget et sections">
+          <div class="ligne-resume">
+            <dl class="resume">
+              <div><dt>Ressources</dt><dd id="r-ressources">—</dd></div>
+              <div><dt>Charges</dt><dd id="r-charges">—</dd></div>
+              <div><dt>Solde<span class="long"> après dettes</span></dt><dd id="r-solde">—</dd></div>
+              <div><dt>Score</dt><dd id="r-score">—</dd></div>
+            </dl>
+            <button type="button" class="bouton bouton-synthese" data-aller="synthese" aria-label="Voir la synthèse"><span class="texte-bouton">Voir la synthèse</span>
+              <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+          <nav class="etapes-saisie" id="etapes" aria-label="Aller à une section"></nav>
         </div>
         <form id="formulaire" class="formulaire" autocomplete="off" novalidate></form>
       </section>
@@ -85,26 +110,7 @@
         <div id="synthese" class="synthese"></div>
       </section>
 
-      <div class="barre-resume" id="barre-resume" role="region" aria-label="Résumé du budget">
-        <dl class="resume">
-          <div><dt>Ressources</dt><dd id="r-ressources">—</dd></div>
-          <div><dt>Charges</dt><dd id="r-charges">—</dd></div>
-          <div><dt>Solde après dettes</dt><dd id="r-solde">—</dd></div>
-          <div><dt>Score</dt><dd id="r-score">—</dd></div>
-        </dl>
-        <button type="button" class="bouton" data-aller="synthese">Voir la synthèse
-          <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-      </div>
     </main>
-  </div>
-
-  <div class="parametres" role="group" aria-label="Réglages d'affichage">
-    <span class="parametres-titre">Affichage</span>
-    <button type="button" id="bascule-theme" class="bascule-theme" data-effectif="light" aria-label="Passer au thème sombre">
-      <svg class="i-soleil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2.1 2.1M16.9 16.9 19 19M19 5l-2.1 2.1M7.1 16.9 5 19"/></svg>
-      <svg class="i-lune" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5Z"/></svg>
-    </button>
   </div>
 
   <script src="js/bouton-theme.js"></script>

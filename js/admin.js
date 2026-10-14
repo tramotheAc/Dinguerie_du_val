@@ -17,6 +17,7 @@ import { champsAutorises, construireLien, genererDax } from './url.js';
 import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js';
 import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js';
 import { apparaitre, cascade } from './animations.js';
+import { ICONES, dessinIcone, nomIcone } from './icones.js';
 
 const PANNEAUX = [
   { id: 'accueil', titre: 'Vue d’ensemble', groupe: 'Paramétrage' },
@@ -33,7 +34,7 @@ const PANNEAUX = [
   { id: 'liens', titre: 'Liens et Power BI', groupe: 'Outils' },
 ];
 
-const NIVEAUX = { vert: 'Vert (favorable)', ambre: 'Ambre (vigilance)', rouge: 'Rouge (critique)', neutre: 'Neutre' };
+const NIVEAUX = { vert: 'Vert', ambre: 'Ambre', rouge: 'Rouge', neutre: 'Neutre' };
 const TYPES_CHAMP = { montant: 'Montant (€)', nombre: 'Nombre entier', texte: 'Texte', date: 'Date' };
 
 let publie;
@@ -506,10 +507,11 @@ RENDUS.formulaire = () => h('div', { class: 'pile' },
 
 function carteSection(s, n) {
   const nominatif = !!s.nominatif;
-  const entetes = h('tr', {}, h('th', {}, 'Libellé'), h('th', {}, 'Identifiant'), h('th', {}, 'Type'), h('th', {}, 'Lien'), h('th', {}, 'Aide'), h('th', {}, ''));
+  const entetes = h('tr', {}, h('th', {}, 'Icône'), h('th', {}, 'Libellé'), h('th', {}, 'Identifiant'), h('th', {}, 'Type'), h('th', {}, 'Lien'), h('th', {}, 'Aide'), h('th', {}, ''));
   const lignes = (s.champs ?? []).map((c, i) => {
     const numerique = c.type === 'montant' || c.type === 'nombre';
     return h('tr', { id: `champ-admin-${c.id}` },
+      h('td', {}, choixIcone(c)),
       h('td', {}, texte(c, 'libelle', { 'aria-label': 'Libellé' })),
       h('td', {}, numerique ? champIdentifiant(c, 'champ') : h('input', { type: 'text', class: 'tech identifiant', value: c.id, disabled: true, 'aria-label': 'Identifiant' })),
       h('td', {}, choix(c, 'type', nominatif ? { texte: 'Texte', date: 'Date' } : TYPES_CHAMP, () => { if (!['montant', 'nombre'].includes(c.type)) c.url = false; modifie(true); })),
@@ -542,6 +544,8 @@ function carteSection(s, n) {
     h('div', { class: 'pile serree' },
       h('div', { class: 'grille-champs' },
         etiquette('Titre de la section', texte(s, 'titre')),
+        etiquette('Nom court (barre des étapes)', texte(s, 'court', { placeholder: s.titre })),
+        etiquette('Icône de la section', choixIcone(s, 'dossier')),
         etiquette('Description', texte(s, 'description', { placeholder: '—' })),
         s.type === 'budget' ? etiquette('Total affiché en tête', choix(s, 'total', optionsVariables(true))) : null,
         etiquette('Colonne', choix(s, 'colonne', { dossier: '1 – Dossier', budget: '2 – Budget' }, () => modifie(true)))),
@@ -550,6 +554,21 @@ function carteSection(s, n) {
       supprimer: s.type === 'budget',
       avant: () => confirmer({ titre: `Supprimer la section « ${s.titre} » ?`, texte: `Ses lignes et la variable somme_${s.id} disparaîtront. ${usages(config, `somme_${s.id}`).join(' ; ')}`, oui: 'Supprimer', danger: true }),
     }));
+}
+
+/* Le choix d'une icone d'illustration, avec son apercu. « Automatique »
+   reprend l'icone prevue pour cet identifiant. */
+function choixIcone(objet, repli = 'piece') {
+  const apercu = h('span', { class: 'apercu-icone' }, dessinIcone(nomIcone(objet, repli)));
+  return h('span', { class: 'choix-icone' }, apercu,
+    h('select', {
+      value: objet.icone ?? '', 'aria-label': 'Icône',
+      onchange: (e) => {
+        if (e.target.value) objet.icone = e.target.value; else delete objet.icone;
+        vider(apercu, dessinIcone(nomIcone(objet, repli)));
+        modifie();
+      },
+    }, h('option', { value: '' }, 'Automatique'), Object.keys(ICONES).map((n) => h('option', { value: n }, n.replace(/_/g, ' ')))));
 }
 
 function ajouterChamp(s) {
