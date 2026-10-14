@@ -2,10 +2,11 @@
    La page de saisie, construite entierement depuis le parametrage : ajouter
    une ligne de depense dans l'admin la fait apparaitre ici, sans code.
 
-   Le parcours se fait par volets : une section ouverte a la fois en general,
-   les autres repliees sur un resume (« 2 adultes · 1 enfant », « 410 € »).
-   « Section terminee » replie et ouvre la suivante. Rien n'est masque pour
-   de bon : chaque volet se rouvre d'un clic.
+   En haut, une grille fixe de tuiles : une par section, rangees par deux
+   selon leur theme (foyer et logement, charges fixes et vie courante...),
+   chacune resumee (« 2 adultes · 1 enfant », « 410 € »). Dessous, le
+   contenu du couple choisi. Les titres ne bougent jamais ; « Section
+   terminee » enchaine sur le couple suivant.
 
    Pour alleger les listes de budget, seuls les postes « affiches d'office »
    (reglage de l'admin) et les postes renseignes sont visibles ; les autres
@@ -16,11 +17,11 @@
    additions dans un champ (« 25+12+8 »), Entree pour passer au suivant.
    =========================================================================== */
 
-import { h, icone, vider, svg } from './dom.js?v=d0a5026678';
-import { formater } from './format.js?v=d0a5026678';
-import { signaler, apparaitre } from './animations.js?v=d0a5026678';
-import { dessinIcone, nomIcone } from './icones.js?v=d0a5026678';
-import { jaugeZones, pastilleNiveau } from './graphiques.js?v=d0a5026678';
+import { h, icone, vider, svg } from './dom.js?v=54740b0b30';
+import { formater } from './format.js?v=54740b0b30';
+import { signaler, apparaitre } from './animations.js?v=54740b0b30';
+import { dessinIcone, nomIcone } from './icones.js?v=54740b0b30';
+import { jaugeZones, pastilleNiveau } from './graphiques.js?v=54740b0b30';
 
 const FREQUENCES = [
   { id: 'sem', libelle: 'Sem.', titre: 'par semaine', vers: (x) => (x * 52) / 12 },
@@ -37,7 +38,7 @@ export function etatVide() {
     dettes: [],
     mensualite_saisie: 0,
     // L'etat de l'interface : il ne sert qu'a l'affichage, jamais au calcul.
-    ui: { ouvertes: new Set(), terminees: new Set(), ajoutees: new Set(), frequences: {}, bruts: {} },
+    ui: { terminees: new Set(), ajoutees: new Set(), frequences: {}, bruts: {} },
   };
 }
 
@@ -426,7 +427,7 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
           h('p', { class: 'question' }, 'Le ménage a-t-il d’autres dettes ?'),
           h('p', { class: 'note' }, section.description ?? 'Dettes familiales, découverts, plans de remboursement…'),
           h('div', { class: 'actions-ligne' },
-            h('button', { type: 'button', class: 'bouton second', onclick: () => { ui.terminees.add(section.id); surChangement(); fermer(section.id, true); } }, icone('ok'), 'Non, aucune'),
+            h('button', { type: 'button', class: 'bouton second', onclick: () => { terminer(section.id); } }, icone('ok'), 'Non, aucune'),
             h('button', { type: 'button', class: 'bouton', onclick: () => { etat.dettes.push({ type: '', montant: '', mensualite: '', echeance: '' }); dessiner(); zone.querySelector('input')?.focus(); } }, icone('plus'), 'Ajouter une dette'))));
         return;
       }
@@ -495,7 +496,9 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
     // Les valeurs calculees qui ne sont pas des montants (mois d'impayes...) completent le resume.
     const calculs = (section.lignes_calculees ?? []).filter((l) => (formats[l.variable] ?? 'euro') !== 'euro' && renseigne(v[l.variable]))
       .map((l) => `≈ ${formater(v[l.variable], formats[l.variable] === 'mois' ? 'decimal' : formats[l.variable])} ${l.libelle.replace(/^nombre de /i, '').toLowerCase()}`);
-    return [...remplis.map((c) => `${c.libelle} ${formater(Number(etat.valeurs[c.id]), c.type === 'montant' ? 'euro' : 'nombre')}`), ...calculs].join(' · ');
+    // Un montant seul est deja affiche a droite de la tuile : inutile de le repeter.
+    const seul = (section.champs ?? []).filter((c) => c.type === 'montant').length === 1 && calculs.length;
+    return [...remplis.filter((c) => !(seul && c.type === 'montant')).map((c) => `${c.libelle} ${formater(Number(etat.valeurs[c.id]), c.type === 'montant' ? 'euro' : 'nombre')}`), ...calculs].join(' · ');
   }
 
   function montantVolet(section, r) {
@@ -511,19 +514,21 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
     return '';
   }
 
+  /* Une section = une tuile de titre (dans la grille fixe du haut) et un
+     volet de contenu (dans la zone du dessous). Ouvrir une section n'ecarte
+     plus les titres : le contenu s'affiche sous la grille. */
   function volet(section) {
     const ton = section.colonne === 'budget' ? (section.id === 'ressources' ? 'entree' : 'sortie') : 'dossier';
-    const corpsId = `corps-${section.id}`;
     const resumeEl = h('span', { class: 'resume-volet' });
     const montant = h('span', { class: 'montant-volet' });
-    const action = h('span', { class: 'action-volet' });
     const marque = h('span', { class: 'marque-volet' });
-    const bouton = h('button', {
-      type: 'button', class: 'tete-volet', 'aria-expanded': 'false', 'aria-controls': corpsId,
-      onclick: () => (ui.ouvertes.has(section.id) ? fermer(section.id) : ouvrir(section.id)),
+    const tuile = h('button', {
+      type: 'button', class: `tuile-section ton-${ton}${section.nominatif ? ' facultatif' : ''}`, id: `tuile-${section.id}`,
+      'data-section': section.id, 'aria-controls': `section-${section.id}`, 'aria-pressed': 'false',
+      onclick: () => activer(section.id, { focus: true }),
     }, marque,
-    h('span', { class: 'titres-volet' }, h('span', { class: 'titre-volet', id: `titre-${section.id}` }, section.nominatif ? `${section.titre} · facultatif` : section.titre), resumeEl),
-    montant, action);
+    h('span', { class: 'titres-volet' }, h('span', { class: 'titre-volet' }, section.nominatif ? `${section.titre} · facultatif` : section.titre), resumeEl),
+    montant, h('span', { class: 'chevron', 'aria-hidden': 'true' }, icone('bas')));
 
     let contenu;
     let visuel = null;
@@ -545,62 +550,66 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
       if (section.id === 'logement') visuel = visuelLogement();
       if (section.id === 'dette') {
         const d = visuelDette();
-        if (d) {
-          contenu = h('div', { class: 'pile-dette' }, d.frise, h('div', { class: 'duo-dette' }, champs, d.equivalent), d.alerte);
-        }
+        if (d) contenu = h('div', { class: 'pile-dette' }, d.frise, h('div', { class: 'duo-dette' }, champs, d.equivalent), d.alerte);
       }
       contenu ??= champs;
       if (section.nominatif) contenu = h('div', {}, h('p', { class: 'note-cadenas' }, icone('alerte'), 'Jamais conservé, jamais transmis dans un lien : ces informations servent uniquement à l’en-tête du PDF.'), contenu);
     }
 
-    const corps = h('div', { class: 'corps-volet', id: corpsId, role: 'region', 'aria-labelledby': `titre-${section.id}`, hidden: true },
-      section.description && section.type !== 'dettes' && !section.nominatif ? h('p', { class: 'description-volet' }, section.description) : null,
-      visuel && section.id !== 'logement' ? visuel : null,
-      contenu,
-      section.id === 'logement' ? visuel : null,
-      h('div', { class: 'pied-volet' }, pied ?? h('span'),
-        h('button', { type: 'button', class: 'bouton second terminer', onclick: () => { ui.terminees.add(section.id); surChangement(); fermer(section.id, true); } }, icone('ok'), 'Section terminée')));
-
-    const el = h('section', { class: `volet ton-${ton}${section.nominatif ? ' facultatif' : ''}`, id: `section-${section.id}`, 'data-section': section.id },
-      h('h3', { class: 'entete-volet' }, bouton), corps);
-    volets.set(section.id, { section, el, corps, bouton, resume: resumeEl, montant, action, marque });
-    return el;
+    const montantDetail = h('span', { class: 'montant-volet' });
+    const detail = h('section', { class: `volet ton-${ton}${section.nominatif ? ' facultatif' : ''}`, id: `section-${section.id}`, 'data-section': section.id, 'aria-labelledby': `titre-${section.id}` },
+      h('header', { class: 'entete-detail' },
+        h('span', { class: `medaillon m-${ton}` }, dessinIcone(nomIcone(section, 'dossier'))),
+        h('div', { class: 'titres-detail' },
+          h('h3', { id: `titre-${section.id}` }, section.nominatif ? `${section.titre} · facultatif` : section.titre),
+          section.description && section.type !== 'dettes' && !section.nominatif ? h('p', {}, section.description) : null),
+        montantDetail),
+      h('div', { class: 'corps-volet' },
+        visuel && section.id !== 'logement' ? visuel : null,
+        contenu,
+        section.id === 'logement' ? visuel : null,
+        h('div', { class: 'pied-volet' }, pied ?? h('span'),
+          h('button', { type: 'button', class: 'bouton second terminer', onclick: () => terminer(section.id) }, icone('ok'), 'Section terminée'))));
+    volets.set(section.id, { section, ton, tuile, detail, resume: resumeEl, montant, montantDetail, marque });
   }
 
-  function majVolet(id) {
-    const vt = volets.get(id);
-    const ouvert = ui.ouvertes.has(id);
-    vt.corps.hidden = !ouvert;
-    vt.el.classList.toggle('ouvert', ouvert);
-    vt.bouton.setAttribute('aria-expanded', String(ouvert));
-    vt.action.textContent = ouvert ? 'Réduire' : (vt.section.nominatif && !estFaite(vt.section, etat) ? 'Déplier' : 'Modifier');
-  }
+  const lignes = rangees(config);
+  const rangeeDe = (id) => lignes.findIndex((r) => r.some((s) => s.id === id));
+  const panneaux = [];
 
-  function ouvrir(id, { defiler = false } = {}) {
-    if (!volets.has(id)) return;
-    ui.ouvertes.add(id);
-    majVolet(id);
-    const vt = volets.get(id);
-    apparaitre(vt.corps);
-    if (defiler) vt.el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* Afficher sous la grille le couple de sections qui contient « id ». */
+  function activer(id, { focus = false, defiler = false } = {}) {
+    const i = rangeeDe(id);
+    if (i < 0) return;
+    ui.rangee = i;
+    majActive();
+    apparaitre(panneaux[i]);
+    if (defiler) zone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (focus) setTimeout(() => volets.get(id)?.detail.querySelector('.corps-volet input, .corps-volet button')?.focus({ preventScroll: !defiler }), defiler ? 350 : 0);
     surOuverture?.(id);
   }
 
-  /* Replier ; apres « terminee », ouvrir la section suivante pas encore faite. */
-  function fermer(id, enchainer = false) {
-    ui.ouvertes.delete(id);
-    majVolet(id);
-    if (!enchainer) return;
-    const ordre = sectionsParcours(config);
-    const i = ordre.findIndex((s) => s.id === id);
-    const prochaine = ordre.slice(i + 1).find((s) => !s.nominatif && !estFaite(s, etat))
-      ?? ordre.find((s) => !s.nominatif && !estFaite(s, etat));
-    if (prochaine) {
-      ouvrir(prochaine.id, { defiler: true });
-      setTimeout(() => volets.get(prochaine.id)?.corps.querySelector('input, button')?.focus({ preventScroll: true }), 350);
-    } else {
-      document.getElementById('fin-saisie')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  function majActive() {
+    panneaux.forEach((p, i) => { p.hidden = i !== ui.rangee; });
+    for (const [id, vt] of volets) {
+      const actif = rangeeDe(id) === ui.rangee;
+      vt.tuile.classList.toggle('active', actif);
+      vt.tuile.setAttribute('aria-pressed', String(actif));
     }
+    vide.hidden = ui.rangee !== null && ui.rangee !== undefined && ui.rangee >= 0;
+  }
+
+  /* « Section terminee » : la suivante du couple si elle reste a faire, sinon
+     le prochain couple qui reste a faire, sinon la fin de saisie. */
+  function terminer(id) {
+    ui.terminees.add(id);
+    surChangement();
+    const i = rangeeDe(id);
+    const reste = lignes[i].find((s) => !s.nominatif && !estFaite(s, etat));
+    if (reste) { volets.get(reste.id).detail.querySelector('.corps-volet input, .corps-volet button')?.focus(); return; }
+    const suivante = [...lignes.slice(i + 1), ...lignes.slice(0, i)].find((r) => r.some((s) => !s.nominatif && !estFaite(s, etat)));
+    if (suivante) activer(suivante.find((s) => !s.nominatif && !estFaite(s, etat)).id, { focus: true, defiler: true });
+    else document.getElementById('fin-saisie')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   /* ---------------------------------------------------------- fin de saisie */
@@ -626,29 +635,38 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
 
   /* ------------------------------------------------------------ assemblage */
 
-  const ordre = sectionsParcours(config);
-  vider(racine, rangees(config).map((r) => h('div', { class: `rangee${r.length > 1 ? ' double' : ''}` }, r.map(volet))), fin);
-  // Au depart, ouvrir la premiere section a faire (sauf si tout est deja rempli).
-  if (!ui.ouvertes.size) {
-    const premiere = ordre.find((s) => !s.nominatif && !estFaite(s, etat));
-    if (premiere) ui.ouvertes.add(premiere.id);
+  for (const s of sectionsParcours(config)) volet(s);
+  const grille = h('div', { class: 'grille-sections', role: 'group', 'aria-label': 'Sections du formulaire' },
+    lignes.flatMap((r) => r.map((s) => {
+      const t = volets.get(s.id).tuile;
+      if (r.length === 1) t.classList.add('pleine');
+      return t;
+    })));
+  lignes.forEach((r) => panneaux.push(h('div', { class: `panneau-rangee${r.length > 1 ? ' double' : ''}`, hidden: true }, r.map((s) => volets.get(s.id).detail))));
+  const vide = h('p', { class: 'zone-vide' }, 'Choisissez une section ci-dessus pour la compléter ou la modifier.');
+  const zone = h('div', { class: 'zone-detail' }, vide, panneaux);
+  vider(racine, grille, zone, fin);
+  // Au depart, le premier couple qui reste a faire.
+  if (ui.rangee === undefined) {
+    const premiere = sectionsParcours(config).find((s) => !s.nominatif && !estFaite(s, etat));
+    ui.rangee = premiere ? rangeeDe(premiere.id) : null;
   }
-  for (const id of volets.keys()) majVolet(id);
+  majActive();
 
   return {
-    ouvrir: (id) => ouvrir(id, { defiler: true }),
+    ouvrir: (id) => activer(id, { focus: true, defiler: true }),
     rafraichir(resultat) {
       dernierResultat = resultat;
       for (const f of aRafraichir) f(resultat);
-      for (const [id, vt] of volets) {
+      for (const [, vt] of volets) {
         const fait = estFaite(vt.section, etat);
-        vt.el.classList.toggle('fait', fait);
-        vider(vt.marque, fait ? h('span', { class: 'coche' }, icone('ok')) : h('span', { class: `medaillon m-${vt.el.classList.contains('ton-entree') ? 'entree' : vt.el.classList.contains('ton-sortie') ? 'sortie' : 'dossier'}` }, dessinIcone(nomIcone(vt.section, 'dossier'))));
+        vt.tuile.classList.toggle('fait', fait);
+        vider(vt.marque, fait ? h('span', { class: 'coche' }, icone('ok')) : h('span', { class: `medaillon m-${vt.ton}` }, dessinIcone(nomIcone(vt.section, 'dossier'))));
         vt.resume.textContent = resume(vt.section, resultat);
         const m = montantVolet(vt.section, resultat);
         if (vt.montant.textContent !== m && vt.montant.textContent) signaler(vt.montant);
         vt.montant.textContent = m;
-        majVolet(id);
+        vt.montantDetail.textContent = m;
       }
       majFin(resultat);
     },

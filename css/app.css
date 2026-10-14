@@ -58,72 +58,60 @@
 .bandeau small { color: var(--encre-doux); }
 
 /* ------------------------------------------------------------------- saisie */
-/* Une colonne de volets a gauche, le panneau d'equilibre colle a droite. */
+/* La grille des sections en haut, le contenu dessous ; le panneau
+   d'equilibre colle a droite. */
 .entete-saisie { align-items: flex-end; }
 .surtitre-page { margin: 0 0 2px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--chiffre); }
 .disposition-saisie { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
-.formulaire { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-/* Deux volets proches par le theme partagent une ligne ; chacun garde sa
-   hauteur, ouvrir l'un ne deplace pas le titre de l'autre. */
-.rangee { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: start; }
-.rangee.double { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); }
+.formulaire { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
-/* Etapes : une pastille par section, numero puis coche. */
-.etapes-saisie {
-  /* Figee en haut : les titres des sections restent a portee pendant qu'on deplie. */
-  position: sticky; top: 0; z-index: 25; display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto;
-  margin: 0 -8px; padding: 8px; background: var(--fond); scrollbar-width: thin;
+/* ------------------------------------------------------ grille des sections */
+/* Deux tuiles par ligne quand les sections se ressemblent (foyer et logement,
+   charges fixes et vie courante...), une pleine ligne sinon. Les tuiles ne
+   bougent jamais : le contenu s'ouvre en dessous de la grille. */
+.grille-sections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tuile-section {
+  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--bord); border-radius: 12px; background: var(--surface);
+  text-align: left; cursor: pointer; transition: border-color .15s, background .15s, box-shadow .15s;
 }
-.etape {
-  flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 4px;
-  border-radius: 999px; border: 1px solid var(--bord-fort); background: var(--surface);
-  color: var(--encre); font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
-  transition: background .15s, border-color .15s, color .15s;
-}
-.etape:hover { border-color: var(--encre-tres-doux); }
-.etape .rond {
-  display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
-  background: var(--surface-2); color: var(--encre-doux); font-size: 11.5px; font-weight: 700;
-}
-.etape .coche { display: none; }
-.etape .coche .icone { width: 13px; height: 13px; stroke-width: 2.6; }
-.etape.fait .rond { background: var(--vert-fond); color: var(--vert); }
-.etape.fait .numero-etape { display: none; }
-.etape.fait .coche { display: grid; }
-.etape[aria-current] { background: var(--nuit); border-color: var(--nuit); color: #fff; }
-.etape[aria-current] .rond { background: rgb(255 255 255 / 18%); color: #fff; }
-.etape.facultative { border-style: dashed; color: var(--encre-doux); }
-
-/* ------------------------------------------------------------------- volets */
-.volet {
-  background: var(--surface); border: 1px solid var(--bord); border-radius: var(--radius-md);
-  box-shadow: 0 1px 2px rgb(20 40 80 / 4%); transition: box-shadow .2s, border-color .2s;
-  scroll-margin-top: 64px;
-}
-.volet.ouvert { border-color: var(--blue-300); box-shadow: var(--ombre); }
-.volet.facultatif:not(.ouvert) { border-style: dashed; background: transparent; box-shadow: none; }
-.entete-volet { margin: 0; font-size: inherit; font-weight: inherit; }
-.tete-volet {
-  width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 14px;
-  padding: 14px 18px; border: 0; background: transparent; cursor: pointer; text-align: left; border-radius: var(--radius-md);
-}
-.tete-volet:hover .action-volet { text-decoration: underline; }
+.tuile-section.pleine { grid-column: 1 / -1; }
+.tuile-section:hover { border-color: var(--blue-300); }
+.tuile-section.active { border-color: var(--accent); background: var(--blue-100); box-shadow: 0 0 0 1px var(--accent); }
+.tuile-section.facultatif:not(.active) { border-style: dashed; background: transparent; }
+.chevron { color: var(--encre-tres-doux); transition: transform .2s; }
+.chevron .icone { width: 16px; height: 16px; }
+.tuile-section.active .chevron { color: var(--accent); transform: rotate(180deg); }
 .marque-volet .coche {
-  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%;
   background: var(--vert); color: var(--surface);
 }
-.marque-volet .coche .icone { width: 16px; height: 16px; stroke-width: 2.6; }
-.marque-volet .medaillon { width: 36px; height: 36px; border-radius: 11px; }
-.marque-volet .medaillon .icone { width: 19px; height: 19px; }
+.marque-volet .coche .icone { width: 15px; height: 15px; stroke-width: 2.6; }
+.marque-volet .medaillon { width: 32px; height: 32px; border-radius: 10px; }
+.marque-volet .medaillon .icone { width: 17px; height: 17px; }
 .titres-volet { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.titre-volet { font-size: 15px; font-weight: 700; color: var(--encre); }
-.resume-volet { font-size: 13px; color: var(--encre-doux); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.volet.ouvert .resume-volet { white-space: normal; }
-.montant-volet { font-size: 17px; font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.titre-volet { font-size: 14px; font-weight: 700; color: var(--encre); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.resume-volet { font-size: 12.5px; color: var(--encre-doux); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.montant-volet { font-size: 15px; font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ton-entree .montant-volet { color: var(--vert); }
-.action-volet { font-size: 13px; font-weight: 600; color: var(--chiffre); white-space: nowrap; }
-.corps-volet { padding: 4px 16px 16px; border-top: 1px solid var(--bord); }
-.description-volet { margin: 10px 0 0; font-size: 12.5px; color: var(--encre-doux); }
+
+/* ---------------------------------------------------- contenu sous la grille */
+.zone-detail { scroll-margin-top: 16px; }
+.zone-vide { margin: 0; padding: 28px 16px; text-align: center; color: var(--encre-doux); border: 1px dashed var(--bord-fort); border-radius: var(--radius-md); }
+.panneau-rangee { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
+.panneau-rangee.double { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.volet {
+  background: var(--surface); border: 1px solid var(--bord); border-top: 3px solid var(--petrole);
+  border-radius: var(--radius-md); box-shadow: var(--ombre); min-width: 0;
+}
+.volet.ton-entree { border-top-color: var(--vert); }
+.volet.ton-sortie { border-top-color: var(--taupe); }
+.entete-detail { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--bord); }
+.entete-detail .medaillon { width: 36px; height: 36px; border-radius: 11px; }
+.titres-detail { flex: 1; min-width: 0; }
+.titres-detail h3 { font-size: 15px; }
+.titres-detail p { margin: 2px 0 0; font-size: 12.5px; color: var(--encre-doux); }
+.corps-volet { padding: 4px 16px 16px; }
 .pied-volet {
   display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
   margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--bord-fort);
@@ -226,7 +214,7 @@ input::placeholder { color: var(--encre-tres-doux); }
 
 /* ------------------------------------------------------------------ dette */
 .pile-dette { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
-.frise-mois { display: grid; grid-template-columns: repeat(auto-fit, minmax(54px, 1fr)); gap: 6px; }
+.frise-mois { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; }
 .case-mois { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .case-mois .marque {
   width: 100%; height: 36px; display: grid; place-items: center; border-radius: 9px;
@@ -235,9 +223,10 @@ input::placeholder { color: var(--encre-tres-doux); }
 .case-mois .marque .icone { width: 15px; height: 15px; }
 .case-mois.impaye .marque { background: var(--rouge-fond); color: var(--rouge); }
 .case-mois.encours .marque { background: transparent; border: 1.5px dashed var(--bord-fort); }
-.case-mois .mois { font-size: 11.5px; font-weight: 600; color: var(--encre-doux); }
+.case-mois .mois { max-width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; font-size: 11.5px; font-weight: 600; color: var(--encre-doux); }
 .duo-dette { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: end; }
 .duo-dette .grille-champs { margin-top: 0; }
+.panneau-rangee.double .duo-dette { grid-template-columns: minmax(0, 1fr); }
 .carte-equivalent { padding: 9px 12px; border-radius: 12px; border: 1px solid var(--bord); display: flex; flex-direction: column; }
 .carte-equivalent span { font-size: 12px; color: var(--encre-doux); font-weight: 600; }
 .carte-equivalent strong { font-size: 18px; color: var(--chiffre); }
@@ -298,6 +287,7 @@ input::placeholder { color: var(--encre-tres-doux); }
 .question-dettes .actions-ligne { margin-top: 6px; justify-content: center; display: flex; gap: 8px; flex-wrap: wrap; }
 .carte-dette { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px; border: 1px solid var(--bord); border-radius: 12px; }
 .champs-dette { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; }
+.panneau-rangee.double .champs-dette { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .champ-dette { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; font-weight: 600; color: var(--encre-doux); min-width: 0; }
 .champ-dette input { padding: 6px 8px; }
 .champ-dette .saisie-nombre.euro input { padding-right: 24px; }
@@ -326,9 +316,9 @@ input::placeholder { color: var(--encre-tres-doux); }
 
 /* ----------------------------------------------- panneau equilibre du mois */
 .panneau-equilibre {
-  position: sticky; top: 64px; padding: 18px; border-radius: var(--radius-md);
+  position: sticky; top: 16px; padding: 18px; border-radius: var(--radius-md);
   background: var(--surface); border: 1px solid var(--bord); box-shadow: var(--ombre);
-  max-height: calc(100vh - 80px); overflow-y: auto;
+  max-height: calc(100vh - 32px); overflow-y: auto;
 }
 .panneau-complet { display: flex; flex-direction: column; gap: 12px; }
 .panneau-complet .surtitre { margin: 0; font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--encre-doux); }
@@ -341,7 +331,7 @@ input::placeholder { color: var(--encre-tres-doux); }
 .libelle-centre { font-size: 12px; font-weight: 600; color: var(--encre-doux); }
 .chiffre-centre { font-size: 28px; font-weight: 800; color: var(--vert); font-variant-numeric: tabular-nums; line-height: 1.1; }
 .chiffre-centre.negatif { color: var(--rouge); }
-.sur-centre { font-size: 12px; color: var(--encre-doux); }
+.sur-centre { max-width: 116px; font-size: 12px; line-height: 1.3; color: var(--encre-doux); }
 .par-jour { margin: 0; padding: 8px 10px; border-radius: 10px; background: var(--vert-fond); color: var(--vert); text-align: center; font-size: 13px; font-weight: 600; }
 .par-jour strong { font-size: 16px; }
 .legende-panneau { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
@@ -400,22 +390,19 @@ input::placeholder { color: var(--encre-tres-doux); }
   /* Sur tablette et telephone, le panneau devient une barre collee en haut. */
   .disposition-saisie { grid-template-columns: 1fr; }
   .panneau-equilibre {
-    order: -1; top: 52px; z-index: 24; padding: 10px 12px; border: 0; color: #fff; max-height: none; overflow: visible;
+    order: -1; top: 8px; z-index: 24; padding: 10px 12px; border: 0; color: #fff; max-height: none; overflow: visible;
     background: linear-gradient(125deg, var(--nuit), var(--accent)); background-color: var(--nuit);
   }
   .panneau-complet { display: none; }
   .panneau-compact { display: block; }
-  .volet { scroll-margin-top: 130px; }
+  .zone-detail { scroll-margin-top: 100px; }
 }
 @media (max-width: 900px) {
-  .etapes-saisie { top: var(--rail-replie); }
-  .panneau-equilibre { top: calc(var(--rail-replie) + 50px); }
-  .volet { scroll-margin-top: 170px; }
-  .tete-volet { grid-template-columns: auto minmax(0, 1fr) auto; padding: 12px 14px; gap: 10px; }
-  .action-volet { display: none; }
+  .panneau-equilibre { top: calc(var(--rail-replie) + 6px); }
+  .zone-detail { scroll-margin-top: 150px; }
+  .panneau-rangee.double { grid-template-columns: 1fr; }
   .corps-volet { padding: 4px 14px 14px; }
   .ligne { grid-template-columns: minmax(0, 1fr) 116px 28px; }
-  .rangee.double { grid-template-columns: 1fr; }
   .ligne .retirer { opacity: 1; }
   .equation-loyer { grid-template-columns: 1fr; }
   .equation-loyer .operateur { display: none; }
@@ -425,6 +412,12 @@ input::placeholder { color: var(--encre-tres-doux); }
   .actions-entete .bouton { flex: 1 1 auto; justify-content: center; }
   .menu-demo-ancre { flex: 1 1 auto; display: flex; }
   .menu-demo { left: 0; right: auto; }
+}
+@media (max-width: 640px) {
+  /* Une tuile par ligne : la paire reste cote a cote dessous. */
+  .grille-sections { grid-template-columns: 1fr; gap: 6px; }
+  .tuile-section { padding: 8px 10px; gap: 10px; }
+  .titre-volet { white-space: normal; }
 }
 
 /* ----------------------------------------------------------------- synthese */

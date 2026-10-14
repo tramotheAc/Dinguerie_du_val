@@ -6,9 +6,9 @@
    Memes categories et memes couleurs que la repartition de la synthese.
    =========================================================================== */
 
-import { h, icone, svg, vider } from './dom.js?v=d0a5026678';
-import { formater } from './format.js?v=d0a5026678';
-import { pastilleNiveau } from './graphiques.js?v=d0a5026678';
+import { h, icone, svg, vider } from './dom.js?v=54740b0b30';
+import { formater } from './format.js?v=54740b0b30';
+import { pastilleNiveau } from './graphiques.js?v=54740b0b30';
 
 const R = 64;
 const TOUR = 2 * Math.PI * R;
@@ -73,13 +73,14 @@ export function creerPanneau({ racine, config, surSynthese }) {
         arc.setAttribute('stroke-dashoffset', String(-debut));
         debut += part * TOUR;
       };
-      cats.forEach((c, i) => poser(arcs[i], valeurs[i] / echelle));
-      poser(arcReste, ressources > depenses ? (ressources - depenses) / echelle : 0);
+      // Sans ressources, l'anneau reste vide : un seul poste ferait le tour complet.
+      cats.forEach((c, i) => poser(arcs[i], vide ? 0 : valeurs[i] / echelle));
+      poser(arcReste, !vide && ressources > depenses ? (ressources - depenses) / echelle : 0);
 
       libelleCentre.textContent = vide ? 'Reste à vivre' : negatif ? 'Déficit' : 'Reste à vivre';
       chiffreCentre.textContent = vide ? '—' : formater(Math.abs(reste ?? 0), 'euro');
       chiffreCentre.classList.toggle('negatif', !vide && negatif);
-      surCentre.textContent = vide ? 'saisissez les ressources' : `sur ${formater(ressources, 'euro')}`;
+      surCentre.textContent = vide ? 'en attente des ressources' : `sur ${formater(ressources, 'euro')}`;
 
       const personnes = v.total_personnes;
       parJour.hidden = vide || negatif || !personnes || !(reste > 0);

@@ -7,17 +7,17 @@
    l'onglet efface tout - c'est voulu.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer } from './dom.js?v=d0a5026678';
-import { chargerConfig } from './config.js?v=d0a5026678';
-import { calculerTout } from './moteur.js?v=d0a5026678';
-import { formater } from './format.js?v=d0a5026678';
-import { lirePrerempli } from './url.js?v=d0a5026678';
-import { creerSaisie, etatVide, estFaite, progression, sectionsParcours } from './saisie.js?v=d0a5026678';
-import { dessinIcone, nomIcone } from './icones.js?v=d0a5026678';
-import { rendreSynthese, saisieVide, identite } from './synthese.js?v=d0a5026678';
-import { apparaitre, signaler, cascade } from './animations.js?v=d0a5026678';
-import { creerPanneau } from './panneau.js?v=d0a5026678';
-import { versionPerimee } from './version.js?v=d0a5026678';
+import { h, icone, vider, confirmer, annoncer } from './dom.js?v=54740b0b30';
+import { chargerConfig } from './config.js?v=54740b0b30';
+import { calculerTout } from './moteur.js?v=54740b0b30';
+import { formater } from './format.js?v=54740b0b30';
+import { lirePrerempli } from './url.js?v=54740b0b30';
+import { creerSaisie, etatVide, progression } from './saisie.js?v=54740b0b30';
+import { dessinIcone, nomIcone } from './icones.js?v=54740b0b30';
+import { rendreSynthese, saisieVide, identite } from './synthese.js?v=54740b0b30';
+import { apparaitre, signaler, cascade } from './animations.js?v=54740b0b30';
+import { creerPanneau } from './panneau.js?v=54740b0b30';
+import { versionPerimee } from './version.js?v=54740b0b30';
 
 let config;
 let etat = etatVide();
@@ -92,32 +92,7 @@ function construireSaisie(prerempli) {
   saisieUI = creerSaisie({
     config, racine: $('formulaire'), etat, prerempli,
     surChangement: () => { touchee = true; recalculer(); },
-    surOuverture: (id) => marquerEtape(id),
   });
-  construireEtapes();
-}
-
-/* --------------------------------------------------------------- etapes */
-/* Une pastille par section : un numero tant qu'elle reste a faire, une coche
-   ensuite. Un clic ouvre le volet et y conduit. */
-function construireEtapes() {
-  vider($('etapes'), sectionsParcours(config).map((s, n) => h('button', {
-    type: 'button', class: `etape${s.nominatif ? ' facultative' : ''}`, 'data-section': s.id, title: s.titre,
-    onclick: () => saisieUI.ouvrir(s.id),
-  },
-  h('span', { class: 'rond' }, h('span', { class: 'numero-etape' }, s.nominatif ? '+' : String(n + 1)), h('span', { class: 'coche' }, icone('ok'))),
-  h('span', { class: 'nom' }, s.court || s.titre))));
-}
-
-function marquerEtape(id) {
-  for (const b of document.querySelectorAll('#etapes .etape')) b.toggleAttribute('aria-current', b.dataset.section === id);
-}
-
-function majEtapes() {
-  for (const b of document.querySelectorAll('#etapes .etape')) {
-    const s = config.sections.find((x) => x.id === b.dataset.section);
-    b.classList.toggle('fait', estFaite(s, etat));
-  }
 }
 
 /* ------------------------------------------------------------------ demo */
@@ -167,14 +142,13 @@ async function chargerDemo(profil) {
   construireSaisie(null);
   recalculer();
   if (vue !== 'saisie') montrer('saisie');
-  cascade(document.querySelectorAll('.volet'), 30);
+  cascade(document.querySelectorAll('.tuile-section'), 20);
   annoncer(`Ménage fictif chargé : ${profil.libelle}`, 'ok');
 }
 
 function recalculer() {
   resultat = calculerTout(config, etat);
   saisieUI.rafraichir(resultat);
-  majEtapes();
   panneau.rafraichir(resultat, { ...progression(config, etat), vide: saisieVide(etat) });
 }
 
@@ -233,7 +207,7 @@ async function telechargerPdf() {
   const voile = h('div', { class: 'voile-pdf' }, h('div', { class: 'carte' }, h('span', { class: 'roue', 'aria-hidden': 'true' }), 'Fabrication du PDF…'));
   document.body.append(voile);
   try {
-    const { exporterPdf } = await import('./pdf.js?v=d0a5026678');
+    const { exporterPdf } = await import('./pdf.js?v=54740b0b30');
     await exporterPdf({ config, resultat, etat });
     annoncer('PDF téléchargé.', 'ok');
   } catch (e) {
