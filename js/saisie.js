@@ -16,11 +16,11 @@
    additions dans un champ (« 25+12+8 »), Entree pour passer au suivant.
    =========================================================================== */
 
-import { h, icone, vider, svg } from './dom.js?v=e847c20310';
-import { formater } from './format.js?v=e847c20310';
-import { signaler, apparaitre } from './animations.js?v=e847c20310';
-import { dessinIcone, nomIcone } from './icones.js?v=e847c20310';
-import { jaugeZones, pastilleNiveau } from './graphiques.js?v=e847c20310';
+import { h, icone, vider, svg } from './dom.js?v=d0a5026678';
+import { formater } from './format.js?v=d0a5026678';
+import { signaler, apparaitre } from './animations.js?v=d0a5026678';
+import { dessinIcone, nomIcone } from './icones.js?v=d0a5026678';
+import { jaugeZones, pastilleNiveau } from './graphiques.js?v=d0a5026678';
 
 const FREQUENCES = [
   { id: 'sem', libelle: 'Sem.', titre: 'par semaine', vers: (x) => (x * 52) / 12 },
@@ -64,9 +64,21 @@ const renseigne = (v) => v !== '' && v !== undefined && v !== null && v !== 0;
 const nombreOuVide = (v) => (v === '' || v === undefined || v === null ? null : Number(v));
 const pluriel = (n, un, plusieurs) => `${formater(n, 'nombre')} ${n > 1 ? plusieurs : un}`;
 
-/* L'ordre du parcours : la section nominative, facultative, passe en dernier. */
+/* L'ordre du parcours : celui du parametrage. */
 export function sectionsParcours(config) {
-  return [...config.sections.filter((s) => !s.nominatif), ...config.sections.filter((s) => s.nominatif)];
+  return [...config.sections];
+}
+
+/* Les rangees de volets : une section marquee « avec_precedente » partage la
+   ligne de la precedente (deux par ligne au plus), par proximite de theme. */
+export function rangees(config) {
+  const lignes = [];
+  for (const s of config.sections) {
+    const derniere = lignes[lignes.length - 1];
+    if (s.avec_precedente && derniere && derniere.length < 2) derniere.push(s);
+    else lignes.push([s]);
+  }
+  return lignes;
 }
 
 /* Ce qu'une section a de rempli. */
@@ -350,7 +362,6 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
         h('label', { for: `champ-${c.id}` },
           h('span', { class: 'puce-icone' }, dessinIcone(nomIcone(c))),
           h('span', { class: 'texte-label' }, c.libelle), marqueLien(c)),
-        m.frequences,
         m.bloc,
         h('button', {
           type: 'button', class: 'bouton-icone retirer', title: 'Retirer ce poste', 'aria-label': `Retirer ${c.libelle}`,
@@ -363,7 +374,7 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
             el.querySelector('input').focus();
           },
         }, icone('croix')),
-        m.conversion,
+        h('div', { class: 'sous-ligne' }, m.frequences, m.conversion),
         c.aide ? h('small', { id: `champ-${c.id}-aide`, class: 'aide' }, c.aide) : null);
       el.hidden = !essentiel(c);
       return el;
@@ -483,7 +494,7 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
     }
     // Les valeurs calculees qui ne sont pas des montants (mois d'impayes...) completent le resume.
     const calculs = (section.lignes_calculees ?? []).filter((l) => (formats[l.variable] ?? 'euro') !== 'euro' && renseigne(v[l.variable]))
-      .map((l) => `≈ ${formater(v[l.variable], formats[l.variable])} ${l.libelle.replace(/^nombre de /i, '').toLowerCase()}`);
+      .map((l) => `≈ ${formater(v[l.variable], formats[l.variable] === 'mois' ? 'decimal' : formats[l.variable])} ${l.libelle.replace(/^nombre de /i, '').toLowerCase()}`);
     return [...remplis.map((c) => `${c.libelle} ${formater(Number(etat.valeurs[c.id]), c.type === 'montant' ? 'euro' : 'nombre')}`), ...calculs].join(' · ');
   }
 
@@ -616,7 +627,7 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
   /* ------------------------------------------------------------ assemblage */
 
   const ordre = sectionsParcours(config);
-  vider(racine, ordre.map(volet), fin);
+  vider(racine, rangees(config).map((r) => h('div', { class: `rangee${r.length > 1 ? ' double' : ''}` }, r.map(volet))), fin);
   // Au depart, ouvrir la premiere section a faire (sauf si tout est deja rempli).
   if (!ui.ouvertes.size) {
     const premiere = ordre.find((s) => !s.nominatif && !estFaite(s, etat));

@@ -9,9 +9,9 @@
    - un titre (title) sur chaque marque pour le survol.
    =========================================================================== */
 
-import { h, svg } from './dom.js?v=e847c20310';
-import { formater } from './format.js?v=e847c20310';
-import { grandir, tracer, sansAnimation } from './animations.js?v=e847c20310';
+import { h, svg } from './dom.js?v=d0a5026678';
+import { formater } from './format.js?v=d0a5026678';
+import { grandir, tracer, sansAnimation } from './animations.js?v=d0a5026678';
 
 const COULEUR_NIVEAU = { vert: 'var(--vert)', ambre: 'var(--ambre)', rouge: 'var(--rouge)', neutre: 'var(--encre-tres-doux)' };
 const FOND_NIVEAU = { vert: 'var(--vert-fond)', ambre: 'var(--ambre-fond)', rouge: 'var(--rouge-fond)', neutre: 'var(--surface-2)' };
@@ -198,4 +198,133 @@ export function critere(c, { animer = true } = {}) {
     h('span', { class: 'libelle' }, c.libelle),
     h('span', { class: 'piste' }, rempli),
     h('span', { class: 'nombre' }, `${formater(c.valeur, 'nombre')} / ${c.max}`));
+}
+
+/* ------------------------------------------------------------- cascade */
+/* Ou part l'argent : des ressources, on retranche chaque categorie jusqu'au
+   solde, puis le plan d'apurement jusqu'au reste reel. Chaque barre porte
+   son montant et sa part des ressources. */
+export function cascadeBudget({ ressources, etapes, solde, plan, animer = true }) {
+  const colonnes = [
+    { libelle: 'Ressources', de: 0, a: ressources, couleur: 'var(--vert)', fort: true, montant: ressources },
+  ];
+  let niveau = ressources;
+  for (const e of etapes) {
+    colonnes.push({ libelle: e.libelle, de: niveau, a: niveau - e.valeur, couleur: e.couleur, montant: -e.valeur });
+    niveau -= e.valeur;
+  }
+  colonnes.push({ libelle: 'Solde', de: 0, a: solde, couleur: solde < 0 ? 'var(--rouge)' : 'var(--petrole)', fort: true, montant: solde });
+  if (plan > 0) {
+    colonnes.push({ libelle: 'Plan d’apurement', de: solde, a: solde - plan, motif: true, montant: -plan });
+    colonnes.push({ libelle: 'Reste réel', de: 0, a: solde - plan, couleur: solde - plan < 0 ? 'var(--rouge)' : 'var(--petrole)', fort: true, montant: solde - plan });
+  }
+  const L = 92, H = 230, haut = 40, bas = 44;
+  const max = Math.max(ressources, 1, ...colonnes.map((c) => Math.max(c.de, c.a)));
+  const min = Math.min(0, ...colonnes.map((c) => Math.min(c.de, c.a)));
+  const y = (v) => haut + ((max - v) / (max - min || 1)) * H;
+  const largeur = colonnes.length * L;
+  const motif = svg('pattern', { id: 'hachure-plan', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
+    svg('rect', { width: 6, height: 6, fill: 'var(--rouge-fond)' }),
+    svg('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: 'var(--rouge)', 'stroke-width': 3 }));
+  const dessin = svg('svg', { viewBox: `0 0 ${largeur} ${haut + H + bas}`, class: 'cascade', role: 'img', 'aria-label': colonnes.map((c) => `${c.libelle} ${formater(c.montant, 'euro')}`).join(', ') },
+    svg('defs', {}, motif),
+    svg('line', { x1: 0, x2: largeur, y1: y(0), y2: y(0), class: 'axe' }),
+    colonnes.map((c, i) => {
+      const x = i * L + 12;
+      const y1 = y(Math.max(c.de, c.a));
+      const y2 = y(Math.min(c.de, c.a));
+      const hauteur = Math.max(2, y2 - y1);
+      const part = ressources ? Math.abs(c.montant) / ressources : null;
+      const texte = `${c.montant < 0 && !c.fort ? '− ' : ''}${formater(c.fort ? c.montant : Math.abs(c.montant), 'euro')}`;
+      const mots = c.libelle.split(' ');
+      const lignes = mots.length > 1 && c.libelle.length > 12 ? [mots.slice(0, Math.ceil(mots.length / 2)).join(' '), mots.slice(Math.ceil(mots.length / 2)).join(' ')] : [c.libelle];
+      const barre = svg('rect', { x, y: y1, width: L - 24, height: hauteur, rx: 5, fill: c.motif ? 'url(#hachure-plan)' : c.couleur, class: 'barre-cascade' }, svg('title', {}, `${c.libelle} : ${texte}`));
+      if (animer && !sansAnimation()) barre.animate?.([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 500, delay: i * 70, easing: 'cubic-bezier(.22,.8,.3,1)', fill: 'backwards' });
+      return svg('g', {},
+        i > 0 ? svg('line', { x1: x - 24, x2: x, y1: y(c.de), y2: y(c.de), class: 'liaison' }) : null,
+        barre,
+        svg('text', { x: x + (L - 24) / 2, y: y1 - (c.fort ? 8 : 20), class: `montant-cascade${c.fort ? ' fort' : ''}`, 'text-anchor': 'middle' }, texte),
+        !c.fort && part !== null ? svg('text', { x: x + (L - 24) / 2, y: y1 - 7, class: 'part-cascade', 'text-anchor': 'middle' }, formater(part, 'pourcent')) : null,
+        svg('text', { x: x + (L - 24) / 2, y: haut + H + 18, class: `libelle-cascade${c.fort ? ' fort' : ''}`, 'text-anchor': 'middle' },
+          lignes.map((t, k) => svg('tspan', { x: x + (L - 24) / 2, dy: k ? 13 : 0 }, t))));
+    }));
+  return dessin;
+}
+
+/* ------------------------------------------------------- sur 100 euros */
+export function barreSur100(items, total) {
+  const parts = items.map((i) => ({ ...i, part: total ? Math.max(0, i.valeur) / total * 100 : 0 }));
+  return h('div', { class: 'barre-100' }, parts.filter((p) => p.part > 0).map((p) => h('span', {
+    class: 'segment-100', style: { flexGrow: String(p.part), background: p.couleur }, title: `${p.libelle} : ${Math.round(p.part)} € sur 100 €`,
+  }, p.part >= 7 ? h('span', { class: 'chiffre-segment' }, String(Math.round(p.part))) : null)));
+}
+
+/* ------------------------------------------------- jauge a zones nommees */
+/* Les zones portent leur nom ; la zone ou tombe la valeur est accentuee, un
+   repere etiquete marque la valeur. */
+export function jaugeNommee(jauge, format) {
+  const max = Number(jauge.echelle_max) || 1;
+  const zones = [];
+  if (jauge.sens === 'haut') {
+    const tri = [...jauge.paliers].reverse();
+    tri.forEach((p, i) => {
+      const de = p.seuil === null || p.seuil === undefined || p.seuil === '' ? 0 : Number(p.seuil);
+      zones.push({ de, a: i + 1 < tri.length ? Number(tri[i + 1].seuil) : max, p });
+    });
+  } else {
+    let de = 0;
+    for (const p of jauge.paliers) {
+      const a = p.seuil === null || p.seuil === undefined || p.seuil === '' ? max : Number(p.seuil);
+      zones.push({ de, a: Math.max(a, de), p });
+      de = a;
+    }
+  }
+  const v = jauge.valeur;
+  const pos = (x) => Math.max(0, Math.min(100, (x / max) * 100));
+  const actif = jauge.palier;
+  // « Situation favorable » -> « Favorable » : dans la jauge, le mot suffit.
+  const court = (t) => String(t).replace(/^situation\s+/i, '').replace(/^./, (x) => x.toUpperCase());
+  // Les largeurs sont en pourcentage de l'echelle : une zone etroite tait son
+  // nom (il reste en infobulle) plutot que de l'afficher coupe.
+  let derniere = -100;
+  const graduations = zones.slice(0, -1).map((z) => pos(z.a)).filter((x) => {
+    if (x - derniere < 9 || x > 96) return false;
+    derniere = x;
+    return true;
+  });
+  return h('div', { class: 'jauge-nommee' },
+    h('div', { class: 'zones' }, zones.map((z) => {
+      const largeur = pos(z.a) - pos(z.de);
+      return h('span', {
+        class: `zone niveau-${z.p.niveau ?? 'neutre'}${actif && z.p.libelle === actif.libelle && z.p.seuil === actif.seuil ? ' active' : ''}`,
+        style: { width: `${largeur}%` }, title: z.p.libelle,
+      }, largeur >= 17 ? h('span', { class: 'nom-zone' }, court(z.p.libelle)) : null);
+    })),
+    v === null || v === undefined ? null : h('span', { class: 'repere-valeur', style: { left: `${pos(v)}%` } },
+      h('span', { class: 'etiquette-valeur' }, formater(v, format))),
+    h('div', { class: 'graduations' }, graduations.map((x) => h('span', { style: { left: `${x}%` } }, formater(x / 100 * max, format)))));
+}
+
+/* ------------------------------------------------ points du score */
+export function barrePoints(criteres, max) {
+  const total = criteres.reduce((t, c) => t + (c.valeur ?? 0), 0);
+  const perdus = Math.max(0, max - total);
+  return h('div', { class: 'barre-points' },
+    criteres.map((c, i) => ((c.valeur ?? 0) > 0 ? h('span', {
+      class: 'segment-points', style: { flexGrow: String(c.valeur), background: `var(--cat-${(i % 5) + 1})` }, title: `${c.libelle} : ${c.valeur} / ${c.max}`,
+    }, h('span', { class: 'chiffre-segment' }, String(c.valeur))) : null)),
+    perdus > 0 ? h('span', { class: 'segment-points perdus', style: { flexGrow: String(perdus) } }, `${perdus} points perdus`) : null);
+}
+
+/* ------------------------------------------- scenarios de plan compares */
+export function scenarios(liste, cible) {
+  const max = Math.max(cible || 0, ...liste.map((s) => s.duree || 0)) * 1.08 || 1;
+  return h('div', { class: 'scenarios' },
+    cible ? h('div', { class: 'ligne-cible-titre' }, h('span', { style: { left: `${(cible / max) * 100}%` } }, `cible ${cible} mois`)) : null,
+    liste.map((s) => h('div', { class: `scenario${s.actif ? ' actif' : ''}` },
+      h('div', { class: 'scenario-libelle' }, h('strong', {}, s.titre), h('small', {}, s.sous)),
+      h('div', { class: 'scenario-piste' },
+        h('span', { class: `scenario-barre${s.motif ? ' motif' : ''}`, style: { width: `${Math.min(100, ((s.duree || 0) / max) * 100)}%`, background: s.motif ? null : s.couleur } }),
+        cible ? h('span', { class: 'scenario-cible', style: { left: `${(cible / max) * 100}%` } }) : null),
+      h('strong', { class: 'scenario-duree' }, s.duree ? String(s.duree) : '—'))));
 }

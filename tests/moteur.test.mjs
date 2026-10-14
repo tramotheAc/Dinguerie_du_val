@@ -47,7 +47,7 @@ test('leviers et points d’attention du classeur', () => {
   const r = calculerTout(config, essai);
   assert.deepEqual(r.leviersRetenus.map((l) => l.id), ['fsl', 'renegocier', 'reduire', 'suivi']);
   assert.equal(r.points.length, 4);
-  assert.match(r.points[0].texte, /5,71 mois/);
+  assert.match(r.points[0].texte, /5,7 mois/);
 });
 
 test('une mensualite simulee remplace la conseillee et recalcule la duree', () => {

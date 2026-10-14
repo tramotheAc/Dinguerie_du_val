@@ -4,18 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta name="version" content="e847c20310">
+  <meta name="version" content="d0a5026678">
   <title>La dinguerie de val</title>
   <meta name="description" content="Diagnostic budgétaire locataire : saisie, synthèse et proposition de plan d'apurement. Aucune donnée n'est conservée.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2329467b'/%3E%3Ctext x='16' y='21' font-family='Arial' font-weight='700' font-size='13' fill='white' text-anchor='middle'%3EDV%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/charte/jetons.css?v=e847c20310">
-  <link rel="stylesheet" href="css/charte/bandeau.css?v=e847c20310">
-  <link rel="stylesheet" href="css/charte/socle.css?v=e847c20310">
-  <link rel="stylesheet" href="css/charte/composants.css?v=e847c20310">
-  <link rel="stylesheet" href="css/charte/bouton-theme.css?v=e847c20310">
-  <link rel="stylesheet" href="css/charte/motif-rail.css?v=e847c20310">
-  <link rel="stylesheet" href="css/categories.css?v=e847c20310">
-  <link rel="stylesheet" href="css/app.css?v=e847c20310">
+  <link rel="stylesheet" href="css/charte/jetons.css?v=d0a5026678">
+  <link rel="stylesheet" href="css/charte/bandeau.css?v=d0a5026678">
+  <link rel="stylesheet" href="css/charte/socle.css?v=d0a5026678">
+  <link rel="stylesheet" href="css/charte/composants.css?v=d0a5026678">
+  <link rel="stylesheet" href="css/charte/bouton-theme.css?v=d0a5026678">
+  <link rel="stylesheet" href="css/charte/motif-rail.css?v=d0a5026678">
+  <link rel="stylesheet" href="css/categories.css?v=d0a5026678">
+  <link rel="stylesheet" href="css/app.css?v=d0a5026678">
 </head>
 <body>
   <div class="app">
@@ -82,9 +82,21 @@
       <section class="vue" id="vue-synthese" aria-labelledby="titre-synthese">
         <div class="entete">
           <div>
+            <p class="surtitre-page">Synthèse</p>
             <h2 id="titre-synthese">Synthèse du diagnostic</h2>
             <p id="identite-synthese">Analyse automatique et aide à la décision.</p>
           </div>
+        </div>
+        <div class="barre-synthese">
+          <nav class="aller-a" aria-label="Aller à une partie de la synthèse">
+            <span class="libelle-aller">Aller à</span>
+            <a href="#s-bilan"><span>1</span>Bilan</a>
+            <a href="#s-budget"><span>2</span>Le budget</a>
+            <a href="#s-score"><span>3</span>Le score expliqué</a>
+            <a href="#s-plan"><span>4</span>Le plan</a>
+            <a href="#s-leviers"><span>5</span>Les leviers</a>
+            <a href="#s-detail" class="discret">Détail des calculs</a>
+          </nav>
           <div class="actions-entete">
             <button type="button" class="bouton second" data-aller="saisie">
               <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
@@ -121,7 +133,7 @@
       if (z) z.prepend(d);
     }, 6000);
   </script>
-  <script src="js/bouton-theme.js?v=e847c20310"></script>
-  <script type="module" src="js/app.js?v=e847c20310"></script>
+  <script src="js/bouton-theme.js?v=d0a5026678"></script>
+  <script type="module" src="js/app.js?v=d0a5026678"></script>
 </body>
 </html>

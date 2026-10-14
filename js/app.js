@@ -7,17 +7,17 @@
    l'onglet efface tout - c'est voulu.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer } from './dom.js?v=e847c20310';
-import { chargerConfig } from './config.js?v=e847c20310';
-import { calculerTout } from './moteur.js?v=e847c20310';
-import { formater } from './format.js?v=e847c20310';
-import { lirePrerempli } from './url.js?v=e847c20310';
-import { creerSaisie, etatVide, estFaite, progression, sectionsParcours } from './saisie.js?v=e847c20310';
-import { dessinIcone, nomIcone } from './icones.js?v=e847c20310';
-import { rendreSynthese, saisieVide, identite } from './synthese.js?v=e847c20310';
-import { apparaitre, signaler, cascade } from './animations.js?v=e847c20310';
-import { creerPanneau } from './panneau.js?v=e847c20310';
-import { versionPerimee } from './version.js?v=e847c20310';
+import { h, icone, vider, confirmer, annoncer } from './dom.js?v=d0a5026678';
+import { chargerConfig } from './config.js?v=d0a5026678';
+import { calculerTout } from './moteur.js?v=d0a5026678';
+import { formater } from './format.js?v=d0a5026678';
+import { lirePrerempli } from './url.js?v=d0a5026678';
+import { creerSaisie, etatVide, estFaite, progression, sectionsParcours } from './saisie.js?v=d0a5026678';
+import { dessinIcone, nomIcone } from './icones.js?v=d0a5026678';
+import { rendreSynthese, saisieVide, identite } from './synthese.js?v=d0a5026678';
+import { apparaitre, signaler, cascade } from './animations.js?v=d0a5026678';
+import { creerPanneau } from './panneau.js?v=d0a5026678';
+import { versionPerimee } from './version.js?v=d0a5026678';
 
 let config;
 let etat = etatVide();
@@ -191,7 +191,7 @@ function dessinerSynthese(animer = true) {
   $('telecharger-pdf').disabled = false;
   rendreSynthese($('synthese'), {
     config, resultat, etat, animer,
-    surSimulation: (m) => { etat.mensualite_saisie = m; recalculer(); dessinerSynthese(true); },
+    surSimulation: (m) => { etat.mensualite_saisie = m; recalculer(); dessinerSynthese(false); },
   });
 }
 
@@ -233,7 +233,7 @@ async function telechargerPdf() {
   const voile = h('div', { class: 'voile-pdf' }, h('div', { class: 'carte' }, h('span', { class: 'roue', 'aria-hidden': 'true' }), 'Fabrication du PDF…'));
   document.body.append(voile);
   try {
-    const { exporterPdf } = await import('./pdf.js?v=e847c20310');
+    const { exporterPdf } = await import('./pdf.js?v=d0a5026678');
     await exporterPdf({ config, resultat, etat });
     annoncer('PDF téléchargé.', 'ok');
   } catch (e) {
@@ -250,6 +250,15 @@ function brancher() {
   for (const b of document.querySelectorAll('[data-vue]')) b.addEventListener('click', () => montrer(b.dataset.vue));
   for (const b of document.querySelectorAll('[data-aller]')) b.addEventListener('click', () => montrer(b.dataset.aller));
   $('nouvelle-situation').addEventListener('click', nouvelleSituation);
+  // « Aller a » : on defile sans ecrire dans l'adresse, dont le # porte les parametres du lien.
+  for (const lien of document.querySelectorAll('.aller-a a')) {
+    lien.addEventListener('click', (e) => {
+      e.preventDefault();
+      const cible = document.querySelector(lien.getAttribute('href'));
+      if (cible?.tagName === 'DETAILS') cible.open = true;
+      cible?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
   $('bouton-demo').addEventListener('click', ouvrirMenuDemo);
   document.addEventListener('click', (e) => { if (!e.target.closest('.menu-demo-ancre')) fermerMenuDemo(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('menu-demo').hidden) { fermerMenuDemo(); $('bouton-demo').focus(); } });

@@ -8,17 +8,17 @@
    deposer dans le depot, a la place de config/parametres.json.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=e847c20310';
-import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner } from './config.js?v=e847c20310';
-import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=e847c20310';
-import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=e847c20310';
-import { formater, interpoler, FORMATS } from './format.js?v=e847c20310';
-import { champsAutorises, construireLien, genererDax } from './url.js?v=e847c20310';
-import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=e847c20310';
-import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=e847c20310';
-import { apparaitre, cascade } from './animations.js?v=e847c20310';
-import { ICONES, dessinIcone, nomIcone } from './icones.js?v=e847c20310';
-import { versionPerimee } from './version.js?v=e847c20310';
+import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=d0a5026678';
+import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner } from './config.js?v=d0a5026678';
+import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=d0a5026678';
+import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=d0a5026678';
+import { formater, interpoler, FORMATS } from './format.js?v=d0a5026678';
+import { champsAutorises, construireLien, genererDax } from './url.js?v=d0a5026678';
+import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=d0a5026678';
+import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=d0a5026678';
+import { apparaitre, cascade } from './animations.js?v=d0a5026678';
+import { ICONES, dessinIcone, nomIcone } from './icones.js?v=d0a5026678';
+import { versionPerimee } from './version.js?v=d0a5026678';
 
 const PANNEAUX = [
   { id: 'accueil', titre: 'Vue d’ensemble', groupe: 'Paramétrage' },
@@ -556,7 +556,7 @@ function carteSection(s, n) {
         etiquette('Icône de la section', choixIcone(s, 'dossier')),
         etiquette('Description', texte(s, 'description', { placeholder: '—' })),
         s.type === 'budget' ? etiquette('Total affiché en tête', choix(s, 'total', optionsVariables(true))) : null,
-        etiquette('Colonne', choix(s, 'colonne', { dossier: '1 – Dossier', budget: '2 – Budget' }, () => modifie(true)))),
+        n > 0 ? caseACocher(s, 'avec_precedente', `Sur la même ligne que « ${config.sections[n - 1].court || config.sections[n - 1].titre} »`) : null),
       corps),
     rangement(config.sections, n, {
       supprimer: s.type === 'budget',
@@ -791,18 +791,22 @@ RENDUS.synthese = () => {
         etiquette('Libellé', texte(j, 'libelle')),
         etiquette('Indicateur', choix(j, 'indicateur', optionsVariables(), () => modifie(true))),
         etiquette('Sens de lecture', choix(j, 'sens', { bas: 'Plus c’est bas, mieux c’est', haut: 'Plus c’est haut, mieux c’est' }, () => modifie(true))),
-        etiquette('Bout de l’échelle dessinée', nombre(j, 'echelle_max', fmt(j.indicateur)))),
+        etiquette('Bout de l’échelle dessinée', nombre(j, 'echelle_max', fmt(j.indicateur))),
+        etiquette('Critère du score qu’elle explique', choix(j, 'critere', { '': '— aucun (indicateur secondaire) —', ...Object.fromEntries((config.score?.criteres ?? []).map((c) => [c.indicateur, c.libelle])) }, () => modifie(true)))),
+      etiquette('En clair (phrase sous la jauge, {variables} permises)', texte(j, 'en_clair', { placeholder: 'Ex. Le logement absorbe {taux_effort_logement} des ressources.' })),
       editeurPaliers(j, fmt(j.indicateur)), apercu),
     rangement(config.jauges, n));
   });
   const sc = config.score;
   return h('div', { class: 'pile' },
     entete('Synthèse : jauges et score', 'Ce que la page de synthèse affiche, et les paliers qui donnent les couleurs et les statuts.'),
-    carte('Chiffres clés', 'Les tuiles en tête de synthèse', h('div', { class: 'pile serree' },
+    carte('Chiffres du bilan', 'Les chiffres du bandeau de bilan, en tête de synthèse', h('div', { class: 'pile serree' },
       config.chiffres_cles.map((c, i) => h('div', { class: 'ligne-edition' },
         etiquette('Libellé', texte(c, 'libelle')),
-        etiquette('Indicateur', choix(c, 'indicateur', optionsVariables())),
+        etiquette('Indicateur', choix(c, 'indicateur', optionsVariables(true))),
+        etiquette('Ou texte composé', texte(c, 'texte', { placeholder: 'Ex. {mensualite_retenue} × {duree_plan}' })),
         etiquette('Note', texte(c, 'note', { placeholder: '—' })),
+        etiquette('Affiché si', texte(c, 'si', { class: 'tech', placeholder: 'toujours' })),
         caseACocher(c, 'signe', 'Rouge si négatif'),
         rangement(config.chiffres_cles, i))),
       h('button', { type: 'button', class: 'bouton-discret', onclick: () => { config.chiffres_cles.push({ indicateur: 'total_ressources', libelle: 'Nouveau chiffre' }); modifie(true); } }, icone('plus'), 'Ajouter un chiffre clé'))),

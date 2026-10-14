@@ -156,7 +156,8 @@
           "libelle": "Loyer résiduel",
           "variable": "loyer_residuel"
         }
-      ]
+      ],
+      "avec_precedente": true
     },
     {
       "id": "dette",
@@ -185,7 +186,8 @@
       "court": "Autres dettes",
       "type": "dettes",
       "colonne": "dossier",
-      "description": "Dettes hors crédits déjà déclarés en charges fixes (dettes familiales, découverts, plans en cours…)."
+      "description": "Dettes hors crédits déjà déclarés en charges fixes (dettes familiales, découverts, plans en cours…).",
+      "avec_precedente": true
     },
     {
       "id": "ressources",
@@ -365,7 +367,8 @@
           "type": "montant"
         }
       ],
-      "lignes_calculees": []
+      "lignes_calculees": [],
+      "avec_precedente": true
     },
     {
       "id": "facultatives",
@@ -457,7 +460,7 @@
       "id": "mois_impayes",
       "groupe": "Logement",
       "libelle": "Nombre de mois d'impayés",
-      "format": "decimal",
+      "format": "mois",
       "formule": "dette_locative / loyer_residuel",
       "aide": "Dette rapportée à ce que le locataire doit réellement payer chaque mois (loyer + charges − APL)."
     },
@@ -580,6 +583,13 @@
       "format": "euro",
       "formule": "solde_apres_dettes / nb_uc",
       "aide": "Ce qu'il reste réellement au ménage après toutes ses charges et remboursements, rapporté à sa composition familiale. C'est un indicateur de fragilité, pas forcément de capacité d'apurement."
+    },
+    {
+      "id": "rav_jour_uc",
+      "groupe": "Ratios",
+      "libelle": "Reste à vivre par jour et par UC",
+      "format": "euro",
+      "formule": "rav_uc / 30"
     },
     {
       "id": "credit_conso",
@@ -892,22 +902,26 @@
   ],
   "chiffres_cles": [
     {
-      "indicateur": "total_ressources",
-      "libelle": "Ressources mensuelles"
-    },
-    {
-      "indicateur": "total_charges",
-      "libelle": "Charges totales",
-      "note": "Hors remboursement de dettes"
-    },
-    {
-      "indicateur": "solde_budgetaire",
-      "libelle": "Solde budgétaire",
+      "indicateur": "solde_apres_dettes",
+      "libelle": "Solde mensuel",
+      "note": "après charges et dettes",
       "signe": true
     },
     {
-      "indicateur": "quotient_familial",
-      "libelle": "Quotient familial estimé"
+      "indicateur": "rav_uc",
+      "libelle": "Reste à vivre / UC",
+      "note": "par unité de consommation"
+    },
+    {
+      "indicateur": "dette_locative",
+      "libelle": "Dette locative",
+      "note": "≈ {mois_impayes} de loyer"
+    },
+    {
+      "libelle": "Plan possible",
+      "texte": "{mensualite_retenue} × {duree_plan}",
+      "note": "cible : {duree_max_plan}",
+      "si": "dette_locative > 0"
     }
   ],
   "jauges": [
@@ -937,7 +951,9 @@
           "libelle": "Situation critique",
           "niveau": "rouge"
         }
-      ]
+      ],
+      "critere": "score_effort",
+      "en_clair": "Le logement absorbe {taux_effort_logement} des ressources du ménage."
     },
     {
       "indicateur": "taux_endettement",
@@ -963,6 +979,37 @@
         {
           "seuil": null,
           "libelle": "Situation critique",
+          "niveau": "rouge"
+        }
+      ],
+      "en_clair": "Les crédits représentent {taux_endettement} des ressources ({credits} par mois)."
+    },
+    {
+      "indicateur": "taux_endettement_global",
+      "libelle": "Endettement global (crédits + dettes)",
+      "sens": "bas",
+      "echelle_max": 0.5,
+      "critere": "score_endettement",
+      "en_clair": "Crédits et dettes absorbent {taux_endettement_global} des ressources.",
+      "paliers": [
+        {
+          "seuil": 0.1,
+          "libelle": "Favorable",
+          "niveau": "vert"
+        },
+        {
+          "seuil": 0.2,
+          "libelle": "À surveiller",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": 0.3,
+          "libelle": "Fragile",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": null,
+          "libelle": "Critique",
           "niveau": "rouge"
         }
       ]
@@ -993,7 +1040,8 @@
           "libelle": "Situation critique",
           "niveau": "rouge"
         }
-      ]
+      ],
+      "en_clair": "Les remboursements de dettes représentent {taux_remboursement_dettes} des ressources."
     },
     {
       "indicateur": "rav_uc",
@@ -1024,6 +1072,38 @@
         {
           "seuil": null,
           "libelle": "Situation très fragile",
+          "niveau": "rouge"
+        }
+      ],
+      "critere": "score_rav",
+      "en_clair": "Environ {rav_jour_uc} par jour et par unité de consommation, une fois tout payé."
+    },
+    {
+      "indicateur": "mois_impayes",
+      "libelle": "Ancienneté de l'impayé",
+      "sens": "bas",
+      "echelle_max": 8,
+      "critere": "score_anciennete",
+      "en_clair": "La dette représente {mois_impayes} de loyer résiduel.",
+      "paliers": [
+        {
+          "seuil": 1,
+          "libelle": "Moins d'un mois",
+          "niveau": "vert"
+        },
+        {
+          "seuil": 3,
+          "libelle": "À surveiller",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": 6,
+          "libelle": "Au-delà du seuil",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": null,
+          "libelle": "Critique",
           "niveau": "rouge"
         }
       ]
@@ -1107,7 +1187,7 @@
     },
     {
       "condition": "mois_impayes > seuil_dette_mois",
-      "libelle": "Dette locative supérieure à {seuil_dette_mois} de loyer résiduel ({mois_impayes} mois)"
+      "libelle": "Dette locative supérieure à {seuil_dette_mois} de loyer résiduel ({mois_impayes})"
     },
     {
       "condition": "taux_effort_logement > 35%",
@@ -1205,7 +1285,7 @@
         "famille": "Logement",
         "priorite": 4,
         "condition": "total_ressources <= BAREME(\"plafonds_fsl\"; total_personnes; \"plafond\")",
-        "description": "Ressources sous le plafond FSL du foyer. Variante au quotient familial : « quotient_familial <= seuil_qf_fsl »."
+        "description": "Les ressources du foyer sont sous le plafond FSL."
       },
       {
         "id": "renegocier",
