@@ -6,11 +6,11 @@
    le coupe jamais entre deux pages.
    =========================================================================== */
 
-import { h, icone, vider } from './dom.js?v=b0bda1646f';
-import { formater, echapper } from './format.js?v=b0bda1646f';
-import { compter, cascade } from './animations.js?v=b0bda1646f';
-import { barres, jaugeZones, legendeSeuils, demiCercle, critere, pastilleNiveau, couleurNiveau, zonesScore, bande, friseDuree } from './graphiques.js?v=b0bda1646f';
-import { dessinIcone } from './icones.js?v=b0bda1646f';
+import { h, icone, vider } from './dom.js?v=e847c20310';
+import { formater, echapper } from './format.js?v=e847c20310';
+import { compter, cascade } from './animations.js?v=e847c20310';
+import { barres, jaugeZones, legendeSeuils, demiCercle, critere, pastilleNiveau, couleurNiveau, zonesScore, bande, friseDuree } from './graphiques.js?v=e847c20310';
+import { dessinIcone } from './icones.js?v=e847c20310';
 
 const NIVEAU_CLASSE = { vert: 'vert', ambre: 'ambre', rouge: 'rouge', neutre: '' };
 

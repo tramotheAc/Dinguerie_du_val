@@ -8,17 +8,17 @@
    deposer dans le depot, a la place de config/parametres.json.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=b0bda1646f';
-import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner } from './config.js?v=b0bda1646f';
-import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=b0bda1646f';
-import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=b0bda1646f';
-import { formater, interpoler, FORMATS } from './format.js?v=b0bda1646f';
-import { champsAutorises, construireLien, genererDax } from './url.js?v=b0bda1646f';
-import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=b0bda1646f';
-import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=b0bda1646f';
-import { apparaitre, cascade } from './animations.js?v=b0bda1646f';
-import { ICONES, dessinIcone, nomIcone } from './icones.js?v=b0bda1646f';
-import { versionPerimee } from './version.js?v=b0bda1646f';
+import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=e847c20310';
+import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner } from './config.js?v=e847c20310';
+import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=e847c20310';
+import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=e847c20310';
+import { formater, interpoler, FORMATS } from './format.js?v=e847c20310';
+import { champsAutorises, construireLien, genererDax } from './url.js?v=e847c20310';
+import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=e847c20310';
+import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=e847c20310';
+import { apparaitre, cascade } from './animations.js?v=e847c20310';
+import { ICONES, dessinIcone, nomIcone } from './icones.js?v=e847c20310';
+import { versionPerimee } from './version.js?v=e847c20310';
 
 const PANNEAUX = [
   { id: 'accueil', titre: 'Vue d’ensemble', groupe: 'Paramétrage' },
@@ -512,7 +512,9 @@ RENDUS.formulaire = () => h('div', { class: 'pile' },
 
 function carteSection(s, n) {
   const nominatif = !!s.nominatif;
-  const entetes = h('tr', {}, h('th', {}, 'Icône'), h('th', {}, 'Libellé'), h('th', {}, 'Identifiant'), h('th', {}, 'Type'), h('th', {}, 'Lien'), h('th', {}, 'Aide'), h('th', {}, ''));
+  const budget = s.type === 'budget';
+  const entetes = h('tr', {}, h('th', {}, 'Icône'), h('th', {}, 'Libellé'), h('th', {}, 'Identifiant'), h('th', {}, 'Type'), h('th', {}, 'Lien'),
+    budget ? h('th', { title: 'Affichée d’office ; sinon la ligne s’ajoute d’un clic' }, 'D’office') : null, h('th', {}, 'Aide'), h('th', {}, ''));
   const lignes = (s.champs ?? []).map((c, i) => {
     const numerique = c.type === 'montant' || c.type === 'nombre';
     return h('tr', { id: `champ-admin-${c.id}` },
@@ -523,6 +525,7 @@ function carteSection(s, n) {
       h('td', { class: 'centre' }, nominatif || !numerique
         ? h('span', { class: 'jeton', title: nominatif ? 'Section nominative : jamais dans un lien' : 'Seuls les nombres passent dans un lien' }, 'non')
         : caseACocher(c, 'url', h('span', { class: 'visuellement-cache' }, `Accepter ${c.libelle} dans le lien`))),
+      budget ? h('td', { class: 'centre' }, caseACocher(c, 'essentiel', h('span', { class: 'visuellement-cache' }, `Afficher ${c.libelle} d’office`))) : null,
       h('td', {}, texte(c, 'aide', { 'aria-label': 'Aide', placeholder: '—' })),
       h('td', {}, rangement(s.champs, i, { avant: () => avantSuppression(c.id, c.libelle) })));
   });

@@ -2,24 +2,42 @@
    La page de saisie, construite entierement depuis le parametrage : ajouter
    une ligne de depense dans l'admin la fait apparaitre ici, sans code.
 
-   Pour qu'elle se remplisse sans ennui : une icone par section et par ligne,
-   des boutons − / + pour les personnes du foyer, une frise qui dessine le
-   foyer, et un compteur de lignes renseignees par section.
+   Le parcours se fait par volets : une section ouverte a la fois en general,
+   les autres repliees sur un resume (« 2 adultes · 1 enfant », « 410 € »).
+   « Section terminee » replie et ouvre la suivante. Rien n'est masque pour
+   de bon : chaque volet se rouvre d'un clic.
+
+   Pour alleger les listes de budget, seuls les postes « affiches d'office »
+   (reglage de l'admin) et les postes renseignes sont visibles ; les autres
+   s'ajoutent d'un clic. Un champ vide affiche « — » : on distingue « pas
+   encore saisi » de « 0 € declare ».
+
+   Confort : frequence (semaine, mois, trimestre, an) convertie en mensuel,
+   additions dans un champ (« 25+12+8 »), Entree pour passer au suivant.
    =========================================================================== */
 
-import { h, icone, vider } from './dom.js?v=b0bda1646f';
-import { formater } from './format.js?v=b0bda1646f';
-import { signaler } from './animations.js?v=b0bda1646f';
-import { dessinIcone, nomIcone } from './icones.js?v=b0bda1646f';
+import { h, icone, vider, svg } from './dom.js?v=e847c20310';
+import { formater } from './format.js?v=e847c20310';
+import { signaler, apparaitre } from './animations.js?v=e847c20310';
+import { dessinIcone, nomIcone } from './icones.js?v=e847c20310';
+import { jaugeZones, pastilleNiveau } from './graphiques.js?v=e847c20310';
 
-const LIGNES_DETTES_INITIALES = 3;
-const FRISE_MAX = 8; // au-dela, la frise ecrit « +n »
+const FREQUENCES = [
+  { id: 'sem', libelle: 'Sem.', titre: 'par semaine', vers: (x) => (x * 52) / 12 },
+  { id: 'mois', libelle: 'Mois', titre: 'par mois', vers: (x) => x },
+  { id: 'trim', libelle: 'Trim.', titre: 'par trimestre', vers: (x) => x / 3 },
+  { id: 'an', libelle: 'An', titre: 'par an', vers: (x) => x / 12 },
+];
+const SILHOUETTES_MAX = 10;
+const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
 export function etatVide() {
   return {
     valeurs: {},
-    dettes: Array.from({ length: LIGNES_DETTES_INITIALES }, () => ({ type: '', montant: '', mensualite: '', echeance: '' })),
+    dettes: [],
     mensualite_saisie: 0,
+    // L'etat de l'interface : il ne sert qu'a l'affichage, jamais au calcul.
+    ui: { ouvertes: new Set(), terminees: new Set(), ajoutees: new Set(), frequences: {}, bruts: {} },
   };
 }
 
@@ -31,10 +49,27 @@ export function lireMontant(s) {
   return Number.isFinite(n) ? n : '';
 }
 
+/* Une petite addition tapee dans un champ : « 25+12+8 », « 1 200 - 150 ».
+   Rien d'autre n'est accepte (pas de multiplication, pas de formule). */
+export function lireExpression(s) {
+  const t = String(s ?? '').replace(/[\s €]/g, '').replace(/,/g, '.');
+  if (t === '') return '';
+  if (!/^[+-]?\d+(\.\d+)?([+-]\d+(\.\d+)?)*$/.test(t)) return null;
+  const n = (t.match(/[+-]?\d+(\.\d+)?/g) ?? []).reduce((s2, x) => s2 + Number(x), 0);
+  return Math.round(n * 100) / 100;
+}
+
 const afficherMontant = (v) => (v === '' || v === undefined || v === null ? '' : String(v).replace('.', ','));
 const renseigne = (v) => v !== '' && v !== undefined && v !== null && v !== 0;
+const nombreOuVide = (v) => (v === '' || v === undefined || v === null ? null : Number(v));
+const pluriel = (n, un, plusieurs) => `${formater(n, 'nombre')} ${n > 1 ? plusieurs : un}`;
 
-/* Ce qu'une section a de rempli : sert au compteur de la carte et aux etapes. */
+/* L'ordre du parcours : la section nominative, facultative, passe en dernier. */
+export function sectionsParcours(config) {
+  return [...config.sections.filter((s) => !s.nominatif), ...config.sections.filter((s) => s.nominatif)];
+}
+
+/* Ce qu'une section a de rempli. */
 export function avancement(section, etat) {
   if (section.type === 'dettes') {
     const n = etat.dettes.filter((d) => d.type || renseigne(d.montant) || renseigne(d.mensualite)).length;
@@ -44,52 +79,119 @@ export function avancement(section, etat) {
   return { remplis: champs.filter((c) => renseigne(etat.valeurs[c.id])).length, total: champs.length };
 }
 
-export function creerSaisie({ config, racine, etat, prerempli, surChangement }) {
-  const aCalculer = [];   // [{ el, variable, format }]
-  const totaux = [];      // [{ el, variable }]
-  const compteurs = [];   // [{ el, section }]
-  const frises = [];      // [{ el, section }]
-  const lignes = [];      // [{ el, champ }] : lignes de budget, colorees une fois remplies
-  const formats = {};
-  for (const i of config.indicateurs) formats[i.id] = i.format;
+/* Une section est faite si on l'a dite terminee, ou si elle a au moins une valeur. */
+export function estFaite(section, etat) {
+  return etat.ui.terminees.has(section.id) || avancement(section, etat).remplis > 0;
+}
+
+export function progression(config, etat) {
+  const parcours = config.sections.filter((s) => !s.nominatif);
+  const faites = parcours.filter((s) => estFaite(s, etat)).length;
+  return { faites, total: parcours.length, complet: faites === parcours.length && parcours.length > 0 };
+}
+
+export function creerSaisie({ config, racine, etat, prerempli, surChangement, surOuverture }) {
+  const ui = etat.ui;
+  const formats = Object.fromEntries(config.indicateurs.map((i) => [i.id, i.format]));
   const marques = new Set((prerempli?.appliques ?? []).map((c) => c.id));
+  const volets = new Map();      // id -> { section, el, corps, resume, montant, action }
+  const aRafraichir = [];        // fonctions (resultat) => void
+  let dernierResultat = null;
 
   const marqueLien = (c) => (marques.has(c.id) ? h('span', { class: 'jeton petrole mini', title: 'Valeur reçue du lien' }, 'lien') : null);
 
-  function champTexte(c, section, id) {
-    return h('span', { class: 'saisie-icone' },
-      dessinIcone(nomIcone(c, 'document')),
-      h('input', {
-        id, name: c.id, autocomplete: 'off', type: c.type === 'date' ? 'date' : 'text', value: etat.valeurs[c.id] ?? '',
-        placeholder: c.type === 'date' ? null : (section.nominatif ? 'Facultatif' : ''),
-        oninput: (e) => { etat.valeurs[c.id] = e.target.value; surChangement(); },
-      }));
-  }
+  /* ----------------------------------------------------------- champs montant */
 
-  function champMontant(c, id) {
-    const montant = c.type === 'montant';
-    return h('span', { class: `saisie-nombre${montant ? ' euro' : ''}` },
-      h('input', {
-        id, name: c.id, autocomplete: 'off', type: 'text', inputmode: montant ? 'decimal' : 'numeric',
-        value: afficherMontant(etat.valeurs[c.id]), placeholder: '0',
-        class: marques.has(c.id) ? 'prerempli' : null, 'aria-describedby': c.aide ? `${id}-aide` : null,
-        oninput: (e) => {
-          const brut = e.target.value;
-          const n = lireMontant(brut);
-          e.target.toggleAttribute('aria-invalid', brut.trim() !== '' && n === '');
-          etat.valeurs[c.id] = c.type === 'nombre' && n !== '' ? Math.max(0, Math.round(n)) : n;
-          e.target.classList.remove('prerempli');
-          surChangement();
-        },
-        onblur: (e) => { if (!e.target.hasAttribute('aria-invalid')) e.target.value = afficherMontant(etat.valeurs[c.id]); },
-      }));
-  }
-
-  /* Un nombre de personnes se regle au doigt : − et + autour du champ. */
-  function compteur(c, id) {
+  function champMontant(c, { surEntree } = {}) {
+    const id = `champ-${c.id}`;
+    const freq = () => ui.frequences[c.id] ?? 'mois';
+    const bulle = h('span', { class: 'bulle-calcul', role: 'status', hidden: true });
+    const conversion = h('small', { class: 'conversion', hidden: true });
+    const valeurAffichee = () => (freq() === 'mois' ? afficherMontant(etat.valeurs[c.id]) : afficherMontant(ui.bruts[c.id]));
     const champ = h('input', {
-      id, name: c.id, autocomplete: 'off', type: 'text', inputmode: 'numeric', value: afficherMontant(etat.valeurs[c.id]),
-      placeholder: '0', class: marques.has(c.id) ? 'prerempli' : null,
+      id, name: c.id, autocomplete: 'off', type: 'text', inputmode: 'decimal', value: valeurAffichee(), placeholder: '—',
+      class: marques.has(c.id) ? 'prerempli' : null, 'aria-describedby': c.aide ? `${id}-aide` : null,
+    });
+    const appliquer = (brut) => {
+      const n = lireExpression(brut);
+      champ.toggleAttribute('aria-invalid', n === null);
+      if (n === null) return false;
+      const f = FREQUENCES.find((x) => x.id === freq());
+      ui.bruts[c.id] = n;
+      etat.valeurs[c.id] = n === '' ? '' : Math.round(f.vers(n) * 100) / 100;
+      majConversion();
+      surChangement();
+      return true;
+    };
+    const majConversion = () => {
+      const f = freq();
+      const brut = ui.bruts[c.id];
+      conversion.hidden = f === 'mois' || brut === '' || brut === undefined;
+      conversion.textContent = conversion.hidden ? '' : `= ${formater(etat.valeurs[c.id], 'euro')} / mois`;
+    };
+    champ.addEventListener('input', () => {
+      champ.classList.remove('prerempli');
+      const t = champ.value;
+      if (/\d\s*[+-]\s*\d/.test(t.replace(/^\s*-/, ''))) {
+        const n = lireExpression(t);
+        bulle.hidden = false;
+        vider(bulle, n === null ? 'Calcul illisible' : [h('strong', {}, `= ${formater(n, 'euro')}`), ' · ', h('kbd', {}, 'Entrée'), ' pour valider']);
+        if (n !== null) appliquer(t);
+        return;
+      }
+      bulle.hidden = true;
+      appliquer(t);
+    });
+    const valider = () => {
+      bulle.hidden = true;
+      if (!champ.hasAttribute('aria-invalid')) champ.value = valeurAffichee();
+    };
+    champ.addEventListener('blur', valider);
+    champ.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      valider();
+      surEntree?.(champ);
+    });
+    majConversion();
+
+    const frequences = h('span', { class: 'frequences', role: 'group', 'aria-label': `Fréquence : ${c.libelle}` },
+      FREQUENCES.map((f) => h('button', {
+        type: 'button', title: `Montant ${f.titre}`, 'aria-pressed': String(freq() === f.id),
+        onclick: (e) => {
+          ui.frequences[c.id] = f.id;
+          for (const b of e.currentTarget.parentElement.children) b.setAttribute('aria-pressed', String(b === e.currentTarget));
+          ligneParent(champ)?.classList.toggle('freq-active', f.id !== 'mois');
+          // Le montant tape reste, il change seulement d'unite.
+          appliquer(champ.value);
+          champ.focus();
+        },
+      }, f.libelle)));
+
+    return {
+      champ, frequences, conversion, bulle,
+      bloc: h('span', { class: 'saisie-montant' }, h('span', { class: 'saisie-nombre euro' }, champ), bulle),
+      vider() { champ.value = ''; ui.bruts[c.id] = ''; etat.valeurs[c.id] = ''; majConversion(); },
+    };
+  }
+
+  const ligneParent = (el) => el.closest('.ligne');
+
+  /* Entree passe au champ suivant de la section, puis au bouton « terminee ». */
+  function suivant(champ) {
+    const volet = champ.closest('.volet');
+    const champs = [...volet.querySelectorAll('.volet-corps input:not([type="checkbox"])')].filter((x) => x.offsetParent !== null);
+    const i = champs.indexOf(champ);
+    (champs[i + 1] ?? volet.querySelector('.terminer'))?.focus();
+  }
+
+  /* ----------------------------------------------------- sections a champs */
+
+  function compteur(c) {
+    const id = `champ-${c.id}`;
+    const champ = h('input', {
+      id, name: c.id, autocomplete: 'off', type: 'text', inputmode: 'numeric', value: afficherMontant(etat.valeurs[c.id]), placeholder: '0',
+      class: marques.has(c.id) ? 'prerempli' : null,
       oninput: (e) => {
         const n = lireMontant(e.target.value);
         e.target.toggleAttribute('aria-invalid', e.target.value.trim() !== '' && n === '');
@@ -97,6 +199,7 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement }) 
         e.target.classList.remove('prerempli');
         surChangement();
       },
+      onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); suivant(e.target); } },
     });
     const pas = (d) => {
       const n = Math.max(0, (Number(etat.valeurs[c.id]) || 0) + d);
@@ -106,211 +209,437 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement }) 
       champ.removeAttribute('aria-invalid');
       surChangement();
     };
-    return h('span', { class: 'compteur' },
-      h('button', { type: 'button', class: 'pas', 'aria-label': `Retirer une personne : ${c.libelle}`, onclick: () => pas(-1) }, icone('moins')),
-      champ,
-      h('button', { type: 'button', class: 'pas', 'aria-label': `Ajouter une personne : ${c.libelle}`, onclick: () => pas(1) }, icone('plus')));
+    return h('div', { class: 'boite-compteur' },
+      h('label', { for: id }, h('span', { class: 'texte-label' }, c.libelle), marqueLien(c)),
+      h('span', { class: 'compteur' },
+        h('button', { type: 'button', class: 'pas moins', 'aria-label': `Retirer une personne : ${c.libelle}`, onclick: () => pas(-1) }, icone('moins')),
+        champ,
+        h('button', { type: 'button', class: 'pas plus', 'aria-label': `Ajouter une personne : ${c.libelle}`, onclick: () => pas(1) }, icone('plus'))));
   }
 
-  function champ(c, section) {
+  function champSimple(c, section) {
     const id = `champ-${c.id}`;
-    if (section.type === 'budget') {
-      const ligne = h('div', { class: 'champ ligne-budget' },
-        h('label', { for: id },
-          h('span', { class: 'puce-icone' }, dessinIcone(nomIcone(c))),
-          h('span', { class: 'texte-label' }, c.libelle), marqueLien(c)),
-        champMontant(c, id),
-        c.aide ? h('small', { id: `${id}-aide`, class: 'aide' }, c.aide) : null);
-      lignes.push({ el: ligne, champ: c });
-      return ligne;
-    }
     let saisie;
-    if (c.type === 'texte' || c.type === 'date') saisie = champTexte(c, section, id);
-    else if (c.type === 'nombre') saisie = compteur(c, id);
-    else saisie = h('span', { class: 'saisie-icone' }, dessinIcone(nomIcone(c)), champMontant(c, id));
+    if (c.type === 'texte' || c.type === 'date') {
+      const champ = h('input', {
+        id, name: c.id, autocomplete: 'off', type: c.type === 'date' ? 'date' : 'text', value: etat.valeurs[c.id] ?? '',
+        placeholder: c.type === 'date' ? null : (section.nominatif ? 'Facultatif' : ''),
+        oninput: (e) => { etat.valeurs[c.id] = e.target.value; surChangement(); },
+        onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); suivant(e.target); } },
+      });
+      saisie = h('span', { class: 'saisie-icone' }, dessinIcone(nomIcone(c, 'document')), champ);
+      if (c.type === 'date') {
+        saisie = h('span', { class: 'saisie-date' }, saisie, h('button', {
+          type: 'button', class: 'bouton-discret', onclick: () => {
+            champ.value = new Date().toISOString().slice(0, 10);
+            etat.valeurs[c.id] = champ.value;
+            surChangement();
+          },
+        }, 'Aujourd’hui'));
+      }
+    } else {
+      const m = champMontant(c, { surEntree: suivant });
+      saisie = h('span', { class: 'saisie-icone' }, dessinIcone(nomIcone(c)), m.bloc);
+    }
     return h('div', { class: `champ champ-${c.type}` },
       h('label', { for: id }, h('span', { class: 'texte-label' }, c.libelle), marqueLien(c)),
       saisie,
       c.aide ? h('small', { id: `${id}-aide`, class: 'aide' }, c.aide) : null);
   }
 
-  function ligneCalculee(l) {
-    const valeur = h('output', { class: 'valeur-calculee' }, '—');
-    aCalculer.push({ el: valeur, variable: l.variable, format: formats[l.variable] ?? 'euro' });
-    return h('div', { class: 'champ calcule' },
-      h('span', { class: 'etiquette-calcul' }, h('span', { class: 'puce-icone' }, dessinIcone(nomIcone(l, 'calculette'))), h('span', { class: 'texte-label' }, l.libelle)),
-      valeur);
+  /* Le foyer se dessine : une silhouette pleine par personne, une en
+     pointilles pour inviter a completer. */
+  function silhouette(classe, taille) {
+    const s = taille;
+    return svg('svg', { viewBox: '0 0 40 56', width: 40 * s, height: 56 * s, class: `silhouette ${classe}`, 'aria-hidden': 'true' },
+      svg('circle', { cx: 20, cy: 12, r: 10 }),
+      svg('path', { d: 'M4 54v-14a16 16 0 0 1 32 0v14Z' }));
   }
 
-  function tableDettes() {
-    const corps = h('tbody');
-    const total = { montant: h('td', { class: 'num' }), mensualite: h('td', { class: 'num' }) };
-    const majTotaux = () => {
-      const somme = (k) => etat.dettes.reduce((t, d) => t + (Number(lireMontant(d[k])) || 0), 0);
-      total.montant.textContent = formater(somme('montant'), 'euro');
-      total.mensualite.textContent = formater(somme('mensualite'), 'euro');
-    };
-    const dessiner = () => {
-      vider(corps, etat.dettes.map((d, n) => {
-        const cellule = (k, type, libelle, place) => h('td', { class: type === 'montant' ? 'num' : null, 'data-libelle': libelle },
-          h('span', { class: type === 'montant' ? 'saisie-nombre euro' : null },
-            h('input', {
-              type: 'text', value: type === 'montant' ? afficherMontant(d[k]) : d[k], 'aria-label': `${libelle}, ligne ${n + 1}`,
-              inputmode: type === 'montant' ? 'decimal' : null, placeholder: place,
-              oninput: (e) => { d[k] = type === 'montant' ? lireMontant(e.target.value) : e.target.value; majTotaux(); surChangement(); },
-            })));
-        return h('tr', {},
-          cellule('type', 'texte', 'Type de dette', 'Ex. découvert'),
-          cellule('montant', 'montant', 'Montant', '0'),
-          cellule('mensualite', 'montant', 'Mensualité', '0'),
-          cellule('echeance', 'texte', 'Échéance', 'mm/aaaa'),
-          h('td', { class: 'action' }, h('button', {
-            type: 'button', class: 'bouton-icone', 'aria-label': `Retirer la ligne ${n + 1}`, title: 'Retirer la ligne',
-            onclick: () => { etat.dettes.splice(n, 1); dessiner(); surChangement(); },
-          }, icone('croix'))));
+  function visuelFoyer(section) {
+    const scene = h('div', { class: 'scene-foyer', 'aria-hidden': 'true' });
+    const total = h('p', { class: 'total-foyer' });
+    aRafraichir.push(() => {
+      const morceaux = [];
+      let n = 0;
+      (section.champs ?? []).forEach((c, i) => {
+        const k = Math.max(0, Math.round(Number(etat.valeurs[c.id]) || 0));
+        for (let j = 0; j < k && n < SILHOUETTES_MAX; j++, n++) morceaux.push(silhouette(`membre m${Math.min(i, 2)}`, i === 0 ? 1 : i === 1 ? 0.72 : 0.86));
+      });
+      const reel = (section.champs ?? []).reduce((t, c) => t + Math.max(0, Math.round(Number(etat.valeurs[c.id]) || 0)), 0);
+      morceaux.push(silhouette('fantome', 0.86));
+      const cle = (section.champs ?? []).map((c) => etat.valeurs[c.id]).join(',');
+      if (scene.dataset.cle !== cle) { scene.dataset.cle = cle; vider(scene, morceaux); }
+      total.textContent = reel ? `${pluriel(reel, 'personne', 'personnes')} dans le foyer${reel > SILHOUETTES_MAX ? ` (${SILHOUETTES_MAX} dessinées)` : ''}` : 'Ajoutez les membres du foyer avec les boutons +';
+    });
+    return h('div', { class: 'visuel-foyer' }, scene, total);
+  }
+
+  /* Le loyer residuel s'ecrit comme une equation, et le taux d'effort se
+     situe aussitot sur sa jauge. */
+  function visuelLogement() {
+    const ids = new Set(config.indicateurs.map((i) => i.id));
+    if (!ids.has('loyer_residuel')) return null;
+    const brut = h('strong'); const aide = h('strong'); const reste = h('strong');
+    const jauge = config.jauges?.find((j) => j.indicateur === 'taux_effort_logement');
+    const zoneJauge = h('div', { class: 'jauge-logement' });
+    aRafraichir.push((r) => {
+      const v = r.valeurs;
+      brut.textContent = formater((v.loyer ?? 0) + (v.charges ?? 0), 'euro');
+      aide.textContent = formater(v.apl ?? 0, 'euro');
+      reste.textContent = formater(v.loyer_residuel, 'euro');
+      if (jauge) {
+        const j = r.jauges.find((x) => x.indicateur === jauge.indicateur);
+        vider(zoneJauge,
+          h('div', { class: 'tete-jauge-logement' }, h('span', {}, jauge.libelle),
+            j?.valeur === null || j?.valeur === undefined ? h('span', { class: 'discret' }, 'renseignez les ressources') : h('span', { class: 'valeur-jauge' }, formater(j.valeur, formats[jauge.indicateur] ?? 'pourcent'), ' ', pastilleNiveau(j.palier))),
+          jaugeZones({ ...jauge, valeur: j?.valeur, format: formats[jauge.indicateur] ?? 'pourcent' }, { animer: false }));
+      }
+    });
+    return h('div', { class: 'visuel-logement' },
+      h('div', { class: 'equation-loyer' },
+        h('div', { class: 'terme' }, h('span', {}, 'Loyer + charges'), brut),
+        h('span', { class: 'operateur', 'aria-hidden': 'true' }, '−'),
+        h('div', { class: 'terme aide' }, h('span', {}, 'APL'), aide),
+        h('span', { class: 'operateur', 'aria-hidden': 'true' }, '='),
+        h('div', { class: 'terme resultat' }, h('span', {}, 'Reste à payer'), reste)),
+      jauge ? zoneJauge : null);
+  }
+
+  /* Les mois d'impayes deviennent une frise, du plus ancien au mois en cours. */
+  function visuelDette() {
+    const ids = new Set(config.indicateurs.map((i) => i.id));
+    if (!ids.has('mois_impayes')) return null;
+    const frise = h('div', { class: 'frise-mois', role: 'img' });
+    const equivalent = h('strong');
+    const alerte = h('p', { class: 'alerte-dette', hidden: true });
+    aRafraichir.push((r) => {
+      const m = r.valeurs.mois_impayes;
+      const n = m && m > 0 ? Math.min(12, Math.ceil(m - 1e-9)) : 0;
+      const cases = Math.max(6, n + 1);
+      const auj = new Date();
+      vider(frise, Array.from({ length: cases }, (_, i) => {
+        const recul = cases - 1 - i;
+        const d = new Date(auj.getFullYear(), auj.getMonth() - recul, 1);
+        const etatCase = recul === 0 ? 'encours' : recul <= n ? 'impaye' : 'paye';
+        return h('div', { class: `case-mois ${etatCase}` },
+          h('span', { class: 'marque' }, etatCase === 'encours' ? '?' : etatCase === 'impaye' ? '!' : icone('ok')),
+          h('span', { class: 'mois' }, MOIS_COURTS[d.getMonth()]));
       }));
-      majTotaux();
+      frise.setAttribute('aria-label', n ? `${n} mois d'impayés jusqu'au mois dernier` : 'Aucun mois d’impayé');
+      equivalent.textContent = m ? `≈ ${formater(m, 'decimal')} mois de loyer` : '—';
+      const seuil = r.valeurs.seuil_dette_mois;
+      alerte.hidden = !(m && seuil && m > seuil);
+      vider(alerte, icone('alerte'), `Plus de ${formater(seuil, 'nombre')} mois d’impayés : piste FSL à étudier.`);
+    });
+    return { frise, equivalent: h('div', { class: 'carte-equivalent' }, h('span', {}, 'Soit environ'), equivalent), alerte };
+  }
+
+  /* -------------------------------------------------- sections budgetaires */
+
+  function sectionBudget(section) {
+    const lignes = h('div', { class: 'lignes-budget' });
+    const puces = h('div', { class: 'ajouts' });
+    const essentiel = (c) => c.essentiel || renseigne(etat.valeurs[c.id]) || ui.ajoutees.has(c.id) || marques.has(c.id);
+    const montants = new Map();
+
+    const ligne = (c) => {
+      const m = champMontant(c, { surEntree: suivant });
+      montants.set(c.id, m);
+      const el = h('div', { class: `ligne${(ui.frequences[c.id] ?? 'mois') !== 'mois' ? ' freq-active' : ''}`, 'data-champ': c.id },
+        h('label', { for: `champ-${c.id}` },
+          h('span', { class: 'puce-icone' }, dessinIcone(nomIcone(c))),
+          h('span', { class: 'texte-label' }, c.libelle), marqueLien(c)),
+        m.frequences,
+        m.bloc,
+        h('button', {
+          type: 'button', class: 'bouton-icone retirer', title: 'Retirer ce poste', 'aria-label': `Retirer ${c.libelle}`,
+          onclick: () => {
+            m.vider();
+            ui.ajoutees.delete(c.id);
+            if (!c.essentiel) el.hidden = true;
+            dessinerPuces();
+            surChangement();
+            el.querySelector('input').focus();
+          },
+        }, icone('croix')),
+        m.conversion,
+        c.aide ? h('small', { id: `champ-${c.id}-aide`, class: 'aide' }, c.aide) : null);
+      el.hidden = !essentiel(c);
+      return el;
+    };
+
+    const dessinerPuces = () => {
+      const caches = (section.champs ?? []).filter((c) => lignes.querySelector(`[data-champ="${c.id}"]`)?.hidden);
+      vider(puces, caches.length ? [
+        h('p', { class: 'titre-ajouts' }, 'Ajouter un poste'),
+        h('div', { class: 'puces' }, caches.map((c) => h('button', {
+          type: 'button', class: 'puce-ajout',
+          onclick: () => {
+            ui.ajoutees.add(c.id);
+            const el = lignes.querySelector(`[data-champ="${c.id}"]`);
+            el.hidden = false;
+            apparaitre(el);
+            dessinerPuces();
+            el.querySelector('input').focus();
+          },
+        }, icone('plus'), c.libelle))),
+      ] : null);
+    };
+
+    vider(lignes,
+      (section.lignes_calculees ?? []).map((l) => {
+        const valeur = h('output', { class: 'valeur-calculee' }, '—');
+        aRafraichir.push((r) => { valeur.textContent = formater(r.valeurs[l.variable], formats[l.variable] ?? 'euro'); });
+        return h('div', { class: 'ligne calculee' },
+          h('span', { class: 'etiquette-calcul' }, h('span', { class: 'puce-icone' }, dessinIcone(nomIcone(l, 'calculette'))), h('span', { class: 'texte-label' }, l.libelle)),
+          valeur);
+      }),
+      (section.champs ?? []).map(ligne));
+    dessinerPuces();
+    aRafraichir.push(() => {
+      for (const [id, m] of montants) ligneParent(m.champ)?.classList.toggle('rempli', renseigne(etat.valeurs[id]));
+    });
+    return h('div', { class: 'corps-budget' }, lignes, puces);
+  }
+
+  /* --------------------------------------------------------- dettes en cours */
+
+  function sectionDettes(section) {
+    const zone = h('div', { class: 'zone-dettes' });
+    const dessiner = () => {
+      const lignes = etat.dettes;
+      if (!lignes.length) {
+        vider(zone, h('div', { class: 'question-dettes' },
+          h('span', { class: 'medaillon m-sortie' }, dessinIcone('carte_bancaire')),
+          h('p', { class: 'question' }, 'Le ménage a-t-il d’autres dettes ?'),
+          h('p', { class: 'note' }, section.description ?? 'Dettes familiales, découverts, plans de remboursement…'),
+          h('div', { class: 'actions-ligne' },
+            h('button', { type: 'button', class: 'bouton second', onclick: () => { ui.terminees.add(section.id); surChangement(); fermer(section.id, true); } }, icone('ok'), 'Non, aucune'),
+            h('button', { type: 'button', class: 'bouton', onclick: () => { etat.dettes.push({ type: '', montant: '', mensualite: '', echeance: '' }); dessiner(); zone.querySelector('input')?.focus(); } }, icone('plus'), 'Ajouter une dette'))));
+        return;
+      }
+      vider(zone,
+        lignes.map((d, n) => {
+          const champ = (k, libelle, montant, place) => {
+            const input = h('input', {
+              type: 'text', value: montant ? afficherMontant(d[k]) : d[k], 'aria-label': `${libelle}, dette ${n + 1}`,
+              inputmode: montant ? 'decimal' : null, placeholder: place,
+              oninput: (e) => { d[k] = montant ? (lireExpression(e.target.value) ?? '') : e.target.value; majDuree(); surChangement(); },
+              onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); suivant(e.target); } },
+            });
+            return h('label', { class: 'champ-dette' }, h('span', {}, libelle), montant ? h('span', { class: 'saisie-nombre euro' }, input) : input);
+          };
+          const duree = h('small', { class: 'duree-dette' });
+          const majDuree = () => {
+            const mt = Number(d.montant) || 0; const me = Number(d.mensualite) || 0;
+            duree.textContent = mt && me ? `≈ ${Math.ceil(mt / me)} mois de remboursement restants` : '';
+          };
+          majDuree();
+          return h('div', { class: 'carte-dette' },
+            h('span', { class: 'medaillon petit m-sortie' }, dessinIcone('carte_bancaire')),
+            h('div', { class: 'champs-dette' },
+              champ('type', 'Type de dette', false, 'Ex. découvert bancaire'),
+              champ('montant', 'Reste dû', true, '—'),
+              champ('mensualite', 'Mensualité', true, '—'),
+              champ('echeance', 'Fin prévue', false, 'mm/aaaa'),
+              duree),
+            h('button', {
+              type: 'button', class: 'bouton-icone retirer', 'aria-label': `Retirer la dette ${n + 1}`, title: 'Retirer cette dette',
+              onclick: () => { etat.dettes.splice(n, 1); dessiner(); surChangement(); },
+            }, icone('croix')));
+        }),
+        h('button', {
+          type: 'button', class: 'bouton-discret ajout',
+          onclick: () => { etat.dettes.push({ type: '', montant: '', mensualite: '', echeance: '' }); dessiner(); zone.querySelector('.carte-dette:last-of-type input')?.focus(); },
+        }, icone('plus'), 'Ajouter une dette'));
     };
     dessiner();
-    return h('div', { class: 'table-dettes' },
-      h('table', {},
-        h('thead', {}, h('tr', {}, h('th', {}, 'Type de dette'), h('th', { class: 'num' }, 'Montant'), h('th', { class: 'num' }, 'Mensualité'), h('th', {}, 'Échéance'), h('th', {}, h('span', { class: 'visuellement-cache' }, 'Actions')))),
-        corps,
-        h('tfoot', {}, h('tr', {}, h('th', {}, 'Total'), total.montant, total.mensualite, h('td'), h('td')))),
-      h('button', {
-        type: 'button', class: 'bouton-discret ajout',
-        onclick: () => { etat.dettes.push({ type: '', montant: '', mensualite: '', echeance: '' }); dessiner(); corps.lastElementChild?.querySelector('input')?.focus(); },
-      }, icone('plus'), 'Ajouter une dette'));
+    return zone;
   }
 
-  /* La frise du foyer : une silhouette par personne. */
-  function frise(section) {
-    const el = h('div', { class: 'frise', 'aria-hidden': 'true' });
-    frises.push({ el, section });
+  /* ------------------------------------------------------------- les volets */
+
+  function resume(section, r) {
+    const v = r.valeurs;
+    if (section.nominatif) {
+      const remplis = (section.champs ?? []).filter((c) => renseigne(etat.valeurs[c.id]));
+      return remplis.length ? remplis.slice(0, 3).map((c) => etat.valeurs[c.id]).join(' · ') : 'Nom, référence, adresse, conseiller… uniquement pour le PDF';
+    }
+    if (section.type === 'dettes') {
+      const n = avancement(section, etat).remplis;
+      if (!n) return ui.terminees.has(section.id) ? 'Aucune autre dette' : 'Pas encore renseigné';
+      return `${pluriel(n, 'dette', 'dettes')} · ${formater(v.dettes_mensualites, 'euro')} par mois`;
+    }
+    const remplis = (section.champs ?? []).filter((c) => renseigne(etat.valeurs[c.id]));
+    if (section.type === 'budget') {
+      if (!remplis.length) return ui.terminees.has(section.id) ? 'Rien à déclarer' : 'Pas encore renseigné';
+      const noms = remplis.map((c) => c.libelle.replace(/\s*\(.*\)\s*/, ''));
+      return `${noms.slice(0, 5).join(' · ')}${noms.length > 5 ? ` · +${noms.length - 5}` : ''}`;
+    }
+    if (!remplis.length) return ui.terminees.has(section.id) ? 'Rien à déclarer' : 'Pas encore renseigné';
+    if ((section.champs ?? []).every((c) => c.type === 'nombre')) {
+      return remplis.map((c) => `${formater(Number(etat.valeurs[c.id]), 'nombre')} × ${c.libelle.toLowerCase()}`).join(' · ');
+    }
+    // Les valeurs calculees qui ne sont pas des montants (mois d'impayes...) completent le resume.
+    const calculs = (section.lignes_calculees ?? []).filter((l) => (formats[l.variable] ?? 'euro') !== 'euro' && renseigne(v[l.variable]))
+      .map((l) => `≈ ${formater(v[l.variable], formats[l.variable])} ${l.libelle.replace(/^nombre de /i, '').toLowerCase()}`);
+    return [...remplis.map((c) => `${c.libelle} ${formater(Number(etat.valeurs[c.id]), c.type === 'montant' ? 'euro' : 'nombre')}`), ...calculs].join(' · ');
+  }
+
+  function montantVolet(section, r) {
+    const v = r.valeurs;
+    if (section.type === 'budget') return formater(v[section.total || `somme_${section.id}`], 'euro');
+    if (section.type === 'dettes') return renseigne(v.dettes_mensualites) ? `${formater(v.dettes_mensualites, 'euro')}/mois` : '';
+    const l = (section.lignes_calculees ?? []).find((x) => (formats[x.variable] ?? 'euro') === 'euro');
+    if (l && avancement(section, etat).remplis) return formater(v[l.variable], 'euro');
+    if ((section.champs ?? []).some((c) => c.type === 'montant') && avancement(section, etat).remplis) {
+      const c = section.champs.find((x) => x.type === 'montant' && renseigne(etat.valeurs[x.id]));
+      return c ? formater(Number(etat.valeurs[c.id]), 'euro') : '';
+    }
+    return '';
+  }
+
+  function volet(section) {
+    const ton = section.colonne === 'budget' ? (section.id === 'ressources' ? 'entree' : 'sortie') : 'dossier';
+    const corpsId = `corps-${section.id}`;
+    const resumeEl = h('span', { class: 'resume-volet' });
+    const montant = h('span', { class: 'montant-volet' });
+    const action = h('span', { class: 'action-volet' });
+    const marque = h('span', { class: 'marque-volet' });
+    const bouton = h('button', {
+      type: 'button', class: 'tete-volet', 'aria-expanded': 'false', 'aria-controls': corpsId,
+      onclick: () => (ui.ouvertes.has(section.id) ? fermer(section.id) : ouvrir(section.id)),
+    }, marque,
+    h('span', { class: 'titres-volet' }, h('span', { class: 'titre-volet', id: `titre-${section.id}` }, section.nominatif ? `${section.titre} · facultatif` : section.titre), resumeEl),
+    montant, action);
+
+    let contenu;
+    let visuel = null;
+    let pied = null;
+    if (section.type === 'dettes') contenu = sectionDettes(section);
+    else if (section.type === 'budget') {
+      contenu = sectionBudget(section);
+      pied = h('p', { class: 'note-pied' }, 'Postes non ajoutés = non concernés');
+    } else if ((section.champs ?? []).length && section.champs.every((c) => c.type === 'nombre')) {
+      visuel = visuelFoyer(section);
+      contenu = h('div', { class: 'grille-compteurs' }, section.champs.map(compteur));
+    } else {
+      const champs = h('div', { class: 'grille-champs' }, (section.champs ?? []).map((c) => champSimple(c, section)),
+        section.id !== 'logement' && section.id !== 'dette' ? (section.lignes_calculees ?? []).map((l) => {
+          const valeur = h('output', { class: 'valeur-calculee' }, '—');
+          aRafraichir.push((r) => { valeur.textContent = formater(r.valeurs[l.variable], formats[l.variable] ?? 'euro'); });
+          return h('div', { class: 'champ calcule' }, h('span', { class: 'etiquette-calcul' }, l.libelle), valeur);
+        }) : null);
+      if (section.id === 'logement') visuel = visuelLogement();
+      if (section.id === 'dette') {
+        const d = visuelDette();
+        if (d) {
+          contenu = h('div', { class: 'pile-dette' }, d.frise, h('div', { class: 'duo-dette' }, champs, d.equivalent), d.alerte);
+        }
+      }
+      contenu ??= champs;
+      if (section.nominatif) contenu = h('div', {}, h('p', { class: 'note-cadenas' }, icone('alerte'), 'Jamais conservé, jamais transmis dans un lien : ces informations servent uniquement à l’en-tête du PDF.'), contenu);
+    }
+
+    const corps = h('div', { class: 'corps-volet', id: corpsId, role: 'region', 'aria-labelledby': `titre-${section.id}`, hidden: true },
+      section.description && section.type !== 'dettes' && !section.nominatif ? h('p', { class: 'description-volet' }, section.description) : null,
+      visuel && section.id !== 'logement' ? visuel : null,
+      contenu,
+      section.id === 'logement' ? visuel : null,
+      h('div', { class: 'pied-volet' }, pied ?? h('span'),
+        h('button', { type: 'button', class: 'bouton second terminer', onclick: () => { ui.terminees.add(section.id); surChangement(); fermer(section.id, true); } }, icone('ok'), 'Section terminée')));
+
+    const el = h('section', { class: `volet ton-${ton}${section.nominatif ? ' facultatif' : ''}`, id: `section-${section.id}`, 'data-section': section.id },
+      h('h3', { class: 'entete-volet' }, bouton), corps);
+    volets.set(section.id, { section, el, corps, bouton, resume: resumeEl, montant, action, marque });
     return el;
   }
 
-  function dessinerFrise(el, section) {
-    const morceaux = [];
-    let n = 0;
-    for (const c of section.champs ?? []) {
-      const k = Math.max(0, Math.round(Number(etat.valeurs[c.id]) || 0));
-      for (let i = 0; i < k; i++) {
-        n++;
-        if (n <= FRISE_MAX) morceaux.push(h('span', { class: `silhouette s-${c.id}`, title: c.libelle }, dessinIcone(nomIcone(c))));
-      }
-    }
-    if (n > FRISE_MAX) morceaux.push(h('span', { class: 'silhouette plus' }, `+${n - FRISE_MAX}`));
-    if (!n) morceaux.push(h('span', { class: 'frise-vide' }, 'Ajoutez les membres du foyer'));
-    const cle = `${n}|${(section.champs ?? []).map((c) => etat.valeurs[c.id]).join(',')}`;
-    if (el.dataset.cle === cle) return;
-    el.dataset.cle = cle;
-    vider(el, morceaux, n ? h('span', { class: 'frise-total' }, `${n} personne${n > 1 ? 's' : ''}`) : null);
+  function majVolet(id) {
+    const vt = volets.get(id);
+    const ouvert = ui.ouvertes.has(id);
+    vt.corps.hidden = !ouvert;
+    vt.el.classList.toggle('ouvert', ouvert);
+    vt.bouton.setAttribute('aria-expanded', String(ouvert));
+    vt.action.textContent = ouvert ? 'Réduire' : (vt.section.nominatif && !estFaite(vt.section, etat) ? 'Déplier' : 'Modifier');
   }
 
-  /* L'equilibre du mois : ou va chaque euro de ressources. Memes categories
-     et memes couleurs que la repartition de la synthese. */
-  function equilibre() {
-    const bandeEl = h('div', { class: 'bande bande-equilibre' });
-    const legende = h('ul', { class: 'legende-equilibre' });
-    const statut = h('span', { class: 'jeton' });
-    const phrase = h('p', { class: 'phrase-equilibre' });
-    const el = h('section', { class: 'carte equilibre', 'aria-label': 'Équilibre du mois' },
-      h('header', {},
-        h('span', { class: 'medaillon m-dossier' }, dessinIcone('calculette')),
-        h('div', { class: 'titres' }, h('h3', {}, 'Équilibre du mois'), h('p', {}, 'Où vont les ressources du ménage, mis à jour à la frappe')),
-        statut),
-      h('div', { class: 'corps' }, bandeEl, phrase, legende));
-    return {
-      el,
-      rafraichir(resultat) {
-        const v = resultat.valeurs;
-        const ressources = Math.max(0, v.total_ressources ?? 0);
-        const cats = (config.repartition ?? []).map((r, n) => ({ libelle: r.libelle, valeur: Math.max(0, v[r.indicateur] ?? 0), couleur: `var(--cat-${(n % 5) + 1})` }));
-        const depenses = cats.reduce((t, c) => t + c.valeur, 0);
-        const echelle = Math.max(ressources, depenses);
-        const reste = ressources - depenses;
-        const vide = !ressources && !depenses;
-        vider(bandeEl,
-          vide ? h('span', { class: 'segment reste', style: { flexGrow: '1' } }) : null,
-          cats.filter((c) => c.valeur > 0).map((c) => h('span', {
-            class: 'segment', title: `${c.libelle} : ${formater(c.valeur, 'euro')}`, style: { flexGrow: String(c.valeur), background: c.couleur },
-          })),
-          reste > 0 ? h('span', { class: 'segment reste', title: `Reste : ${formater(reste, 'euro')}`, style: { flexGrow: String(reste) } }) : null,
-          // Les ressources marquees d'un trait quand les depenses les depassent
-          reste < 0 && echelle ? h('span', { class: 'repere-ressources', style: { left: `${(ressources / echelle) * 100}%` }, title: `Ressources : ${formater(ressources, 'euro')}` }) : null);
-        statut.className = `jeton ${vide ? '' : reste < 0 ? 'rouge' : 'vert'}`;
-        statut.textContent = vide ? 'À compléter' : reste < 0 ? `Déficit ${formater(-reste, 'euro')}` : `Reste ${formater(reste, 'euro')}`;
-        phrase.textContent = vide ? 'Saisissez les ressources et les dépenses : la répartition se dessine ici.'
-          : reste < 0 ? `Les dépenses (${formater(depenses, 'euro')}) dépassent les ressources (${formater(ressources, 'euro')}) : le trait marque où elles s’arrêtent.`
-            : `Sur ${formater(ressources, 'euro')} de ressources, ${formater(depenses, 'euro')} partent en dépenses et remboursements.`;
-        vider(legende, cats.map((c) => h('li', {},
-          h('span', { class: 'pastille-legende', style: { background: c.couleur } }),
-          h('span', { class: 'nom' }, c.libelle),
-          h('strong', {}, formater(c.valeur, 'euro')))));
-      },
-    };
+  function ouvrir(id, { defiler = false } = {}) {
+    if (!volets.has(id)) return;
+    ui.ouvertes.add(id);
+    majVolet(id);
+    const vt = volets.get(id);
+    apparaitre(vt.corps);
+    if (defiler) vt.el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    surOuverture?.(id);
   }
 
-  function carte(section) {
-    const ton = section.colonne === 'budget' ? (section.id === 'ressources' ? 'entree' : 'sortie') : 'dossier';
-    let total = null;
-    if (section.type === 'budget') {
-      total = h('span', { class: 'total-section', 'aria-live': 'polite' }, '—');
-      totaux.push({ el: total, variable: section.total || `somme_${section.id}` });
+  /* Replier ; apres « terminee », ouvrir la section suivante pas encore faite. */
+  function fermer(id, enchainer = false) {
+    ui.ouvertes.delete(id);
+    majVolet(id);
+    if (!enchainer) return;
+    const ordre = sectionsParcours(config);
+    const i = ordre.findIndex((s) => s.id === id);
+    const prochaine = ordre.slice(i + 1).find((s) => !s.nominatif && !estFaite(s, etat))
+      ?? ordre.find((s) => !s.nominatif && !estFaite(s, etat));
+    if (prochaine) {
+      ouvrir(prochaine.id, { defiler: true });
+      setTimeout(() => volets.get(prochaine.id)?.corps.querySelector('input, button')?.focus({ preventScroll: true }), 350);
+    } else {
+      document.getElementById('fin-saisie')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    const pastille = h('span', { class: 'compte-section' });
-    compteurs.push({ el: pastille, section });
-    const toutNombre = section.type === 'champs' && (section.champs ?? []).length && section.champs.every((c) => c.type === 'nombre');
-    let corps;
-    if (section.type === 'dettes') corps = tableDettes();
-    else {
-      corps = h('div', { class: section.type === 'budget' ? 'lignes-budget' : 'grille-champs' },
-        section.type === 'budget' ? (section.lignes_calculees ?? []).map(ligneCalculee) : null,
-        (section.champs ?? []).map((c) => champ(c, section)),
-        section.type !== 'budget' ? (section.lignes_calculees ?? []).map(ligneCalculee) : null);
-    }
-    return h('section', { class: `carte section-saisie section-${section.type} ton-${ton}`, id: `section-${section.id}`, 'aria-labelledby': `titre-${section.id}` },
-      h('header', {},
-        h('span', { class: 'medaillon' }, dessinIcone(nomIcone(section, 'dossier'))),
-        h('div', { class: 'titres' },
-          h('h3', { id: `titre-${section.id}` }, section.titre),
-          section.description ? h('p', {}, section.description) : null,
-          pastille),
-        total),
-      toutNombre ? frise(section) : null,
-      h('div', { class: 'corps' }, corps));
   }
 
-  const dossier = config.sections.filter((s) => s.colonne !== 'budget');
-  const budget = config.sections.filter((s) => s.colonne === 'budget');
-  const titreColonne = (n, titre, sous) => h('div', { class: 'titre-colonne' },
-    h('span', { class: 'numero' }, n), h('div', {}, h('h3', {}, titre), h('p', {}, sous)));
-  const balance = equilibre();
-  vider(racine,
-    h('div', { class: 'colonne-saisie' }, titreColonne('1', 'Le dossier', 'Qui est le ménage, où il vit, ce qu’il doit'), dossier.map(carte)),
-    h('div', { class: 'colonne-saisie' }, titreColonne('2', 'Le budget du mois', 'Ce qui entre et ce qui sort chaque mois'), balance.el, budget.map(carte)));
+  /* ---------------------------------------------------------- fin de saisie */
 
-  const precedents = new Map();
+  const fin = h('section', { class: 'fin-saisie', id: 'fin-saisie', hidden: true, 'aria-live': 'polite' });
+  function majFin(r) {
+    const p = progression(config, etat);
+    fin.hidden = !p.complet;
+    if (!p.complet) return;
+    const v = r.valeurs;
+    const negatif = (v.solde_apres_dettes ?? 0) < 0;
+    vider(fin,
+      h('div', { class: 'anneau-fin', 'aria-hidden': 'true' }, icone('ok')),
+      h('p', { class: 'surtitre' }, 'Fin de saisie'),
+      h('h3', {}, 'Toutes les sections sont complètes'),
+      h('p', {}, 'Le diagnostic est prêt : synthèse, score et proposition de plan.'),
+      h('div', { class: 'puces-fin' },
+        h('span', { class: 'jeton taupe' }, `${p.faites} / ${p.total} sections`),
+        h('span', { class: `jeton ${negatif ? 'rouge' : 'vert'}` }, `${negatif ? 'Déficit' : 'Reste à vivre'} ${formater(Math.abs(v.solde_apres_dettes ?? 0), 'euro')}`),
+        r.score ? pastilleNiveau(r.score.palier, `Score ${formater(r.score.valeur, 'nombre')} / ${r.score.max}`) : null),
+      h('button', { type: 'button', class: 'bouton grand', 'data-aller': 'synthese', onclick: () => document.querySelector('.nav [data-vue="synthese"]')?.click() }, 'Voir la synthèse et le PDF', icone('suite')));
+  }
+
+  /* ------------------------------------------------------------ assemblage */
+
+  const ordre = sectionsParcours(config);
+  vider(racine, ordre.map(volet), fin);
+  // Au depart, ouvrir la premiere section a faire (sauf si tout est deja rempli).
+  if (!ui.ouvertes.size) {
+    const premiere = ordre.find((s) => !s.nominatif && !estFaite(s, etat));
+    if (premiere) ui.ouvertes.add(premiere.id);
+  }
+  for (const id of volets.keys()) majVolet(id);
+
   return {
+    ouvrir: (id) => ouvrir(id, { defiler: true }),
     rafraichir(resultat) {
-      for (const { el, variable, format } of aCalculer) el.textContent = formater(resultat.valeurs[variable], format);
-      for (const { el, variable } of totaux) {
-        const t = formater(resultat.valeurs[variable], 'euro');
-        if (precedents.has(el) && precedents.get(el) !== t) signaler(el);
-        precedents.set(el, t);
-        el.textContent = t;
+      dernierResultat = resultat;
+      for (const f of aRafraichir) f(resultat);
+      for (const [id, vt] of volets) {
+        const fait = estFaite(vt.section, etat);
+        vt.el.classList.toggle('fait', fait);
+        vider(vt.marque, fait ? h('span', { class: 'coche' }, icone('ok')) : h('span', { class: `medaillon m-${vt.el.classList.contains('ton-entree') ? 'entree' : vt.el.classList.contains('ton-sortie') ? 'sortie' : 'dossier'}` }, dessinIcone(nomIcone(vt.section, 'dossier'))));
+        vt.resume.textContent = resume(vt.section, resultat);
+        const m = montantVolet(vt.section, resultat);
+        if (vt.montant.textContent !== m && vt.montant.textContent) signaler(vt.montant);
+        vt.montant.textContent = m;
+        majVolet(id);
       }
-      for (const { el, section } of compteurs) {
-        const { remplis, total } = avancement(section, etat);
-        el.textContent = total === null
-          ? (remplis ? `${remplis} dette${remplis > 1 ? 's' : ''} renseignée${remplis > 1 ? 's' : ''}` : 'Aucune dette renseignée')
-          : `${remplis} / ${total} renseigné${remplis > 1 ? 's' : ''}`;
-        el.classList.toggle('complet', total !== null && remplis === total);
-      }
-      for (const { el, section } of frises) dessinerFrise(el, section);
-      for (const { el, champ: c } of lignes) el.classList.toggle('rempli', renseigne(etat.valeurs[c.id]));
-      balance.rafraichir(resultat);
+      majFin(resultat);
     },
   };
 }

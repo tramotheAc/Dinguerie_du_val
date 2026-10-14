@@ -198,12 +198,14 @@
         {
           "id": "salaire_1",
           "libelle": "Salaire 1",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "salaire_2",
           "libelle": "Salaire 2",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "rsa",
@@ -218,7 +220,8 @@
         {
           "id": "caf",
           "libelle": "CAF (allocations)",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "are_ass",
@@ -260,27 +263,32 @@
         {
           "id": "energie",
           "libelle": "Électricité / gaz",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "eau",
           "libelle": "Eau",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "internet",
           "libelle": "Internet",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "telephonie",
           "libelle": "Téléphone",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "assurance_habitation",
           "libelle": "Assurance habitation",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "assurances",
@@ -320,17 +328,20 @@
         {
           "id": "alimentation",
           "libelle": "Courses / alimentation",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "carburant",
           "libelle": "Carburant",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "sante",
           "libelle": "Santé",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "habillement",
@@ -340,7 +351,8 @@
         {
           "id": "transports",
           "libelle": "Transports",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "enfants",
@@ -381,7 +393,8 @@
         {
           "id": "loisirs",
           "libelle": "Loisirs / sorties",
-          "type": "montant"
+          "type": "montant",
+          "essentiel": true
         },
         {
           "id": "jeux",

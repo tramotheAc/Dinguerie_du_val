@@ -7,21 +7,23 @@
    l'onglet efface tout - c'est voulu.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer } from './dom.js?v=b0bda1646f';
-import { chargerConfig } from './config.js?v=b0bda1646f';
-import { calculerTout } from './moteur.js?v=b0bda1646f';
-import { formater } from './format.js?v=b0bda1646f';
-import { lirePrerempli } from './url.js?v=b0bda1646f';
-import { creerSaisie, etatVide, avancement } from './saisie.js?v=b0bda1646f';
-import { dessinIcone, nomIcone } from './icones.js?v=b0bda1646f';
-import { rendreSynthese, saisieVide, identite } from './synthese.js?v=b0bda1646f';
-import { apparaitre, signaler, cascade } from './animations.js?v=b0bda1646f';
-import { versionPerimee } from './version.js?v=b0bda1646f';
+import { h, icone, vider, confirmer, annoncer } from './dom.js?v=e847c20310';
+import { chargerConfig } from './config.js?v=e847c20310';
+import { calculerTout } from './moteur.js?v=e847c20310';
+import { formater } from './format.js?v=e847c20310';
+import { lirePrerempli } from './url.js?v=e847c20310';
+import { creerSaisie, etatVide, estFaite, progression, sectionsParcours } from './saisie.js?v=e847c20310';
+import { dessinIcone, nomIcone } from './icones.js?v=e847c20310';
+import { rendreSynthese, saisieVide, identite } from './synthese.js?v=e847c20310';
+import { apparaitre, signaler, cascade } from './animations.js?v=e847c20310';
+import { creerPanneau } from './panneau.js?v=e847c20310';
+import { versionPerimee } from './version.js?v=e847c20310';
 
 let config;
 let etat = etatVide();
 let resultat;
 let saisieUI;
+let panneau;
 let vue = 'saisie';
 let touchee = false; // l'utilisateur a-t-il saisi quelque chose lui-meme ?
 
@@ -80,59 +82,42 @@ async function demarrer() {
   }
   vider($('bandeaux'), messages);
 
+  panneau = creerPanneau({ racine: $('panneau-equilibre'), config, surSynthese: () => montrer('synthese') });
   construireSaisie(prerempli);
   brancher();
   recalculer();
 }
 
 function construireSaisie(prerempli) {
-  saisieUI = creerSaisie({ config, racine: $('formulaire'), etat, prerempli, surChangement: () => { touchee = true; recalculer(); } });
+  saisieUI = creerSaisie({
+    config, racine: $('formulaire'), etat, prerempli,
+    surChangement: () => { touchee = true; recalculer(); },
+    surOuverture: (id) => marquerEtape(id),
+  });
   construireEtapes();
 }
 
 /* --------------------------------------------------------------- etapes */
-/* Une pastille par section, en haut : on voit ce qui est rempli et on y
-   saute d'un clic. La section a l'ecran est mise en avant. */
-let observateur;
+/* Une pastille par section : un numero tant qu'elle reste a faire, une coche
+   ensuite. Un clic ouvre le volet et y conduit. */
 function construireEtapes() {
-  const nav = $('etapes');
-  vider(nav, config.sections.map((s) => h('a', {
-    href: `#section-${s.id}`, class: 'etape', 'data-section': s.id, 'aria-label': s.titre,
-    onclick: (e) => {
-      e.preventDefault();
-      const cible = $(`section-${s.id}`);
-      cible?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      cible?.querySelector('input, button')?.focus({ preventScroll: true });
-    },
-  title: s.titre }, dessinIcone(nomIcone(s, 'dossier')), h('span', { class: 'nom' }, s.court || s.titre), h('span', { class: 'coche', 'aria-hidden': 'true' }, icone('ok')))));
-  observateur?.disconnect();
-  observateur = new IntersectionObserver((entrees) => {
-    for (const e of entrees) {
-      if (!e.isIntersecting) continue;
-      const id = e.target.id.replace('section-', '');
-      for (const a of nav.querySelectorAll('.etape')) a.toggleAttribute('aria-current', a.dataset.section === id);
-      const actif = nav.querySelector(`[data-section="${id}"]`);
-      // La pastille active reste visible dans la barre qui defile horizontalement
-      if (actif && nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: actif.offsetLeft - nav.clientWidth / 2 + actif.clientWidth / 2, behavior: 'smooth' });
-    }
-  }, { rootMargin: '-35% 0px -60% 0px' });
-  for (const sec of document.querySelectorAll('.section-saisie')) observateur.observe(sec);
+  vider($('etapes'), sectionsParcours(config).map((s, n) => h('button', {
+    type: 'button', class: `etape${s.nominatif ? ' facultative' : ''}`, 'data-section': s.id, title: s.titre,
+    onclick: () => saisieUI.ouvrir(s.id),
+  },
+  h('span', { class: 'rond' }, h('span', { class: 'numero-etape' }, s.nominatif ? '+' : String(n + 1)), h('span', { class: 'coche' }, icone('ok'))),
+  h('span', { class: 'nom' }, s.court || s.titre))));
+}
+
+function marquerEtape(id) {
+  for (const b of document.querySelectorAll('#etapes .etape')) b.toggleAttribute('aria-current', b.dataset.section === id);
 }
 
 function majEtapes() {
-  let faites = 0;
-  for (const a of document.querySelectorAll('#etapes .etape')) {
-    const s = config.sections.find((x) => x.id === a.dataset.section);
-    const { remplis } = avancement(s, etat);
-    a.classList.toggle('rempli', remplis > 0);
-    if (remplis > 0) faites++;
+  for (const b of document.querySelectorAll('#etapes .etape')) {
+    const s = config.sections.find((x) => x.id === b.dataset.section);
+    b.classList.toggle('fait', estFaite(s, etat));
   }
-  // L'anneau de progression : la part des sections qui ont au moins une valeur.
-  const total = config.sections.length || 1;
-  const angle = Math.round((faites / total) * 360);
-  $('anneau').style.background = `conic-gradient(var(--vert) ${angle}deg, var(--surface-3) 0)`;
-  $('progression-texte').textContent = `${faites}/${total}`;
-  $('progression').setAttribute('aria-label', `${faites} sections renseignées sur ${total}`);
 }
 
 /* ------------------------------------------------------------------ demo */
@@ -173,7 +158,8 @@ async function chargerDemo(profil) {
   etat = etatVide();
   for (const [k, v] of Object.entries(profil.valeurs)) if (connus.has(k)) etat.valeurs[k] = v;
   etat.valeurs.date_entretien ??= new Date().toISOString().slice(0, 10);
-  if (profil.dettes?.length) etat.dettes = [...profil.dettes.map((d) => ({ ...d })), { type: '', montant: '', mensualite: '', echeance: '' }];
+  if (profil.dettes?.length) etat.dettes = profil.dettes.map((d) => ({ ...d }));
+  else etat.ui.terminees.add('dettes');
   touchee = false;
   history.replaceState(null, '', location.pathname);
   vider($('bandeaux'), [...$('bandeaux').children].filter((b) => !b.classList.contains('petrole') && !b.classList.contains('demo')),
@@ -181,36 +167,15 @@ async function chargerDemo(profil) {
   construireSaisie(null);
   recalculer();
   if (vue !== 'saisie') montrer('saisie');
-  cascade(document.querySelectorAll('.section-saisie'), 35);
+  cascade(document.querySelectorAll('.volet'), 30);
   annoncer(`Ménage fictif chargé : ${profil.libelle}`, 'ok');
-}
-
-const precedent = {};
-function majResume() {
-  const v = resultat.valeurs;
-  const champs = {
-    'r-ressources': formater(v.total_ressources, 'euro'),
-    'r-charges': formater(v.total_charges_avec_dettes, 'euro'),
-    'r-solde': formater(v.solde_apres_dettes, 'euro'),
-    // Un score sur une saisie vide ne veut rien dire : on attend.
-    'r-score': resultat.score && !saisieVide(etat) ? `${formater(resultat.score.valeur, 'nombre')} / ${resultat.score.max}` : '—',
-  };
-  for (const [id, t] of Object.entries(champs)) {
-    const el = $(id);
-    if (precedent[id] !== undefined && precedent[id] !== t) signaler(el);
-    precedent[id] = t;
-    el.textContent = t;
-  }
-  $('r-solde').classList.toggle('negatif', (v.solde_apres_dettes ?? 0) < 0);
-  const p = resultat.score?.palier;
-  $('r-score').dataset.niveau = saisieVide(etat) ? '' : (p?.niveau ?? '');
 }
 
 function recalculer() {
   resultat = calculerTout(config, etat);
   saisieUI.rafraichir(resultat);
-  majResume();
   majEtapes();
+  panneau.rafraichir(resultat, { ...progression(config, etat), vide: saisieVide(etat) });
 }
 
 function dessinerSynthese(animer = true) {
@@ -268,7 +233,7 @@ async function telechargerPdf() {
   const voile = h('div', { class: 'voile-pdf' }, h('div', { class: 'carte' }, h('span', { class: 'roue', 'aria-hidden': 'true' }), 'Fabrication du PDF…'));
   document.body.append(voile);
   try {
-    const { exporterPdf } = await import('./pdf.js?v=b0bda1646f');
+    const { exporterPdf } = await import('./pdf.js?v=e847c20310');
     await exporterPdf({ config, resultat, etat });
     annoncer('PDF téléchargé.', 'ok');
   } catch (e) {

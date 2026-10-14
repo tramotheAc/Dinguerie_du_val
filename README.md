@@ -18,7 +18,7 @@ version 1.xlsm` (référentiel V1.0, juillet 2026).
 
 | Page | Rôle |
 |---|---|
-| `index.html` — **Saisie** | Le formulaire, construit depuis le paramétrage, illustré d'une icône par section et par ligne. Une barre collée en haut donne le résumé du budget (ressources, charges, solde, score), le bouton vers la synthèse et une pastille par section, cochée dès qu'elle est remplie. Les personnes du foyer se règlent avec − / + et s'affichent en silhouettes. « Nouvelle situation » remplace la macro `Réinitialiser_Situation`. **Données de démo** remplit le formulaire avec l'un des trois ménages fictifs de `config/demo.json`. |
+| `index.html` — **Saisie** | Une colonne de **volets** : chaque section se replie sur un résumé (« 2 adultes · 1 enfant », « 410 € ») ; « Section terminée » replie et ouvre la suivante. À droite, le panneau **Équilibre du mois** suit la frappe (anneau des dépenses, reste à vivre, taux d'effort, score). Les listes de budget n'affichent que les postes utiles (réglage « d'office » dans l'admin), les autres s'ajoutent d'un clic ; un champ vide affiche « — ». Confort : fréquence semaine / mois / trimestre / an convertie en mensuel, additions (« 25+12+8 »), Entrée pour passer au champ suivant. **Données de démo** remplit avec un ménage fictif ; **Nouvelle situation** remplace la macro `Réinitialiser_Situation`. |
 | `index.html` — **Synthèse** | Chiffres clés, jauges des indicateurs, répartition des dépenses, score, points d'attention, plan d'apurement (avec simulation d'une autre mensualité), leviers, détail des calculs. Bouton **Télécharger le PDF**. |
 | `admin.html` — **Administration** | Tout le paramétrage : paramètres, formulaire, formules de calcul, barèmes, paliers des jauges et du score, points d'attention, qualifications du plan, leviers, jeu d'essai, liens et Power BI. |
 
@@ -156,6 +156,7 @@ css/app.css, admin.css     styles propres, uniquement des jetons de la charte
 js/formules.js             l'interpréteur de formules
 js/moteur.js               le calcul complet et le contrôle du paramétrage
 js/saisie.js, synthese.js  les deux vues du calculateur
+js/panneau.js              le panneau « Équilibre du mois » de la saisie
 js/graphiques.js           jauges, barres, demi-cercle (SVG)
 js/icones.js               icônes d'illustration du formulaire (SVG au trait)
 js/animations.js           animations sobres (API Web Animations), coupées si
