@@ -7,17 +7,17 @@
    l'onglet efface tout - c'est voulu.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer } from './dom.js?v=54740b0b30';
-import { chargerConfig } from './config.js?v=54740b0b30';
-import { calculerTout } from './moteur.js?v=54740b0b30';
-import { formater } from './format.js?v=54740b0b30';
-import { lirePrerempli } from './url.js?v=54740b0b30';
-import { creerSaisie, etatVide, progression } from './saisie.js?v=54740b0b30';
-import { dessinIcone, nomIcone } from './icones.js?v=54740b0b30';
-import { rendreSynthese, saisieVide, identite } from './synthese.js?v=54740b0b30';
-import { apparaitre, signaler, cascade } from './animations.js?v=54740b0b30';
-import { creerPanneau } from './panneau.js?v=54740b0b30';
-import { versionPerimee } from './version.js?v=54740b0b30';
+import { h, icone, vider, confirmer, annoncer } from './dom.js?v=281db63c74';
+import { chargerConfig } from './config.js?v=281db63c74';
+import { calculerTout } from './moteur.js?v=281db63c74';
+import { formater } from './format.js?v=281db63c74';
+import { lirePrerempli } from './url.js?v=281db63c74';
+import { creerSaisie, etatVide, progression } from './saisie.js?v=281db63c74';
+import { dessinIcone, nomIcone } from './icones.js?v=281db63c74';
+import { rendreSynthese, saisieVide, identite } from './synthese.js?v=281db63c74';
+import { apparaitre, signaler, cascade } from './animations.js?v=281db63c74';
+import { creerPanneau } from './panneau.js?v=281db63c74';
+import { versionPerimee } from './version.js?v=281db63c74';
 
 let config;
 let etat = etatVide();
@@ -207,7 +207,7 @@ async function telechargerPdf() {
   const voile = h('div', { class: 'voile-pdf' }, h('div', { class: 'carte' }, h('span', { class: 'roue', 'aria-hidden': 'true' }), 'Fabrication du PDF…'));
   document.body.append(voile);
   try {
-    const { exporterPdf } = await import('./pdf.js?v=54740b0b30');
+    const { exporterPdf } = await import('./pdf.js?v=281db63c74');
     await exporterPdf({ config, resultat, etat });
     annoncer('PDF téléchargé.', 'ok');
   } catch (e) {

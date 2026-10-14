@@ -8,17 +8,17 @@
    deposer dans le depot, a la place de config/parametres.json.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=54740b0b30';
-import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner } from './config.js?v=54740b0b30';
-import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=54740b0b30';
-import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=54740b0b30';
-import { formater, interpoler, FORMATS } from './format.js?v=54740b0b30';
-import { champsAutorises, construireLien, genererDax } from './url.js?v=54740b0b30';
-import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=54740b0b30';
-import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=54740b0b30';
-import { apparaitre, cascade } from './animations.js?v=54740b0b30';
-import { ICONES, dessinIcone, nomIcone } from './icones.js?v=54740b0b30';
-import { versionPerimee } from './version.js?v=54740b0b30';
+import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=281db63c74';
+import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=281db63c74';
+import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=281db63c74';
+import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=281db63c74';
+import { formater, interpoler, FORMATS } from './format.js?v=281db63c74';
+import { champsAutorises, construireLien, genererDax } from './url.js?v=281db63c74';
+import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=281db63c74';
+import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=281db63c74';
+import { apparaitre, cascade } from './animations.js?v=281db63c74';
+import { ICONES, dessinIcone, nomIcone } from './icones.js?v=281db63c74';
+import { versionPerimee } from './version.js?v=281db63c74';
 
 const PANNEAUX = [
   { id: 'accueil', titre: 'Vue d’ensemble', groupe: 'Paramétrage' },
@@ -59,7 +59,8 @@ async function demarrer() {
     return;
   }
   completer(publie);
-  config = lireBrouillon() ?? cloner(publie);
+  const brouillon = lireBrouillon();
+  config = brouillon ? rattraper(brouillon, publie) : cloner(publie);
   completer(config);
   dessinerNav();
   brancherRail();
@@ -572,7 +573,7 @@ function choixIcone(objet, repli = 'piece') {
     h('select', {
       value: objet.icone ?? '', 'aria-label': 'Icône',
       onchange: (e) => {
-        if (e.target.value) objet.icone = e.target.value; else delete objet.icone;
+        objet.icone = e.target.value; // vide = icone par defaut
         vider(apercu, dessinIcone(nomIcone(objet, repli)));
         modifie();
       },
