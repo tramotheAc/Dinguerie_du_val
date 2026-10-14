@@ -126,6 +126,18 @@ navigateur bloque la lecture de `config/parametres.json` en `file://`) :
 - VS Code : extension **Live Server** → *Go Live* ;
 - ou `python3 -m http.server` dans le dossier, puis <http://localhost:8000>.
 
+**Avant chaque commit**, poser les tampons de version :
+
+```
+node outils/version.mjs
+```
+
+Chaque feuille de style et chaque script est appelé avec `?v=<empreinte du contenu>`.
+GitHub Pages laisse le navigateur garder les fichiers dix minutes : sans tampon, une
+page neuve pouvait tourner avec d'anciens scripts (boutons sans effet, icônes
+absentes). Le test `tests/version.test.mjs` échoue si un tampon est périmé, et la page
+affiche un bandeau si elle détecte un mélange de versions.
+
 Tests (Node ≥ 20, aucune dépendance) :
 
 ```
@@ -151,7 +163,8 @@ js/pdf.js                  export PDF (jsPDF + html2canvas-pro, chargés au clic
 js/url.js                  liens pré-remplis et formule DAX
 js/admin.js                l'administration
 vendor/                    jsPDF 4.2.1 et html2canvas-pro 2.4.5 (MIT)
-tests/                     tests du moteur, des formules, des liens
+outils/version.mjs         pose les tampons de version (cache du navigateur)
+tests/                     tests du moteur, des formules, des liens, des tampons
 ```
 
 La charte vient du dépôt `charte-visuelle` (copie de `jetons`, `socle`,

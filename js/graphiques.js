@@ -9,9 +9,9 @@
    - un titre (title) sur chaque marque pour le survol.
    =========================================================================== */
 
-import { h, svg } from './dom.js';
-import { formater } from './format.js';
-import { grandir, tracer, sansAnimation } from './animations.js';
+import { h, svg } from './dom.js?v=6e18913daa';
+import { formater } from './format.js?v=6e18913daa';
+import { grandir, tracer, sansAnimation } from './animations.js?v=6e18913daa';
 
 const COULEUR_NIVEAU = { vert: 'var(--vert)', ambre: 'var(--ambre)', rouge: 'var(--rouge)', neutre: 'var(--encre-tres-doux)' };
 const FOND_NIVEAU = { vert: 'var(--vert-fond)', ambre: 'var(--ambre-fond)', rouge: 'var(--rouge-fond)', neutre: 'var(--surface-2)' };

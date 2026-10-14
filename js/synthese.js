@@ -6,10 +6,10 @@
    le coupe jamais entre deux pages.
    =========================================================================== */
 
-import { h, icone, vider } from './dom.js';
-import { formater, echapper } from './format.js';
-import { compter, cascade } from './animations.js';
-import { barres, jaugeZones, legendeSeuils, demiCercle, critere, pastilleNiveau, couleurNiveau } from './graphiques.js';
+import { h, icone, vider } from './dom.js?v=6e18913daa';
+import { formater, echapper } from './format.js?v=6e18913daa';
+import { compter, cascade } from './animations.js?v=6e18913daa';
+import { barres, jaugeZones, legendeSeuils, demiCercle, critere, pastilleNiveau, couleurNiveau } from './graphiques.js?v=6e18913daa';
 
 const NIVEAU_CLASSE = { vert: 'vert', ambre: 'ambre', rouge: 'rouge', neutre: '' };
 

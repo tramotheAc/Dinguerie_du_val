@@ -34,7 +34,8 @@
 .nav .nav-lien svg { width: 19px; height: 19px; flex: none; }
 .rail-pied .version { display: block; margin-top: 8px; opacity: .85; }
 
-.scene { padding-bottom: 48px; }
+/* De quoi faire defiler le bas de page au-dessus des reglages d'affichage. */
+.scene { padding-bottom: 72px; }
 .actions-entete { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .entete h2:focus { outline: none; }
 

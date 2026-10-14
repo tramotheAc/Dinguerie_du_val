@@ -7,10 +7,10 @@
    foyer, et un compteur de lignes renseignees par section.
    =========================================================================== */
 
-import { h, icone, vider } from './dom.js';
-import { formater } from './format.js';
-import { signaler } from './animations.js';
-import { dessinIcone, nomIcone } from './icones.js';
+import { h, icone, vider } from './dom.js?v=6e18913daa';
+import { formater } from './format.js?v=6e18913daa';
+import { signaler } from './animations.js?v=6e18913daa';
+import { dessinIcone, nomIcone } from './icones.js?v=6e18913daa';
 
 const LIGNES_DETTES_INITIALES = 3;
 const FRISE_MAX = 8; // au-dela, la frise ecrit « +n »

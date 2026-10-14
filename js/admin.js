@@ -8,16 +8,17 @@
    deposer dans le depot, a la place de config/parametres.json.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js';
-import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner } from './config.js';
-import { calculerTout, catalogue, verifier, ordonner } from './moteur.js';
-import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js';
-import { formater, interpoler, FORMATS } from './format.js';
-import { champsAutorises, construireLien, genererDax } from './url.js';
-import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js';
-import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js';
-import { apparaitre, cascade } from './animations.js';
-import { ICONES, dessinIcone, nomIcone } from './icones.js';
+import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=6e18913daa';
+import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner } from './config.js?v=6e18913daa';
+import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=6e18913daa';
+import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=6e18913daa';
+import { formater, interpoler, FORMATS } from './format.js?v=6e18913daa';
+import { champsAutorises, construireLien, genererDax } from './url.js?v=6e18913daa';
+import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=6e18913daa';
+import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=6e18913daa';
+import { apparaitre, cascade } from './animations.js?v=6e18913daa';
+import { ICONES, dessinIcone, nomIcone } from './icones.js?v=6e18913daa';
+import { versionPerimee } from './version.js?v=6e18913daa';
 
 const PANNEAUX = [
   { id: 'accueil', titre: 'Vue d’ensemble', groupe: 'Paramétrage' },
@@ -151,8 +152,12 @@ function ouvrir(id, animer = true) {
 
 function dessinerBarre() {
   const brouillon = JSON.stringify(config) !== JSON.stringify(publie);
+  const perime = versionPerimee()
+    ? h('div', { class: 'bandeau rouge perime', role: 'alert' }, icone('alerte'), h('div', {}, h('strong', {}, 'Une version plus récente du site existe. '), 'Actualisez sans le cache : Ctrl + F5.'))
+    : null;
   const fichier = h('input', { type: 'file', accept: '.json,application/json', hidden: true, onchange: importer });
   vider($('barre-admin'),
+    perime,
     h('div', { class: 'etat' },
       brouillon
         ? h('span', { class: 'jeton ambre' }, h('span', { class: 'point' }), 'Brouillon non publié')
@@ -984,4 +989,5 @@ RENDUS.liens = () => {
           h('li', {}, 'Un paramètre vide est simplement omis du lien.'))))));
 };
 
+window.dinguerieDemarree = true;
 demarrer();

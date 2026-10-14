@@ -2,7 +2,8 @@
    L'administration. Uniquement des alias de la charte.
    =========================================================================== */
 
-.page-admin .scene { padding-bottom: 60px; }
+.page-admin .scene { padding-bottom: 72px; }
+.barre-admin .perime { flex-basis: 100%; }
 .panneau { display: flex; flex-direction: column; gap: 16px; }
 .pile { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .pile.serree { gap: 12px; }

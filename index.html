@@ -4,16 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
+  <meta name="version" content="6e18913daa">
   <title>La dinguerie de val</title>
   <meta name="description" content="Diagnostic budgétaire locataire : saisie, synthèse et proposition de plan d'apurement. Aucune donnée n'est conservée.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2329467b'/%3E%3Ctext x='16' y='21' font-family='Arial' font-weight='700' font-size='13' fill='white' text-anchor='middle'%3EDV%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/charte/jetons.css">
-  <link rel="stylesheet" href="css/charte/bandeau.css">
-  <link rel="stylesheet" href="css/charte/socle.css">
-  <link rel="stylesheet" href="css/charte/composants.css">
-  <link rel="stylesheet" href="css/charte/bouton-theme.css">
-  <link rel="stylesheet" href="css/charte/motif-rail.css">
-  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/charte/jetons.css?v=6e18913daa">
+  <link rel="stylesheet" href="css/charte/bandeau.css?v=6e18913daa">
+  <link rel="stylesheet" href="css/charte/socle.css?v=6e18913daa">
+  <link rel="stylesheet" href="css/charte/composants.css?v=6e18913daa">
+  <link rel="stylesheet" href="css/charte/bouton-theme.css?v=6e18913daa">
+  <link rel="stylesheet" href="css/charte/motif-rail.css?v=6e18913daa">
+  <link rel="stylesheet" href="css/app.css?v=6e18913daa">
 </head>
 <body>
   <div class="app">
@@ -41,11 +42,6 @@
         <li><a class="nav-lien" href="admin.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
           Administration</a></li>
-        <li class="nav-groupe">Affichage</li>
-        <li><button type="button" id="bascule-theme" class="bascule-theme nav-theme" data-effectif="light" aria-label="Passer au thème sombre">
-          <svg class="i-soleil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2.1 2.1M16.9 16.9 19 19M19 5l-2.1 2.1M7.1 16.9 5 19"/></svg>
-          <svg class="i-lune" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5Z"/></svg>
-          <span>Thème clair / sombre</span></button></li>
       </ul>
       <div class="rail-pied">
         <b>Rien n'est conservé.</b> La saisie vit dans cette page seulement : la fermer ou l'actualiser efface tout.
@@ -113,7 +109,28 @@
     </main>
   </div>
 
-  <script src="js/bouton-theme.js"></script>
-  <script type="module" src="js/app.js"></script>
+  <div class="parametres" role="group" aria-label="Réglages d'affichage">
+    <span class="parametres-titre">Affichage</span>
+    <button type="button" id="bascule-theme" class="bascule-theme" data-effectif="light" aria-label="Passer au thème sombre">
+      <svg class="i-soleil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2.1 2.1M16.9 16.9 19 19M19 5l-2.1 2.1M7.1 16.9 5 19"/></svg>
+      <svg class="i-lune" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5Z"/></svg>
+    </button>
+  </div>
+
+  <!-- Si les scripts ne demarrent pas (fichier ancien garde en cache, reseau
+       coupe), on le dit au lieu de laisser des boutons sans effet. -->
+  <script>
+    setTimeout(function () {
+      if (window.dinguerieDemarree) return;
+      var d = document.createElement('div');
+      d.className = 'bandeau rouge';
+      d.setAttribute('role', 'alert');
+      d.innerHTML = '<div><strong>La page n\u2019a pas fini de se charger.</strong> Actualisez-la sans le cache : Ctrl + F5 (Cmd + Maj + R sur Mac).</div>';
+      var z = document.getElementById('bandeaux') || document.getElementById('barre-admin');
+      if (z) z.prepend(d);
+    }, 6000);
+  </script>
+  <script src="js/bouton-theme.js?v=6e18913daa"></script>
+  <script type="module" src="js/app.js?v=6e18913daa"></script>
 </body>
 </html>

@@ -7,15 +7,16 @@
    l'onglet efface tout - c'est voulu.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer } from './dom.js';
-import { chargerConfig } from './config.js';
-import { calculerTout } from './moteur.js';
-import { formater } from './format.js';
-import { lirePrerempli } from './url.js';
-import { creerSaisie, etatVide, avancement } from './saisie.js';
-import { dessinIcone, nomIcone } from './icones.js';
-import { rendreSynthese, saisieVide, identite } from './synthese.js';
-import { apparaitre, signaler, cascade } from './animations.js';
+import { h, icone, vider, confirmer, annoncer } from './dom.js?v=6e18913daa';
+import { chargerConfig } from './config.js?v=6e18913daa';
+import { calculerTout } from './moteur.js?v=6e18913daa';
+import { formater } from './format.js?v=6e18913daa';
+import { lirePrerempli } from './url.js?v=6e18913daa';
+import { creerSaisie, etatVide, avancement } from './saisie.js?v=6e18913daa';
+import { dessinIcone, nomIcone } from './icones.js?v=6e18913daa';
+import { rendreSynthese, saisieVide, identite } from './synthese.js?v=6e18913daa';
+import { apparaitre, signaler, cascade } from './animations.js?v=6e18913daa';
+import { versionPerimee } from './version.js?v=6e18913daa';
 
 let config;
 let etat = etatVide();
@@ -71,6 +72,11 @@ async function demarrer() {
   } else if (prerempli.ignores.length) {
     messages.push(bandeau('ambre', icone('alerte'), h('div', {},
       h('strong', {}, 'Paramètres du lien ignorés : '), prerempli.ignores.map((i) => `${i.cle} (${i.raison})`).join(', '))));
+  }
+  if (versionPerimee()) {
+    messages.unshift(bandeau('rouge', icone('alerte'), h('div', {},
+      h('strong', {}, 'Une version plus récente du site existe. '),
+      'Actualisez la page sans le cache : Ctrl + F5 (Cmd + Maj + R sur Mac).')));
   }
   vider($('bandeaux'), messages);
 
@@ -254,7 +260,7 @@ async function telechargerPdf() {
   const voile = h('div', { class: 'voile-pdf' }, h('div', { class: 'carte' }, h('span', { class: 'roue', 'aria-hidden': 'true' }), 'Fabrication du PDF…'));
   document.body.append(voile);
   try {
-    const { exporterPdf } = await import('./pdf.js');
+    const { exporterPdf } = await import('./pdf.js?v=6e18913daa');
     await exporterPdf({ config, resultat, etat });
     annoncer('PDF téléchargé.', 'ok');
   } catch (e) {
@@ -289,4 +295,5 @@ function brancher() {
   });
 }
 
+window.dinguerieDemarree = true;
 demarrer();
