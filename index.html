@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>La dinguerie de val</title>
+  <meta name="description" content="Diagnostic budgétaire locataire : saisie, synthèse et proposition de plan d'apurement. Aucune donnée n'est conservée.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2329467b'/%3E%3Ctext x='16' y='21' font-family='Arial' font-weight='700' font-size='13' fill='white' text-anchor='middle'%3EDV%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/charte/jetons.css">
+  <link rel="stylesheet" href="css/charte/bandeau.css">
+  <link rel="stylesheet" href="css/charte/socle.css">
+  <link rel="stylesheet" href="css/charte/composants.css">
+  <link rel="stylesheet" href="css/charte/bouton-theme.css">
+  <link rel="stylesheet" href="css/charte/motif-rail.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="rail" id="rail">
+      <div class="marque">
+        <div class="pastille" aria-hidden="true">DV</div>
+        <div class="marque-texte">
+          <h1 id="titre-app">La dinguerie de val</h1>
+          <p id="sous-titre-app">Diagnostic budgétaire locataire</p>
+        </div>
+        <button type="button" class="bascule-nav" aria-expanded="false" aria-controls="nav-principale">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          Menu
+        </button>
+      </div>
+      <ul class="nav" id="nav-principale">
+        <li class="nav-groupe">Diagnostic</li>
+        <li><button type="button" data-vue="saisie" aria-current="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4"/></svg>
+          Saisie</button></li>
+        <li><button type="button" data-vue="synthese">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+          Synthèse</button></li>
+        <li class="nav-groupe">Paramétrage</li>
+        <li><a class="nav-lien" href="admin.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+          Administration</a></li>
+      </ul>
+      <div class="rail-pied">
+        <b>Rien n'est conservé.</b> La saisie vit dans cette page seulement : la fermer ou l'actualiser efface tout.
+        <span id="version-referentiel" class="version"></span>
+      </div>
+    </aside>
+
+    <main class="scene" id="scene">
+      <div id="bandeaux"></div>
+
+      <section class="vue actif" id="vue-saisie" aria-labelledby="titre-saisie">
+        <div class="entete">
+          <div>
+            <h2 id="titre-saisie">Saisie des renseignements</h2>
+            <p>Les totaux et la synthèse se calculent au fil de la saisie. Les montants sont mensuels.</p>
+          </div>
+          <div class="actions-entete">
+            <button type="button" class="bouton second" id="nouvelle-situation">
+              <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
+              Nouvelle situation</button>
+
+          </div>
+        </div>
+        <form id="formulaire" class="formulaire" autocomplete="off" novalidate></form>
+      </section>
+
+      <section class="vue" id="vue-synthese" aria-labelledby="titre-synthese">
+        <div class="entete">
+          <div>
+            <h2 id="titre-synthese">Synthèse du diagnostic</h2>
+            <p id="identite-synthese">Analyse automatique et aide à la décision.</p>
+          </div>
+          <div class="actions-entete">
+            <button type="button" class="bouton second" data-aller="saisie">
+              <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+              Modifier la saisie</button>
+            <button type="button" class="bouton" id="telecharger-pdf">
+              <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+              Télécharger le PDF</button>
+          </div>
+        </div>
+        <div id="synthese" class="synthese"></div>
+      </section>
+
+      <div class="barre-resume" id="barre-resume" role="region" aria-label="Résumé du budget">
+        <dl class="resume">
+          <div><dt>Ressources</dt><dd id="r-ressources">—</dd></div>
+          <div><dt>Charges</dt><dd id="r-charges">—</dd></div>
+          <div><dt>Solde après dettes</dt><dd id="r-solde">—</dd></div>
+          <div><dt>Score</dt><dd id="r-score">—</dd></div>
+        </dl>
+        <button type="button" class="bouton" data-aller="synthese">Voir la synthèse
+          <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <div class="parametres" role="group" aria-label="Réglages d'affichage">
+    <span class="parametres-titre">Affichage</span>
+    <button type="button" id="bascule-theme" class="bascule-theme" data-effectif="light" aria-label="Passer au thème sombre">
+      <svg class="i-soleil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2.1 2.1M16.9 16.9 19 19M19 5l-2.1 2.1M7.1 16.9 5 19"/></svg>
+      <svg class="i-lune" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5Z"/></svg>
+    </button>
+  </div>
+
+  <script src="js/bouton-theme.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

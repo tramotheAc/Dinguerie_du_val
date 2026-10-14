@@ -1,0 +1,207 @@
+/* ===========================================================================
+   Charte visuelle Aiguillon - les jetons
+
+   Un jeton est une valeur nommee : une couleur, un rayon, une largeur. Les
+   feuilles de style n'ecrivent jamais une couleur en dur, elles ecrivent
+   var(--encre). Changer la charte, c'est changer ces valeurs une fois.
+
+   Les jetons vont par deux couches. En dessous, une base aux noms anglais
+   qui dit d'ou vient la valeur : --blue-800, --data-teal-700, --app-bg. Au
+   dessus, des alias francais qui disent a quoi elle sert : --accent, --petrole,
+   --fond. Les feuilles n'emploient que les alias ; la base ne sert qu'a les
+   definir. C'est ce qui permet de changer une couleur de marque sans relire
+   tout le CSS.
+
+   LE MODE SOMBRE EST DECLARE DEUX FOIS, ET C'EST VOULU :
+
+     @media (prefers-color-scheme: dark) :root:not([data-theme="light"])
+        le poste est regle en sombre, et l'utilisateur n'a pas force le clair
+
+     :root[data-theme="dark"]
+        l'utilisateur a clique le bouton
+
+   Les deux blocs doivent rester IDENTIQUES. outils/couverture.py le verifie :
+   ils divergent toujours un jour, et le jour ou ils divergent, le theme force
+   ne ressemble plus au theme systeme sans que personne ne comprenne pourquoi.
+
+   En sombre, les alias francais sont redefinis DIRECTEMENT, pas via la base.
+   Changer --data-teal-700 dans le bloc sombre ne ferait donc rien : c'est
+   --petrole qu'il faut changer.
+   =========================================================================== */
+
+:root {
+  --blue-950: #203864;
+  --blue-900: #29467b;
+  --blue-850: #2f518d;
+  --blue-800: #3560a4;
+  --blue-700: #3b7cbb;
+  --blue-600: #4f8ecc;
+  --blue-500: #679ad1;
+  --blue-300: #8faadc;
+  --blue-100: #eaf1fb;
+  --app-bg: #eef2f8;
+  --border: #e6ebf3;
+  --border-strong: #d3dbe6;
+  --text: #16233f;
+  --text-muted: #5b6a82;
+  --focus: #1d64c8;
+  --data-teal-700: #006a7e;
+  --data-teal-600: #007b91;
+  --data-red-700: #b11f0d;
+  --data-red-500: #ef4b2d;
+  --data-blue-700: #0059a8;
+  --data-blue-500: #2f7fc1;
+  --success: #137a55;
+  --warning: #a85c00;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --shadow: 0 1px 2px rgb(20 40 80 / 4%), 0 8px 22px rgb(20 40 80 / 5%);
+  --sidebar-width: 264px;
+  --row-blue-a: #ffffff;
+  --row-blue-b: #fafcff;
+  --row-blue-hover: #f3f8ff;
+  --font-ui: "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+  --font-mono: Consolas, "Cascadia Mono", ui-monospace, Menlo, monospace;
+  --fond: var(--app-bg);
+  --surface: #ffffff;
+  --surface-2: #edf1f7;
+  --surface-3: #e3eaf3;
+  --bord: var(--border);
+  --bord-fort: var(--border-strong);
+  --encre: var(--text);
+  --encre-doux: var(--text-muted);
+  --encre-tres-doux: #626f81;
+  --nuit: var(--blue-900);
+  --nuit-2: var(--blue-850);
+  --accent: var(--blue-800);
+  --petrole: var(--data-teal-700);
+  --petrole-clair: var(--data-teal-600);
+  --taupe: var(--data-blue-700);
+  --vert: var(--success);
+  --ambre: var(--warning);
+  --rouge: var(--data-red-700);
+  --vert-fond: #e2f3ec;
+  --ambre-fond: #fff6e8;
+  --rouge-fond: #fde9e6;
+  --ombre: var(--shadow);
+  --rail: var(--sidebar-width);
+  --chiffre: var(--blue-950);
+  --serie-1: #006a7e;
+  --serie-2: #0059a8;
+  --serie-3: #3560a4;
+  --serie-4: #2f7fc1;
+  --serie-5: #007b91;
+  --serie-6: #203864;
+  --serie-7: #3b7cbb;
+  --serie-8: #a85c00;
+  --serie-9: #137a55;
+  --serie-10: #b11f0d;
+  --rail-replie: 58px;   /* largeur du rail une fois replie */
+  /* Rampe sequentielle en cinq marches, du petrole clair au fonce. Elle sert
+     a graduer une intensite - un niveau d'impact, une densite - la ou les
+     jetons de serie servent a distinguer des categories sans ordre. */
+  --rampe-1: #74bfcf; --rampe-2: #3ba0b5; --rampe-3: #0d8096;
+  --rampe-4: #005f73; --rampe-5: #003d4a;
+
+  /* Le bandeau officiel est une image de 165 Ko encodee en base64. La charte
+     ne la porte pas dans cette feuille : c'est l'assemblage de chaque projet
+     qui l'injecte ici, depuis bandeau-gauche-bleu.png.base64. Sans injection,
+     le rail reste uni - la page est correcte, elle est seulement moins belle.
+     Une valeur par defaut vaut mieux qu'un jeton absent : un var() qui ne
+     resout rien fait disparaitre la declaration entiere. */
+  --fond-rail: none;
+  --petrole-fond: #e2f0f3;   /* aplat derriere un jeton petrole */
+  --taupe-fond: #e7eefa;   /* aplat derriere un jeton taupe */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --app-bg: #0e1626;
+    --surface: #172236;
+    --surface-2: #202c42;
+    --surface-3: #29374f;
+    --border: #2a3a56;
+    --border-strong: #46587a;
+    --text: #e8eef8;
+    --text-muted: #9fb0ca;
+    --encre-tres-doux: #8b9ab1;
+    --focus: #7fb2ff;
+    --blue-100: #1e2c46;
+    --nuit: #101a2e;
+    --nuit-2: #1a2743;
+    --accent: #2f6cb5;
+    --chiffre: #9dbbe8;
+    --petrole: #3fb0c6;
+    --petrole-clair: #63c6d8;
+    --taupe: #6ba7e8;
+    --vert: #4cc294;
+    --ambre: #dda54a;
+    --rouge: #f08579;
+    --vert-fond: #12352a;
+    --ambre-fond: #322611;
+    --rouge-fond: #351d1b;
+    --row-blue-a: #172236;
+    --row-blue-b: #1a2436;
+    --row-blue-hover: #22304a;
+    --serie-1: #3fb0c6;
+    --serie-2: #6ba7e8;
+    --serie-3: #8faadc;
+    --serie-4: #5fb4e6;
+    --serie-5: #45c4d6;
+    --serie-6: #a3c0ea;
+    --serie-7: #7fc0f0;
+    --serie-8: #dda54a;
+    --serie-9: #4cc294;
+    --serie-10: #f08579;
+    --shadow: 0 1px 2px rgb(0 0 0 / 45%), 0 8px 22px rgb(0 0 0 / 30%);
+    --petrole-fond: #123039;
+    --taupe-fond: #152a44;
+    --rampe-1: #31707f; --rampe-2: #3f8fa2; --rampe-3: #54b0c3;
+    --rampe-4: #74cede; --rampe-5: #a3e7f0;
+  }
+}
+
+:root[data-theme="dark"] {
+  --app-bg: #0e1626;
+  --surface: #172236;
+  --surface-2: #202c42;
+  --surface-3: #29374f;
+  --border: #2a3a56;
+  --border-strong: #46587a;
+  --text: #e8eef8;
+  --text-muted: #9fb0ca;
+  --encre-tres-doux: #8b9ab1;
+  --focus: #7fb2ff;
+  --blue-100: #1e2c46;
+  --nuit: #101a2e;
+  --nuit-2: #1a2743;
+  --accent: #2f6cb5;
+  --chiffre: #9dbbe8;
+  --petrole: #3fb0c6;
+  --petrole-clair: #63c6d8;
+  --taupe: #6ba7e8;
+  --vert: #4cc294;
+  --ambre: #dda54a;
+  --rouge: #f08579;
+  --vert-fond: #12352a;
+  --ambre-fond: #322611;
+  --rouge-fond: #351d1b;
+  --row-blue-a: #172236;
+  --row-blue-b: #1a2436;
+  --row-blue-hover: #22304a;
+  --serie-1: #3fb0c6;
+  --serie-2: #6ba7e8;
+  --serie-3: #8faadc;
+  --serie-4: #5fb4e6;
+  --serie-5: #45c4d6;
+  --serie-6: #a3c0ea;
+  --serie-7: #7fc0f0;
+  --serie-8: #dda54a;
+  --serie-9: #4cc294;
+  --serie-10: #f08579;
+  --shadow: 0 1px 2px rgb(0 0 0 / 45%), 0 8px 22px rgb(0 0 0 / 30%);
+  --petrole-fond: #123039;
+  --taupe-fond: #152a44;
+  --rampe-1: #31707f; --rampe-2: #3f8fa2; --rampe-3: #54b0c3;
+  --rampe-4: #74cede; --rampe-5: #a3e7f0;
+}

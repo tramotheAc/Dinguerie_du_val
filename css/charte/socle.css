@@ -1,0 +1,174 @@
+/* ---------------------------------------------------------------------------
+   Ossature : le rail de navigation, la scene, l'en-tete, le pied, les
+   reglages d'affichage. Rien ici ne connait le sujet de l'application.
+--------------------------------------------------------------------------- */
+
+* { box-sizing: border-box; }
+
+/* Une regle d'auteur « display: flex » l'emporte sur le display:none que le
+   navigateur attache a [hidden] : sans ce !important, masquer un element en
+   JavaScript par « el.hidden = true » n'a aucun effet visible. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--encre);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Un identifiant technique se lit en chasse fixe, un libelle humain en
+   lineale. Montrer les deux evite d'avoir a choisir un registre de lecture. */
+.tech { font-family: var(--font-mono); }
+
+h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 600; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+
+/* ------------------------------------------------------------------ ossature */
+.app { display: grid; grid-template-columns: var(--rail) 1fr; min-height: 100vh; }
+
+/* Le rail reprend le bandeau officiel du theme maison : image d'origine
+   etiree, jamais remplacee par un aplat. */
+.rail {
+  background-color: var(--nuit);
+  background-image: var(--fond-rail);
+  background-size: 100% 100%;
+  background-position: center top;
+  color: #fff;
+  padding: 22px 0 18px;
+  display: flex; flex-direction: column; gap: 26px;
+  position: sticky; top: 0; height: 100vh;
+  isolation: isolate;
+}
+/* Le bandeau s'eclaircit vers le bas : sans ce voile, le texte blanc des
+   dernieres entrees et du pied deviendrait illisible. */
+.rail::after {
+  content: ''; position: absolute; inset: 32% 0 0 0; z-index: -1;
+  background: linear-gradient(180deg, rgb(32 56 100 / 0) 0%, rgb(32 56 100 / .55) 45%,
+              rgb(32 56 100 / .82) 100%);
+  pointer-events: none;
+}
+.marque { padding: 0 14px; }
+.marque .pastille {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid #ffffffaa; background: transparent;
+  display: grid; place-items: center; margin-bottom: 12px;
+  font-weight: 700; font-size: 14px; color: #fff; letter-spacing: .02em;
+}
+.marque h1 { font-size: 15px; letter-spacing: .2px; font-weight: 700; }
+.marque p { margin: 2px 0 0; font-size: 11px; font-weight: 600; color: #d7e2f2; }
+/* Le bouton de repli n'existe que sur petit ecran ; ailleurs le rail est
+   deja entierement visible et un bouton de plus n'y ajouterait rien. */
+.bascule-nav {
+  display: none; align-items: center; gap: 8px; margin-left: auto;
+  background: rgb(255 255 255 / 16%); color: #fff; border: 0;
+  border-radius: 999px; padding: 8px 14px; min-height: 42px;
+  font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.bascule-nav svg { width: 18px; height: 18px; }
+
+.nav { list-style: none; margin: 0; padding: 0 12px; display: flex; flex-direction: column; gap: 4px; }
+.nav button {
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px; border: 0; border-radius: var(--radius-md); cursor: pointer;
+  background: transparent; color: #fff; font-size: 15px; text-align: left;
+  transition: background .12s;
+}
+.nav button:hover,
+.nav button[aria-current="true"] { background: rgb(143 170 220 / 34%); }
+.nav button[aria-current="true"] { font-weight: 700; }
+.nav svg { width: 19px; height: 19px; flex: none; }
+/* Les intitules de groupe rangent la navigation sans y ajouter un niveau a
+   cliquer : ce ne sont pas des pages. */
+.nav-groupe {
+  padding: 12px 12px 4px; font-size: 10.5px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: #c2d2e8;
+}
+.nav-groupe:first-child { padding-top: 0; }
+
+.rail-pied {
+  margin-top: auto; padding: 12px 14px 0; border-top: 1px solid rgb(255 255 255 / 20%);
+  font-size: 11px; color: #cbd8ea; line-height: 1.55;
+}
+.rail-pied b { color: #fff; font-weight: 700; }
+
+.scene { min-width: 0; padding: 20px 24px 36px; display: flex; flex-direction: column; gap: 16px; }
+.scene > .barre-filtres { top: 8px; }
+
+.entete { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.entete h2 { font-size: 22px; letter-spacing: -.01em; }
+.entete p { margin: 3px 0 0; color: var(--encre-doux); max-width: 62ch; font-size: 13.5px; }
+
+.vue { display: none; flex-direction: column; gap: 18px; }
+.vue.actif { display: flex; }
+
+/* Reglages d'affichage : une barre minuscule en bas a droite, effacee tant
+   qu'on ne s'y interesse pas, entiere des qu'on l'approche ou qu'on
+   l'atteint au clavier. */
+.parametres {
+  position: fixed; right: 14px; bottom: 12px; z-index: 60;
+  display: flex; align-items: center; gap: 2px;
+  padding: 3px 4px 3px 10px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--bord);
+  box-shadow: var(--ombre); opacity: .5; transition: opacity .15s;
+}
+.parametres:hover, .parametres:focus-within { opacity: 1; }
+.parametres-titre {
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  font-weight: 700; color: var(--encre-tres-doux); margin-right: 4px;
+}
+.parametres button {
+  border: 0; background: transparent; cursor: pointer;
+  padding: 3px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; color: var(--encre-doux);
+}
+.parametres button:hover { color: var(--encre); }
+.parametres button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+/* Sur un telephone, un panneau flottant recouvre en permanence le bas de la
+   page - et le bas de la page, sur l'ecran de tournee, porte les boutons.
+   Il n'y a pas non plus de survol pour le reveiller de son opacite. Il
+   redescend donc dans le flux, tout en bas du document. */
+@media (max-width: 900px) {
+  .parametres {
+    position: static; opacity: 1; width: max-content;
+    margin: 0 14px 18px; padding: 5px 6px 5px 12px;
+  }
+}
+@media print { .parametres { display: none; } }
+
+/* Sous 900 px le rail passe au-dessus de la scene : une colonne fixe de
+   276 px ne laisse plus rien au contenu. Il se replie derriere un bouton :
+   deploye, il occupait tout le premier ecran d'un telephone, et il fallait
+   le faire defiler avant d'atteindre la page demandee. Replie, il reste
+   colle en haut et sert de barre de titre. */
+@media (max-width: 900px) {
+  /* Deux barres collantes se disputent le haut de l'ecran : le rail replie et
+     le bandeau de filtres. Le rail passe devant et le bandeau se cale juste
+     dessous, faute de quoi le second recouvre le premier. La hauteur du rail
+     est declaree plutot que devinee : un nom de marque plus long la ferait
+     grandir, et le decalage deviendrait faux. */
+  :root { --rail-replie: 58px; }
+  .app { grid-template-columns: 1fr; }
+  .rail {
+    position: sticky; top: 0; z-index: 40;
+    height: auto; min-height: var(--rail-replie); padding: 0; gap: 0;
+    box-shadow: 0 2px 10px rgb(16 26 46 / 22%);
+  }
+  .scene > .barre-filtres { top: calc(var(--rail-replie) + 6px); }
+  .rail::after { display: none; }
+  .marque { display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+  .marque .pastille { margin-bottom: 0; width: 30px; height: 30px; font-size: 12px; }
+  .marque p { display: none; }
+  .marque-texte { min-width: 0; }
+  .bascule-nav { display: flex; }
+  .nav { display: none; padding: 2px 10px 12px; }
+  .rail.ouvert .nav { display: flex; }
+  .nav button { min-height: 48px; font-size: 16px; }
+  .nav-groupe { padding-top: 10px; }
+  .rail-pied { display: none; }
+  .scene { padding: 14px; }
+}

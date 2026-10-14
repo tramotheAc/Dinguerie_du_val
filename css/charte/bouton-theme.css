@@ -1,0 +1,25 @@
+/* ===========================================================================
+   Charte visuelle Aiguillon - le bouton clair / sombre
+
+   Un seul bouton, deux etats : soleil en clair, lune en sombre. L'icone dit
+   le theme courant, l'etiquette dit ce que le clic fera.
+
+   C'est le script qui pose data-effectif sur le bouton - une seule source de
+   verite, plutot qu'une regle CSS a maintenir dans les deux declarations
+   sombres de la charte.
+   =========================================================================== */
+
+.bascule-theme {
+  display: grid; place-items: center; width: 30px; height: 30px; padding: 0;
+  border: 0; border-radius: 999px; background: transparent;
+  color: var(--encre-doux); cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.bascule-theme:hover { background: var(--surface-2); color: var(--encre); }
+.bascule-theme svg { width: 17px; height: 17px; display: block; }
+/* L'icone dit le theme courant : soleil en clair, lune en sombre. C'est le
+   script qui pose data-effectif - une seule source de verite, plutot qu'une
+   regle CSS a maintenir dans les deux declarations sombres. */
+.bascule-theme[data-effectif="light"] .i-lune,
+.bascule-theme[data-effectif="dark"] .i-soleil { display: none; }
+

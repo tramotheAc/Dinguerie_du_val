@@ -1,0 +1,1266 @@
+{
+  "version": 1,
+  "meta": {
+    "titre": "La dinguerie de val",
+    "sous_titre": "Diagnostic budgétaire locataire",
+    "referentiel": "V1.1 – octobre 2026 (d'après le classeur V1.0 de juillet 2026)",
+    "url_publique": "https://tramotheac.github.io/Dinguerie_du_val/"
+  },
+  "parametres": [
+    {
+      "id": "plafond_effort_apurement",
+      "libelle": "Plafond de l'effort d'apurement (part du solde après dettes)",
+      "valeur": 0.5,
+      "format": "pourcent"
+    },
+    {
+      "id": "duree_max_plan",
+      "libelle": "Durée maximale d'un plan d'apurement soutenable",
+      "valeur": 36,
+      "format": "mois"
+    },
+    {
+      "id": "seuil_dette_mois",
+      "libelle": "Seuil d'alerte : dette locative en mois de loyer",
+      "valeur": 3,
+      "format": "mois"
+    },
+    {
+      "id": "seuil_solde_faible",
+      "libelle": "Seuil d'alerte : solde disponible après dettes",
+      "valeur": 600,
+      "format": "euro"
+    },
+    {
+      "id": "seuil_qf_fsl",
+      "libelle": "Seuil de quotient familial pour le FSL (variante)",
+      "valeur": 800,
+      "format": "euro"
+    },
+    {
+      "id": "seuil_facultatives",
+      "libelle": "Seuil d'alerte : dépenses facultatives / ressources",
+      "valeur": 0.1,
+      "format": "pourcent"
+    }
+  ],
+  "sections": [
+    {
+      "id": "dossier",
+      "titre": "Dossier locataire",
+      "type": "champs",
+      "colonne": "dossier",
+      "nominatif": true,
+      "description": "Informations d'identification. Elles figurent sur le PDF mais ne sont jamais conservées ni acceptées dans un lien.",
+      "champs": [
+        {
+          "id": "nom",
+          "libelle": "Nom",
+          "type": "texte"
+        },
+        {
+          "id": "prenom",
+          "libelle": "Prénom",
+          "type": "texte"
+        },
+        {
+          "id": "reference",
+          "libelle": "Référence locataire",
+          "type": "texte"
+        },
+        {
+          "id": "adresse",
+          "libelle": "Adresse",
+          "type": "texte"
+        },
+        {
+          "id": "telephone",
+          "libelle": "Téléphone",
+          "type": "texte"
+        },
+        {
+          "id": "email",
+          "libelle": "Email",
+          "type": "texte"
+        },
+        {
+          "id": "date_entretien",
+          "libelle": "Date de l'entretien",
+          "type": "date"
+        },
+        {
+          "id": "conseiller",
+          "libelle": "Conseiller",
+          "type": "texte"
+        }
+      ],
+      "lignes_calculees": []
+    },
+    {
+      "id": "composition",
+      "titre": "Composition familiale",
+      "type": "champs",
+      "colonne": "dossier",
+      "champs": [
+        {
+          "id": "adultes",
+          "libelle": "Adultes",
+          "type": "nombre",
+          "url": true
+        },
+        {
+          "id": "enfants_moins_14",
+          "libelle": "Enfants de moins de 14 ans",
+          "type": "nombre",
+          "url": true
+        },
+        {
+          "id": "enfants_14_plus",
+          "libelle": "Enfants de 14 ans et plus",
+          "type": "nombre",
+          "url": true
+        }
+      ],
+      "lignes_calculees": []
+    },
+    {
+      "id": "logement",
+      "titre": "Situation logement",
+      "type": "champs",
+      "colonne": "dossier",
+      "champs": [
+        {
+          "id": "loyer",
+          "libelle": "Loyer",
+          "type": "montant",
+          "url": true
+        },
+        {
+          "id": "charges",
+          "libelle": "Charges",
+          "type": "montant",
+          "url": true
+        },
+        {
+          "id": "apl",
+          "libelle": "APL",
+          "type": "montant",
+          "url": true
+        }
+      ],
+      "lignes_calculees": [
+        {
+          "libelle": "Loyer résiduel",
+          "variable": "loyer_residuel"
+        }
+      ]
+    },
+    {
+      "id": "dette",
+      "titre": "Dette locative",
+      "type": "champs",
+      "colonne": "dossier",
+      "champs": [
+        {
+          "id": "dette_locative",
+          "libelle": "Montant de la dette locative",
+          "type": "montant",
+          "url": true
+        }
+      ],
+      "lignes_calculees": [
+        {
+          "libelle": "Nombre de mois d'impayés",
+          "variable": "mois_impayes"
+        }
+      ]
+    },
+    {
+      "id": "dettes",
+      "titre": "Dettes et engagements en cours",
+      "type": "dettes",
+      "colonne": "dossier",
+      "description": "Dettes hors crédits déjà déclarés en charges fixes (dettes familiales, découverts, plans en cours…)."
+    },
+    {
+      "id": "ressources",
+      "titre": "Ressources mensuelles",
+      "type": "budget",
+      "colonne": "budget",
+      "total": "total_ressources",
+      "champs": [
+        {
+          "id": "salaire_1",
+          "libelle": "Salaire 1",
+          "type": "montant"
+        },
+        {
+          "id": "salaire_2",
+          "libelle": "Salaire 2",
+          "type": "montant"
+        },
+        {
+          "id": "rsa",
+          "libelle": "RSA",
+          "type": "montant"
+        },
+        {
+          "id": "aah",
+          "libelle": "AAH",
+          "type": "montant"
+        },
+        {
+          "id": "caf",
+          "libelle": "CAF (allocations)",
+          "type": "montant"
+        },
+        {
+          "id": "are_ass",
+          "libelle": "ARE / ASS",
+          "type": "montant"
+        },
+        {
+          "id": "pension_recue",
+          "libelle": "Pension alimentaire reçue",
+          "type": "montant"
+        },
+        {
+          "id": "retraite",
+          "libelle": "Retraite",
+          "type": "montant"
+        },
+        {
+          "id": "autres_ressources",
+          "libelle": "Autres ressources",
+          "type": "montant"
+        }
+      ],
+      "lignes_calculees": []
+    },
+    {
+      "id": "charges_fixes",
+      "titre": "Charges fixes",
+      "type": "budget",
+      "colonne": "budget",
+      "total": "total_charges_fixes",
+      "lignes_calculees": [
+        {
+          "libelle": "Loyer résiduel (calculé)",
+          "variable": "loyer_residuel"
+        }
+      ],
+      "champs": [
+        {
+          "id": "energie",
+          "libelle": "Électricité / gaz",
+          "type": "montant"
+        },
+        {
+          "id": "eau",
+          "libelle": "Eau",
+          "type": "montant"
+        },
+        {
+          "id": "internet",
+          "libelle": "Internet",
+          "type": "montant"
+        },
+        {
+          "id": "telephonie",
+          "libelle": "Téléphone",
+          "type": "montant"
+        },
+        {
+          "id": "assurance_habitation",
+          "libelle": "Assurance habitation",
+          "type": "montant"
+        },
+        {
+          "id": "assurances",
+          "libelle": "Autres assurances",
+          "type": "montant"
+        },
+        {
+          "id": "credits",
+          "libelle": "Crédits (auto, conso…)",
+          "type": "montant"
+        },
+        {
+          "id": "impots",
+          "libelle": "Impôts / taxes / amendes",
+          "type": "montant"
+        },
+        {
+          "id": "pension_versee",
+          "libelle": "Pension alimentaire versée",
+          "type": "montant"
+        },
+        {
+          "id": "autres_charges_fixes",
+          "libelle": "Autres charges fixes",
+          "type": "montant"
+        }
+      ]
+    },
+    {
+      "id": "vie_courante",
+      "titre": "Vie courante (semi-fixes)",
+      "type": "budget",
+      "colonne": "budget",
+      "total": "total_vie_courante",
+      "champs": [
+        {
+          "id": "alimentation",
+          "libelle": "Courses / alimentation",
+          "type": "montant"
+        },
+        {
+          "id": "carburant",
+          "libelle": "Carburant",
+          "type": "montant"
+        },
+        {
+          "id": "sante",
+          "libelle": "Santé",
+          "type": "montant"
+        },
+        {
+          "id": "habillement",
+          "libelle": "Habillement",
+          "type": "montant"
+        },
+        {
+          "id": "transports",
+          "libelle": "Transports",
+          "type": "montant"
+        },
+        {
+          "id": "enfants",
+          "libelle": "Enfants (cantine, activités)",
+          "type": "montant"
+        },
+        {
+          "id": "autres_vie_courante",
+          "libelle": "Autres dépenses de vie courante",
+          "type": "montant"
+        }
+      ],
+      "lignes_calculees": []
+    },
+    {
+      "id": "facultatives",
+      "titre": "Dépenses facultatives",
+      "type": "budget",
+      "colonne": "budget",
+      "total": "total_facultatives",
+      "champs": [
+        {
+          "id": "tabac",
+          "libelle": "Tabac",
+          "type": "montant"
+        },
+        {
+          "id": "streaming",
+          "libelle": "Streaming / TV",
+          "type": "montant"
+        },
+        {
+          "id": "restaurants",
+          "libelle": "Restaurants",
+          "type": "montant"
+        },
+        {
+          "id": "loisirs",
+          "libelle": "Loisirs / sorties",
+          "type": "montant"
+        },
+        {
+          "id": "jeux",
+          "libelle": "Jeux / paris",
+          "type": "montant"
+        },
+        {
+          "id": "vacances",
+          "libelle": "Vacances",
+          "type": "montant"
+        },
+        {
+          "id": "autres_facultatives",
+          "libelle": "Autres dépenses facultatives",
+          "type": "montant"
+        }
+      ],
+      "lignes_calculees": []
+    }
+  ],
+  "indicateurs": [
+    {
+      "id": "total_personnes",
+      "groupe": "Foyer",
+      "libelle": "Nombre de personnes",
+      "format": "nombre",
+      "formule": "adultes + enfants_moins_14 + enfants_14_plus"
+    },
+    {
+      "id": "nb_enfants",
+      "groupe": "Foyer",
+      "libelle": "Nombre d'enfants",
+      "format": "nombre",
+      "formule": "enfants_moins_14 + enfants_14_plus"
+    },
+    {
+      "id": "nb_uc",
+      "groupe": "Foyer",
+      "libelle": "Unités de consommation (échelle OCDE)",
+      "format": "decimal",
+      "formule": "1 + MAX(adultes - 1; 0) * 0,5 + enfants_moins_14 * 0,3 + enfants_14_plus * 0,5",
+      "aide": "Le premier adulte compte pour 1, chaque autre personne de 14 ans et plus pour 0,5, chaque enfant de moins de 14 ans pour 0,3."
+    },
+    {
+      "id": "parts_caf",
+      "groupe": "Foyer",
+      "libelle": "Parts estimées (principe CAF)",
+      "format": "decimal",
+      "formule": "MAX(adultes; 1) + SI(nb_enfants <= 2; nb_enfants * 0,5; 1 + (nb_enfants - 2))",
+      "aide": "Une part par adulte, une demi-part pour chacun des deux premiers enfants, une part entière à partir du troisième."
+    },
+    {
+      "id": "loyer_residuel",
+      "groupe": "Logement",
+      "libelle": "Loyer résiduel",
+      "format": "euro",
+      "formule": "MAX(loyer + charges - apl; 0)"
+    },
+    {
+      "id": "mois_impayes",
+      "groupe": "Logement",
+      "libelle": "Nombre de mois d'impayés",
+      "format": "decimal",
+      "formule": "dette_locative / loyer_residuel",
+      "aide": "Dette rapportée à ce que le locataire doit réellement payer chaque mois (loyer + charges − APL)."
+    },
+    {
+      "id": "depenses_logement",
+      "groupe": "Logement",
+      "libelle": "Dépenses liées au logement",
+      "format": "euro",
+      "formule": "loyer_residuel + energie + eau + assurance_habitation"
+    },
+    {
+      "id": "total_ressources",
+      "groupe": "Totaux",
+      "libelle": "Total des ressources",
+      "format": "euro",
+      "formule": "somme_ressources"
+    },
+    {
+      "id": "total_charges_fixes",
+      "groupe": "Totaux",
+      "libelle": "Total des charges fixes",
+      "format": "euro",
+      "formule": "loyer_residuel + somme_charges_fixes"
+    },
+    {
+      "id": "autres_charges_fixes_total",
+      "groupe": "Totaux",
+      "libelle": "Charges fixes hors logement",
+      "format": "euro",
+      "formule": "total_charges_fixes - depenses_logement"
+    },
+    {
+      "id": "total_vie_courante",
+      "groupe": "Totaux",
+      "libelle": "Total vie courante",
+      "format": "euro",
+      "formule": "somme_vie_courante"
+    },
+    {
+      "id": "total_facultatives",
+      "groupe": "Totaux",
+      "libelle": "Total des dépenses facultatives",
+      "format": "euro",
+      "formule": "somme_facultatives"
+    },
+    {
+      "id": "total_charges",
+      "groupe": "Totaux",
+      "libelle": "Charges totales (hors remboursement de dettes)",
+      "format": "euro",
+      "formule": "total_charges_fixes + total_vie_courante + total_facultatives"
+    },
+    {
+      "id": "total_charges_avec_dettes",
+      "groupe": "Totaux",
+      "libelle": "Charges totales, dettes comprises",
+      "format": "euro",
+      "formule": "total_charges + dettes_mensualites"
+    },
+    {
+      "id": "solde_budgetaire",
+      "groupe": "Totaux",
+      "libelle": "Solde budgétaire (ressources − charges)",
+      "format": "euro",
+      "formule": "total_ressources - total_charges"
+    },
+    {
+      "id": "solde_apres_dettes",
+      "groupe": "Totaux",
+      "libelle": "Solde disponible après dettes",
+      "format": "euro",
+      "formule": "total_ressources - total_charges - dettes_mensualites"
+    },
+    {
+      "id": "quotient_familial",
+      "groupe": "Ratios",
+      "libelle": "Quotient familial mensuel estimé",
+      "format": "euro",
+      "formule": "total_ressources / parts_caf"
+    },
+    {
+      "id": "taux_effort_logement",
+      "groupe": "Ratios",
+      "libelle": "Taux d'effort logement",
+      "format": "pourcent",
+      "formule": "depenses_logement / total_ressources"
+    },
+    {
+      "id": "taux_endettement",
+      "groupe": "Ratios",
+      "libelle": "Taux d'endettement (crédits)",
+      "format": "pourcent",
+      "formule": "credits / total_ressources"
+    },
+    {
+      "id": "taux_remboursement_dettes",
+      "groupe": "Ratios",
+      "libelle": "Taux de remboursement des dettes",
+      "format": "pourcent",
+      "formule": "dettes_mensualites / total_ressources"
+    },
+    {
+      "id": "taux_endettement_global",
+      "groupe": "Ratios",
+      "libelle": "Taux d'endettement global (crédits + dettes)",
+      "format": "pourcent",
+      "formule": "(credits + dettes_mensualites) / total_ressources"
+    },
+    {
+      "id": "part_facultatives",
+      "groupe": "Ratios",
+      "libelle": "Part des dépenses facultatives",
+      "format": "pourcent",
+      "formule": "total_facultatives / total_ressources"
+    },
+    {
+      "id": "rav_uc",
+      "groupe": "Ratios",
+      "libelle": "Reste à vivre par UC après dettes",
+      "format": "euro",
+      "formule": "solde_apres_dettes / nb_uc",
+      "aide": "Ce qu'il reste réellement au ménage après toutes ses charges et remboursements, rapporté à sa composition familiale. C'est un indicateur de fragilité, pas forcément de capacité d'apurement."
+    },
+    {
+      "id": "credit_conso",
+      "groupe": "Ratios",
+      "libelle": "Crédit à la consommation présent",
+      "format": "booleen",
+      "formule": "credits > 0"
+    },
+    {
+      "id": "score_effort",
+      "groupe": "Score",
+      "libelle": "Score du taux d'effort logement",
+      "format": "nombre",
+      "formule": "SI(taux_effort_logement <= 25%; 30; SI(taux_effort_logement <= 35%; 20; SI(taux_effort_logement <= 40%; 10; 0)))"
+    },
+    {
+      "id": "score_endettement",
+      "groupe": "Score",
+      "libelle": "Score d'endettement global",
+      "format": "nombre",
+      "formule": "SI(taux_endettement_global <= 10%; 25; SI(taux_endettement_global <= 20%; 15; SI(taux_endettement_global <= 30%; 5; 0)))"
+    },
+    {
+      "id": "score_rav",
+      "groupe": "Score",
+      "libelle": "Score du reste à vivre",
+      "format": "nombre",
+      "formule": "SI(rav_uc >= 700; 25; SI(rav_uc >= 500; 15; SI(rav_uc >= 300; 5; 0)))"
+    },
+    {
+      "id": "score_anciennete",
+      "groupe": "Score",
+      "libelle": "Score d'ancienneté de l'impayé",
+      "format": "nombre",
+      "formule": "SI(dette_locative <= 0; 20; SI(mois_impayes < 1; 20; SI(mois_impayes < 3; 15; SI(mois_impayes < 6; 5; 0))))"
+    },
+    {
+      "id": "score_budgetaire",
+      "groupe": "Score",
+      "libelle": "Score de fragilité budgétaire",
+      "format": "score",
+      "formule": "score_effort + score_endettement + score_rav + score_anciennete"
+    },
+    {
+      "id": "apurement_mini",
+      "groupe": "Plan d'apurement",
+      "libelle": "Fourchette d'apurement : mini",
+      "format": "euro",
+      "formule": "SI(solde_apres_dettes <= 0; 0; BAREME(\"fourchette_apurement\"; solde_apres_dettes; \"mini\"))"
+    },
+    {
+      "id": "apurement_maxi",
+      "groupe": "Plan d'apurement",
+      "libelle": "Fourchette d'apurement : maxi",
+      "format": "euro",
+      "formule": "SI(solde_apres_dettes <= 0; 0; BAREME(\"fourchette_apurement\"; solde_apres_dettes; \"maxi\"))"
+    },
+    {
+      "id": "coefficient_score",
+      "groupe": "Plan d'apurement",
+      "libelle": "Position dans la fourchette (selon le score)",
+      "format": "pourcent",
+      "formule": "BAREME(\"coefficient_score\"; score_budgetaire; \"coefficient\")",
+      "aide": "0 % = mini de la fourchette, 100 % = maxi."
+    },
+    {
+      "id": "correction_rav",
+      "groupe": "Plan d'apurement",
+      "libelle": "Correction selon le reste à vivre par UC",
+      "format": "euro",
+      "formule": "BAREME(\"correction_rav\"; rav_uc; \"correction\")"
+    },
+    {
+      "id": "mensualite_conseillee",
+      "groupe": "Plan d'apurement",
+      "libelle": "Mensualité conseillée",
+      "format": "euro",
+      "formule": "SI(OU(dette_locative <= 0; solde_apres_dettes <= 0); 0; ARRONDI(MIN(MAX(apurement_mini + coefficient_score * (apurement_maxi - apurement_mini) + correction_rav; 0); solde_apres_dettes * plafond_effort_apurement; dette_locative); 0))",
+      "aide": "Position dans la fourchette selon le score, corrigée selon le reste à vivre, plafonnée à une part du solde après dettes et au montant de la dette."
+    },
+    {
+      "id": "mensualite_retenue",
+      "groupe": "Plan d'apurement",
+      "libelle": "Mensualité retenue",
+      "format": "euro",
+      "formule": "SI(mensualite_saisie > 0; MIN(mensualite_saisie; dette_locative); mensualite_conseillee)",
+      "aide": "La mensualité conseillée, sauf si le conseiller en simule une autre sur la synthèse."
+    },
+    {
+      "id": "duree_plan",
+      "groupe": "Plan d'apurement",
+      "libelle": "Durée estimée du plan",
+      "format": "mois",
+      "formule": "SI(mensualite_retenue > 0; ARRONDI.SUP(dette_locative / mensualite_retenue; 0); 0)"
+    },
+    {
+      "id": "effort_apurement",
+      "groupe": "Plan d'apurement",
+      "libelle": "Part du solde après dettes consacrée au plan",
+      "format": "pourcent",
+      "formule": "mensualite_retenue / solde_apres_dettes"
+    }
+  ],
+  "baremes": [
+    {
+      "id": "fourchette_apurement",
+      "libelle": "Fourchette d'apurement selon le solde disponible après dettes",
+      "description": "La ligne retenue est la dernière dont le « solde mini » est inférieur ou égal au solde du ménage.",
+      "colonnes": [
+        {
+          "id": "solde",
+          "libelle": "Solde mini",
+          "format": "euro"
+        },
+        {
+          "id": "mini",
+          "libelle": "Apurement mini",
+          "format": "euro"
+        },
+        {
+          "id": "maxi",
+          "libelle": "Apurement maxi",
+          "format": "euro"
+        },
+        {
+          "id": "lecture",
+          "libelle": "Lecture métier",
+          "format": "texte"
+        }
+      ],
+      "lignes": [
+        {
+          "solde": 0,
+          "mini": 25,
+          "maxi": 50,
+          "lecture": "Capacité très limitée"
+        },
+        {
+          "solde": 100,
+          "mini": 50,
+          "maxi": 100,
+          "lecture": "Capacité limitée"
+        },
+        {
+          "solde": 300,
+          "mini": 100,
+          "maxi": 150,
+          "lecture": "Capacité prudente"
+        },
+        {
+          "solde": 500,
+          "mini": 150,
+          "maxi": 250,
+          "lecture": "Capacité intermédiaire"
+        },
+        {
+          "solde": 800,
+          "mini": 250,
+          "maxi": 400,
+          "lecture": "Capacité confortable"
+        },
+        {
+          "solde": 1200,
+          "mini": 400,
+          "maxi": 600,
+          "lecture": "Capacité favorable"
+        },
+        {
+          "solde": 2000,
+          "mini": 600,
+          "maxi": 800,
+          "lecture": "Capacité élevée"
+        }
+      ]
+    },
+    {
+      "id": "coefficient_score",
+      "libelle": "Score de fragilité et position dans la fourchette",
+      "description": "Plus le score est élevé, plus la mensualité se rapproche du maxi de la fourchette.",
+      "colonnes": [
+        {
+          "id": "score",
+          "libelle": "Score mini",
+          "format": "nombre"
+        },
+        {
+          "id": "position",
+          "libelle": "Position",
+          "format": "texte"
+        },
+        {
+          "id": "coefficient",
+          "libelle": "Coefficient",
+          "format": "pourcent"
+        },
+        {
+          "id": "lecture",
+          "libelle": "Lecture métier",
+          "format": "texte"
+        }
+      ],
+      "lignes": [
+        {
+          "score": 0,
+          "position": "Situation critique",
+          "coefficient": 0,
+          "lecture": "Capacité d'apurement très limitée. Priorité à la stabilisation budgétaire et à l'accompagnement social."
+        },
+        {
+          "score": 40,
+          "position": "Situation fragile",
+          "coefficient": 0.33,
+          "lecture": "Une proposition d'apurement est possible mais nécessite une vigilance sur la soutenabilité."
+        },
+        {
+          "score": 60,
+          "position": "Situation maîtrisée",
+          "coefficient": 0.67,
+          "lecture": "La capacité financière permet d'envisager un effort régulier."
+        },
+        {
+          "score": 80,
+          "position": "Situation favorable",
+          "coefficient": 1,
+          "lecture": "Une capacité d'apurement renforcée peut être envisagée."
+        }
+      ]
+    },
+    {
+      "id": "correction_rav",
+      "libelle": "Correction de la mensualité selon le reste à vivre par UC",
+      "colonnes": [
+        {
+          "id": "seuil",
+          "libelle": "RAV / UC mini",
+          "format": "euro"
+        },
+        {
+          "id": "correction",
+          "libelle": "Correction",
+          "format": "euro"
+        }
+      ],
+      "lignes": [
+        {
+          "seuil": 0,
+          "correction": -10
+        },
+        {
+          "seuil": 300,
+          "correction": -5
+        },
+        {
+          "seuil": 500,
+          "correction": 0
+        },
+        {
+          "seuil": 700,
+          "correction": 10
+        },
+        {
+          "seuil": 900,
+          "correction": 20
+        }
+      ]
+    },
+    {
+      "id": "plafonds_fsl",
+      "libelle": "Plafonds de ressources FSL selon le nombre de personnes",
+      "description": "Éligibilité FSL relative au statut d'occupation et aux ressources. Au-delà de la dernière ligne, la dernière s'applique.",
+      "colonnes": [
+        {
+          "id": "personnes",
+          "libelle": "Personnes",
+          "format": "nombre"
+        },
+        {
+          "id": "plafond",
+          "libelle": "Plafond de ressources",
+          "format": "euro"
+        }
+      ],
+      "lignes": [
+        {
+          "personnes": 1,
+          "plafond": 1275
+        },
+        {
+          "personnes": 2,
+          "plafond": 1913
+        },
+        {
+          "personnes": 3,
+          "plafond": 2550
+        },
+        {
+          "personnes": 4,
+          "plafond": 3187
+        },
+        {
+          "personnes": 5,
+          "plafond": 3824
+        },
+        {
+          "personnes": 6,
+          "plafond": 4461
+        }
+      ]
+    }
+  ],
+  "chiffres_cles": [
+    {
+      "indicateur": "total_ressources",
+      "libelle": "Ressources mensuelles"
+    },
+    {
+      "indicateur": "total_charges",
+      "libelle": "Charges totales",
+      "note": "Hors remboursement de dettes"
+    },
+    {
+      "indicateur": "solde_budgetaire",
+      "libelle": "Solde budgétaire",
+      "signe": true
+    },
+    {
+      "indicateur": "quotient_familial",
+      "libelle": "Quotient familial estimé"
+    }
+  ],
+  "jauges": [
+    {
+      "indicateur": "taux_effort_logement",
+      "libelle": "Taux d'effort logement",
+      "sens": "bas",
+      "echelle_max": 0.6,
+      "paliers": [
+        {
+          "seuil": 0.25,
+          "libelle": "Situation favorable",
+          "niveau": "vert"
+        },
+        {
+          "seuil": 0.35,
+          "libelle": "Situation à surveiller",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": 0.4,
+          "libelle": "Situation fragile",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": null,
+          "libelle": "Situation critique",
+          "niveau": "rouge"
+        }
+      ]
+    },
+    {
+      "indicateur": "taux_endettement",
+      "libelle": "Taux d'endettement (crédits)",
+      "sens": "bas",
+      "echelle_max": 0.6,
+      "paliers": [
+        {
+          "seuil": 0.25,
+          "libelle": "Situation favorable",
+          "niveau": "vert"
+        },
+        {
+          "seuil": 0.35,
+          "libelle": "Situation à surveiller",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": 0.4,
+          "libelle": "Situation fragile",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": null,
+          "libelle": "Situation critique",
+          "niveau": "rouge"
+        }
+      ]
+    },
+    {
+      "indicateur": "taux_remboursement_dettes",
+      "libelle": "Taux de remboursement des dettes",
+      "sens": "bas",
+      "echelle_max": 0.4,
+      "paliers": [
+        {
+          "seuil": 0.1,
+          "libelle": "Situation favorable",
+          "niveau": "vert"
+        },
+        {
+          "seuil": 0.2,
+          "libelle": "Situation à surveiller",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": 0.3,
+          "libelle": "Situation fragile",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": null,
+          "libelle": "Situation critique",
+          "niveau": "rouge"
+        }
+      ]
+    },
+    {
+      "indicateur": "rav_uc",
+      "libelle": "Reste à vivre par UC après dettes",
+      "sens": "haut",
+      "echelle_max": 1200,
+      "paliers": [
+        {
+          "seuil": 900,
+          "libelle": "Situation favorable",
+          "niveau": "vert"
+        },
+        {
+          "seuil": 700,
+          "libelle": "Situation correcte",
+          "niveau": "vert"
+        },
+        {
+          "seuil": 500,
+          "libelle": "Situation à surveiller",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": 300,
+          "libelle": "Situation fragile",
+          "niveau": "ambre"
+        },
+        {
+          "seuil": null,
+          "libelle": "Situation très fragile",
+          "niveau": "rouge"
+        }
+      ]
+    }
+  ],
+  "repartition": [
+    {
+      "indicateur": "depenses_logement",
+      "libelle": "Logement (loyer résiduel, énergie, eau, assurance)"
+    },
+    {
+      "indicateur": "autres_charges_fixes_total",
+      "libelle": "Autres charges fixes"
+    },
+    {
+      "indicateur": "total_vie_courante",
+      "libelle": "Vie courante"
+    },
+    {
+      "indicateur": "total_facultatives",
+      "libelle": "Dépenses facultatives"
+    },
+    {
+      "indicateur": "dettes_mensualites",
+      "libelle": "Remboursement de dettes"
+    }
+  ],
+  "score": {
+    "indicateur": "score_budgetaire",
+    "max": 100,
+    "sens": "haut",
+    "criteres": [
+      {
+        "indicateur": "score_effort",
+        "libelle": "Taux d'effort logement",
+        "max": 30
+      },
+      {
+        "indicateur": "score_endettement",
+        "libelle": "Endettement global",
+        "max": 25
+      },
+      {
+        "indicateur": "score_rav",
+        "libelle": "Reste à vivre par UC",
+        "max": 25
+      },
+      {
+        "indicateur": "score_anciennete",
+        "libelle": "Ancienneté de l'impayé",
+        "max": 20
+      }
+    ],
+    "paliers": [
+      {
+        "seuil": 80,
+        "libelle": "Situation maîtrisée",
+        "niveau": "vert"
+      },
+      {
+        "seuil": 60,
+        "libelle": "Vigilance",
+        "niveau": "ambre"
+      },
+      {
+        "seuil": 40,
+        "libelle": "Fragilité budgétaire",
+        "niveau": "ambre"
+      },
+      {
+        "seuil": null,
+        "libelle": "Situation critique",
+        "niveau": "rouge"
+      }
+    ]
+  },
+  "points_attention": [
+    {
+      "condition": "solde_budgetaire < 0",
+      "libelle": "Budget déficitaire : les charges dépassent les ressources de {solde_budgetaire}"
+    },
+    {
+      "condition": "mois_impayes > seuil_dette_mois",
+      "libelle": "Dette locative supérieure à {seuil_dette_mois} de loyer résiduel ({mois_impayes} mois)"
+    },
+    {
+      "condition": "taux_effort_logement > 35%",
+      "libelle": "Taux d'effort logement élevé ({taux_effort_logement})"
+    },
+    {
+      "condition": "taux_remboursement_dettes > 20%",
+      "libelle": "Remboursement des dettes important ({taux_remboursement_dettes} des ressources)"
+    },
+    {
+      "condition": "solde_apres_dettes < seuil_solde_faible",
+      "libelle": "Solde disponible après dettes faible ({solde_apres_dettes}, seuil {seuil_solde_faible})"
+    },
+    {
+      "condition": "credit_conso",
+      "libelle": "Crédit à la consommation présent ({credits} par mois)"
+    }
+  ],
+  "plan": {
+    "qualifications": [
+      {
+        "condition": "dette_locative <= 0",
+        "libelle": "Pas de dette locative",
+        "niveau": "neutre",
+        "commentaire": "Aucune dette locative n'est déclarée : aucun plan d'apurement n'est à prévoir."
+      },
+      {
+        "condition": "mensualite_retenue <= 0",
+        "libelle": "Plan d'apurement non envisageable",
+        "niveau": "rouge",
+        "commentaire": "La situation budgétaire ne permet pas la mise en place d'un plan d'apurement. Un rééquilibrage budgétaire, la mobilisation d'aides financières et/ou un accompagnement social sont à privilégier avant toute proposition de plan."
+      },
+      {
+        "condition": "duree_plan > duree_max_plan",
+        "libelle": "Plan d'apurement fragile (durée)",
+        "niveau": "ambre",
+        "commentaire": "Malgré une capacité de remboursement identifiée, la durée estimée du plan dépasse {duree_max_plan}. Il est recommandé de rechercher des solutions complémentaires (FSL, adaptation de la mensualité, accompagnement social, mutation du logement, etc.) afin de réduire la durée d'apurement."
+      },
+      {
+        "condition": "score_budgetaire >= 80",
+        "libelle": "Plan d'apurement optimal",
+        "niveau": "vert",
+        "commentaire": "La situation budgétaire est solide. La capacité de remboursement permet un apurement de la dette dans des conditions sécurisées, avec un risque de défaillance limité."
+      },
+      {
+        "condition": "score_budgetaire >= 60",
+        "libelle": "Plan d'apurement satisfaisant",
+        "niveau": "vert",
+        "commentaire": "La situation budgétaire est globalement équilibrée. Le plan proposé est compatible avec les capacités financières du ménage, sous réserve du maintien de sa situation actuelle."
+      },
+      {
+        "condition": "score_budgetaire >= 40",
+        "libelle": "Plan d'apurement adapté",
+        "niveau": "ambre",
+        "commentaire": "Le plan d'apurement apparaît compatible avec les capacités financières du ménage, mais la situation présente certaines fragilités. Un suivi de l'exécution du plan est recommandé."
+      },
+      {
+        "condition": "VRAI",
+        "libelle": "Plan d'apurement fragile",
+        "niveau": "rouge",
+        "commentaire": "La capacité de remboursement est limitée. Le plan présente un risque accru de non-respect et nécessite une vigilance particulière, voire un accompagnement social si nécessaire."
+      }
+    ]
+  },
+  "leviers": {
+    "nb_affiches": 5,
+    "liste": [
+      {
+        "id": "pole_social",
+        "libelle": "Solliciter le pôle social",
+        "famille": "Accompagnement",
+        "priorite": 1,
+        "condition": "ET(OU(score_budgetaire < 40; rav_uc < 300); OU(taux_effort_logement > 40%; taux_endettement_global > 50%))",
+        "description": "Score < 40 ou RAV/UC < 300 €, avec un facteur aggravant (taux d'effort > 40 % ou endettement > 50 %)."
+      },
+      {
+        "id": "mutation",
+        "libelle": "Envisager une mutation logement",
+        "famille": "Logement",
+        "priorite": 2,
+        "condition": "taux_effort_logement > 40%",
+        "description": "Taux d'effort logement supérieur à 40 %."
+      },
+      {
+        "id": "surendettement",
+        "libelle": "Étudier un dossier de surendettement",
+        "famille": "Budget",
+        "priorite": 3,
+        "condition": "taux_endettement_global > 50%",
+        "description": "Crédits et dettes absorbent plus de la moitié des ressources."
+      },
+      {
+        "id": "fsl",
+        "libelle": "Mobiliser le FSL",
+        "famille": "Logement",
+        "priorite": 4,
+        "condition": "total_ressources <= BAREME(\"plafonds_fsl\"; total_personnes; \"plafond\")",
+        "description": "Ressources sous le plafond FSL du foyer. Variante au quotient familial : « quotient_familial <= seuil_qf_fsl »."
+      },
+      {
+        "id": "renegocier",
+        "libelle": "Renégocier les crédits",
+        "famille": "Budget",
+        "priorite": 5,
+        "condition": "ET(credits > 0; taux_endettement > 10%)",
+        "description": "Crédit à la consommation et remboursements supérieurs à 10 % des ressources."
+      },
+      {
+        "id": "reduire",
+        "libelle": "Réduire les dépenses ajustables",
+        "famille": "Budget",
+        "priorite": 6,
+        "condition": "OU(part_facultatives > seuil_facultatives; rav_uc < 300)",
+        "description": "Dépenses facultatives supérieures au seuil ou reste à vivre par UC inférieur à 300 €."
+      },
+      {
+        "id": "suivi",
+        "libelle": "Renforcer le suivi",
+        "famille": "Accompagnement",
+        "priorite": 7,
+        "condition": "ET(score_budgetaire < 60; nb_leviers_actifs >= 2)",
+        "description": "Score < 60 et au moins deux autres leviers déclenchés."
+      }
+    ]
+  },
+  "jeu_essai": {
+    "libelle": "Exemple du classeur Excel",
+    "valeurs": {
+      "adultes": 1,
+      "enfants_moins_14": 3,
+      "enfants_14_plus": 0,
+      "loyer": 980,
+      "charges": 0,
+      "apl": 0,
+      "dette_locative": 5600,
+      "salaire_1": 2500,
+      "rsa": 520,
+      "pension_recue": 150,
+      "energie": 180,
+      "eau": 55,
+      "internet": 35,
+      "telephonie": 30,
+      "assurance_habitation": 18,
+      "assurances": 60,
+      "credits": 320,
+      "impots": 35,
+      "autres_charges_fixes": 120,
+      "alimentation": 700,
+      "carburant": 120,
+      "sante": 80,
+      "habillement": 60,
+      "transports": 40,
+      "enfants": 16,
+      "autres_vie_courante": 80,
+      "autres_facultatives": 40
+    },
+    "dettes": [
+      {
+        "type": "",
+        "montant": 0,
+        "mensualite": 0
+      }
+    ]
+  },
+  "liens": {
+    "table": "Clients",
+    "mode": "colonne",
+    "colonnes": {
+      "adultes": "NbAdultes",
+      "enfants_moins_14": "NbEnfantsMoins14",
+      "enfants_14_plus": "NbEnfants14Plus",
+      "loyer": "Loyer",
+      "charges": "Charges",
+      "apl": "APL",
+      "dette_locative": "DetteLocative"
+    }
+  }
+}

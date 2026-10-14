@@ -1,0 +1,239 @@
+/* ---------------------------------------------------------------------------
+   Composants. Chacun est neutre : il ne sait pas ce qu'il affiche.
+
+   Les contrastes texte/fond de ce fichier ont ete mesures dans un navigateur,
+   fond composite compris, en clair et en sombre : tous au-dessus de 4,5 pour 1.
+   Avant d'introduire une couleur, verifier avec outils/contraste.py.
+--------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------ boutons */
+.bouton {
+  border: 1px solid var(--accent); background: var(--accent); color: #fff;
+  border-radius: var(--radius-sm); padding: 6px 14px;
+  font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.bouton:hover { background: var(--nuit-2); border-color: var(--nuit-2); }
+.bouton.second { background: var(--surface); color: var(--chiffre); border-color: var(--bord-fort); }
+.bouton.second:hover { background: var(--surface-2); }
+.bouton.inerte, .bouton:disabled { opacity: .55; cursor: not-allowed; }
+.bouton-discret {
+  border: 1px solid var(--bord-fort); background: var(--surface); cursor: pointer;
+  padding: 5px 12px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 600; color: var(--encre-doux);
+}
+.bouton-discret:hover { color: var(--encre); border-color: var(--encre-tres-doux); }
+
+/* Controles segmentes : un choix parmi trois ou quatre, toujours visible. */
+.bascule, .mailles {
+  display: flex; gap: 3px; background: var(--surface); padding: 3px;
+  border-radius: 999px; border: 1px solid var(--bord-fort); flex-wrap: wrap;
+}
+.bascule button, .mailles button {
+  border: 0; background: transparent; padding: 6px 14px; border-radius: 999px;
+  cursor: pointer; font-size: 13px; color: var(--encre-doux); font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+}
+.bascule button[aria-pressed="true"], .mailles button[aria-pressed="true"] {
+  background: var(--accent); color: #fff;
+}
+.mailles button:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ------------------------------------------------------------------- tuiles */
+.tuiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 12px; }
+.tuile {
+  background: var(--surface); border: 1px solid var(--bord); border-radius: var(--radius-md);
+  padding: 12px 14px; box-shadow: var(--ombre);
+  display: flex; flex-direction: column; gap: 3px;
+}
+.tuile .valeur { font-size: 26px; font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; }
+.tuile .etiquette { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--encre-tres-doux); font-weight: 600; }
+.tuile .note { font-size: 12px; color: var(--encre-doux); }
+.tuile.accent { border-left: 3px solid var(--accent); }
+
+/* ------------------------------------------------------------------- cartes */
+.carte {
+  background: var(--surface); border: 1px solid var(--bord); border-radius: var(--radius-md);
+  box-shadow: var(--ombre); overflow: hidden;
+}
+.carte > header {
+  padding: 13px 16px; border-bottom: 1px solid var(--bord);
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+}
+.carte > header h3 { font-size: 14px; font-weight: 600; }
+.carte > header p { margin: 2px 0 0; font-size: 12.5px; color: var(--encre-doux); }
+.carte .corps { padding: 16px; }
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 1020px) { .duo { grid-template-columns: 1fr; } }
+.colonnes-jumelles { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 1100px) { .colonnes-jumelles { grid-template-columns: 1fr; } }
+
+/* -------------------------------------------------------------- histogramme */
+.barres { display: flex; flex-direction: column; gap: 9px; }
+.barre { display: grid; grid-template-columns: 148px 1fr 58px; align-items: center; gap: 11px; font-size: 13px; }
+.barre .piste { display: block; background: var(--surface-2); border-radius: 4px; height: 17px; overflow: hidden; }
+.barre .remplissage { display: block; height: 100%; border-radius: 4px; background: var(--petrole); transition: width .5s cubic-bezier(.2,.8,.3,1); }
+.barre .nombre { text-align: right; font-variant-numeric: tabular-nums; color: var(--encre-doux); }
+.barre .libelle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ------------------------------------------------------------------ tableau */
+.cadre-table { overflow: auto; max-height: 62vh; }
+.cadre-table table { min-width: 100%; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+/* En-tete bleu nuit, corps en bleus tres legers alternes : c'est la signature
+   des tableaux du theme maison, heritee des rapports Power BI. */
+thead th {
+  position: sticky; top: 0; z-index: 2; background: var(--blue-950);
+  text-align: left; font-size: 12px; letter-spacing: .01em;
+  color: #fff; font-weight: 700; padding: 10px 12px; white-space: nowrap;
+}
+tbody td {
+  padding: 9px 12px; border-top: 1px solid var(--bord); vertical-align: top;
+  font-size: 13.5px; line-height: 1.35;
+}
+tbody tr { background: var(--row-blue-a); }
+tbody tr:nth-child(even) { background: var(--row-blue-b); }
+tbody tr:hover { background: var(--row-blue-hover); }
+tbody tr.cliquable { cursor: pointer; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+/* Sans borne, une colonne s'elargit au gre de son contenu et pousse la
+   derniere hors du cadre. On ne coupe un mot que s'il ne tient pas. */
+tbody td:first-child, thead th:first-child { max-width: 220px; overflow-wrap: break-word; }
+.tronque {
+  max-width: 300px; overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+td .jeton { max-width: 168px; overflow: hidden; text-overflow: ellipsis; display: inline-block; }
+
+/* ------------------------------------------------------------------- jetons */
+.jeton {
+  display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px;
+  border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  background: var(--surface-2); color: var(--encre-doux); border: 1px solid var(--bord);
+}
+.jeton.vert { background: var(--vert-fond); color: var(--vert); border-color: transparent; }
+.jeton.ambre { background: var(--ambre-fond); color: var(--ambre); border-color: transparent; }
+.jeton.rouge { background: var(--rouge-fond); color: var(--rouge); border-color: transparent; }
+/* Le voile petrole etait a 12 % : sur une rangee de tableau deja teintee, le
+   texte tombait a 4,30 pour 1. A 7 % il repasse au-dessus du seuil, et la
+   couleur reste lisible comme telle. */
+.jeton.petrole { background: color-mix(in srgb, var(--petrole) 7%, transparent); color: var(--petrole); border-color: transparent; }
+/* Meme cause pour le taupe : 15 % donnaient 4,49 pour 1, a un centieme du
+   seuil. Ces deux defauts existent aussi dans Dictionnaire_entrepot.html. */
+.jeton.taupe { background: color-mix(in srgb, var(--taupe) 9%, transparent); color: var(--taupe); border-color: transparent; }
+
+/* Une proportion se lit aussi en forme, pas seulement en chiffre. */
+.jauge { display: inline-flex; align-items: center; gap: 7px; font-variant-numeric: tabular-nums; }
+.jauge .rail-jauge { display: block; width: 42px; height: 5px; border-radius: 3px; background: var(--surface-3); overflow: hidden; flex: none; }
+.jauge .part { display: block; height: 100%; border-radius: 3px; }
+
+/* ------------------------------------------------------------------ filtres */
+.recherche { position: relative; flex: 1 1 300px; min-width: 220px; }
+.recherche input {
+  width: 100%; padding: 8px 12px 8px 34px; border-radius: var(--radius-sm);
+  border: 1px solid var(--bord-fort); background: var(--surface); font-size: 13.5px;
+}
+.recherche svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--encre-tres-doux); }
+select {
+  padding: 7px 10px; border-radius: var(--radius-sm); border: 1px solid var(--bord-fort);
+  background: var(--surface); font-size: 13px; max-width: 210px;
+}
+.compte { font-size: 12.5px; color: var(--encre-doux); font-variant-numeric: tabular-nums; }
+
+/* Le meme filtre commande toutes les pages. Il est colle sous l'en-tete,
+   toujours a la meme place, de sorte qu'on ne le cherche jamais. Les filtres
+   propres a une page se posent en dessous, dans son corps. */
+.barre-filtres {
+  position: sticky; top: 0; z-index: 30;
+  background: var(--surface); border: 1px solid var(--bord);
+  border-radius: var(--radius-md); box-shadow: var(--ombre);
+  padding: 10px 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.barre-filtres .recherche { flex: 1 1 240px; min-width: 200px; max-width: 320px; }
+.barre-filtres select { max-width: 190px; }
+.barre-filtres select.large { max-width: 260px; }
+.etiquette-filtre {
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  /* Sur un fond legerement teinte, l'encre tres douce tombe a 4,01 pour 1 :
+     c'est l'encre douce qu'il faut ici. */
+  font-weight: 700; color: var(--encre-doux);
+}
+.filtres-page {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  padding: 9px 12px; border: 1px dashed var(--bord-fort);
+  border-radius: var(--radius-md); background: var(--surface-2);
+}
+
+/* ------------------------------------------------------------------ onglets */
+.onglets { display: flex; gap: 2px; border-bottom: 1px solid var(--bord); overflow-x: auto; }
+.onglet {
+  border: 1px solid transparent; border-bottom: 0; background: transparent; cursor: pointer;
+  font-size: 12.5px; font-weight: 600; color: var(--encre-doux);
+  padding: 6px 12px; border-radius: var(--radius-sm) var(--radius-sm) 0 0; white-space: nowrap;
+}
+.onglet:hover { color: var(--encre); background: var(--surface-2); }
+.onglet[aria-selected="true"] {
+  background: var(--surface); border-color: var(--bord); color: var(--chiffre);
+  margin-bottom: -1px; padding-bottom: 7px;
+}
+.onglet .n { font-variant-numeric: tabular-nums; color: var(--encre-doux); font-weight: 700; }
+/* --accent porte la navigation, pas le texte : en sombre il tombe a 3,02
+   pour 1 sur la surface. --chiffre existe pour cela. */
+.onglet[aria-selected="true"] .n { color: var(--chiffre); }
+
+/* ------------------------------------------------------------------- tiroir */
+.tiroir {
+  position: fixed; inset: 0 0 0 auto; width: min(680px, 100%);
+  background: var(--surface); border-left: 1px solid var(--bord);
+  box-shadow: -18px 0 44px rgba(17,30,53,.16); z-index: 40;
+  display: flex; flex-direction: column; transform: translateX(100%);
+  transition: transform .26s cubic-bezier(.2,.8,.3,1);
+}
+.tiroir.ouvert { transform: none; }
+.tiroir > header { padding: 18px 22px; border-bottom: 1px solid var(--bord); display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+.tiroir h3 { font-size: 17px; }
+.tiroir .corps { padding: 20px 22px 40px; overflow: auto; display: flex; flex-direction: column; gap: 18px; }
+.fermer { border: 1px solid var(--bord); background: var(--surface); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 17px; line-height: 1; color: var(--encre-doux); flex: none; }
+.fermer:hover { background: var(--surface-2); }
+.voile { position: fixed; inset: 0; background: rgba(10,17,28,.34); z-index: 39; opacity: 0; pointer-events: none; transition: opacity .22s; }
+.voile.visible { opacity: 1; pointer-events: auto; }
+
+/* Liste de definitions : l'usage courant dans un tiroir. */
+.paire { display: grid; grid-template-columns: 168px 1fr; gap: 6px 16px; font-size: 13px; }
+.paire dt { color: var(--encre-tres-doux); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; padding-top: 2px; }
+.paire dd { margin: 0; }
+@media (max-width: 560px) { .paire { grid-template-columns: 1fr; } }
+
+/* -------------------------------------------------------------------- divers */
+.bloc-code {
+  background: var(--surface-2); border: 1px solid var(--bord); border-radius: 8px;
+  padding: 11px 13px; font-family: var(--font-mono);
+  font-size: 12px; white-space: pre-wrap; word-break: break-word; line-height: 1.55;
+  color: var(--encre-doux); max-height: 220px; overflow: auto;
+}
+.lien-interne {
+  color: var(--petrole); cursor: pointer; text-decoration: underline;
+  text-underline-offset: 2px; text-decoration-thickness: 1px;
+  background: none; border: 0; padding: 0; font: inherit;
+}
+.lien-interne:hover { color: var(--petrole-clair); }
+.vide { padding: 34px 16px; text-align: center; color: var(--encre-doux); font-size: 13.5px; }
+.legende { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--encre-doux); }
+.legende span { display: inline-flex; align-items: center; gap: 6px; }
+.pastille-legende { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ------------------------------------------------------- pointeur grossier */
+/* Au doigt, une cible de trente pixels se rate. Les recommandations d'accès
+   demandent quarante-quatre ; on n'agrandit que la ou le pointeur est
+   grossier, pour ne rien changer a la densite du poste de bureau. */
+@media (pointer: coarse) {
+  .bouton, .bouton.second, .bouton-discret, a.bouton {
+    min-height: 44px; padding-left: 16px; padding-right: 16px;
+  }
+  .bascule button, .mailles button { min-height: 40px; }
+  .barre-filtres select, .barre-filtres input,
+  .filtres-page select, .filtres-page input { min-height: 42px; }
+  /* Seize pixels au moins dans un champ : en dessous, iOS zoome sur la page
+     des qu'on y pose le curseur, et n'en ressort pas. */
+  input, select, textarea { font-size: 16px; }
+  .fermer { min-width: 44px; min-height: 44px; }
+}
