@@ -151,6 +151,7 @@ index.html, admin.html     les pages
 config/parametres.json     le paramétrage publié (barèmes, formules, libellés)
 config/demo.json           trois ménages fictifs pour s'exercer
 css/charte/                copie de la charte visuelle Aiguillon (+ bandeau injecté)
+css/categories.css         5 couleurs de catégories de dépenses (locales, validées clair/sombre)
 css/app.css, admin.css     styles propres, uniquement des jetons de la charte
 js/formules.js             l'interpréteur de formules
 js/moteur.js               le calcul complet et le contrôle du paramétrage

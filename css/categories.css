@@ -1,0 +1,41 @@
+/* ===========================================================================
+   Couleurs des catégories de dépenses - jetons LOCAUX au calculateur.
+
+   La charte n'a pas encore de palette catégorielle : ses --serie-* sont des
+   bleus et des pétroles trop proches pour distinguer cinq catégories côte à
+   côte. Ces cinq teintes ont été validées (lisibilité, daltonismes, écart
+   entre voisines) en clair sur #ffffff et en sombre sur #172236. Elles ne
+   portent jamais un sens seules : chaque barre est accompagnée de son
+   libellé et de son montant.
+
+   Ordre fixe, jamais réattribué : 1 logement, 2 autres charges fixes,
+   3 vie courante, 4 dépenses facultatives, 5 remboursement de dettes.
+   Candidates à rejoindre la charte (jetons.css) si d'autres pages en ont
+   besoin.
+   =========================================================================== */
+
+:root {
+  --cat-1: #2a78d6;
+  --cat-2: #1baf7a;
+  --cat-3: #6250d6;
+  --cat-4: #eda100;
+  --cat-5: #e87ba4;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --cat-1: #3987e5;
+    --cat-2: #199e70;
+    --cat-3: #9085e9;
+    --cat-4: #c98500;
+    --cat-5: #d55181;
+  }
+}
+
+:root[data-theme="dark"] {
+  --cat-1: #3987e5;
+  --cat-2: #199e70;
+  --cat-3: #9085e9;
+  --cat-4: #c98500;
+  --cat-5: #d55181;
+}

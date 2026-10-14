@@ -4,17 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta name="version" content="6e18913daa">
+  <meta name="version" content="b0bda1646f">
   <title>La dinguerie de val</title>
   <meta name="description" content="Diagnostic budgétaire locataire : saisie, synthèse et proposition de plan d'apurement. Aucune donnée n'est conservée.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2329467b'/%3E%3Ctext x='16' y='21' font-family='Arial' font-weight='700' font-size='13' fill='white' text-anchor='middle'%3EDV%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/charte/jetons.css?v=6e18913daa">
-  <link rel="stylesheet" href="css/charte/bandeau.css?v=6e18913daa">
-  <link rel="stylesheet" href="css/charte/socle.css?v=6e18913daa">
-  <link rel="stylesheet" href="css/charte/composants.css?v=6e18913daa">
-  <link rel="stylesheet" href="css/charte/bouton-theme.css?v=6e18913daa">
-  <link rel="stylesheet" href="css/charte/motif-rail.css?v=6e18913daa">
-  <link rel="stylesheet" href="css/app.css?v=6e18913daa">
+  <link rel="stylesheet" href="css/charte/jetons.css?v=b0bda1646f">
+  <link rel="stylesheet" href="css/charte/bandeau.css?v=b0bda1646f">
+  <link rel="stylesheet" href="css/charte/socle.css?v=b0bda1646f">
+  <link rel="stylesheet" href="css/charte/composants.css?v=b0bda1646f">
+  <link rel="stylesheet" href="css/charte/bouton-theme.css?v=b0bda1646f">
+  <link rel="stylesheet" href="css/charte/motif-rail.css?v=b0bda1646f">
+  <link rel="stylesheet" href="css/categories.css?v=b0bda1646f">
+  <link rel="stylesheet" href="css/app.css?v=b0bda1646f">
 </head>
 <body>
   <div class="app">
@@ -53,19 +54,25 @@
       <div id="bandeaux"></div>
 
       <section class="vue actif" id="vue-saisie" aria-labelledby="titre-saisie">
-        <div class="entete">
-          <div>
+        <div class="entete hero">
+          <div class="hero-texte">
+            <p class="surtitre">Diagnostic budgétaire locataire</p>
             <h2 id="titre-saisie">Saisie des renseignements</h2>
-            <p>Les totaux et la synthèse se calculent au fil de la saisie. Les montants sont mensuels.</p>
+            <p>Renseignez la situation du ménage : totaux, score et proposition de plan se calculent à la frappe. Tous les montants sont mensuels.</p>
+            <ol class="parcours" aria-label="Le parcours">
+              <li><span>1</span>Le dossier</li>
+              <li><span>2</span>Le budget du mois</li>
+              <li><span>3</span>La synthèse et le PDF</li>
+            </ol>
           </div>
           <div class="actions-entete">
             <div class="menu-demo-ancre">
-              <button type="button" class="bouton second" id="bouton-demo" aria-haspopup="true" aria-expanded="false" aria-controls="menu-demo">
+              <button type="button" class="bouton sur-fond" id="bouton-demo" aria-haspopup="true" aria-expanded="false" aria-controls="menu-demo">
                 <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 15.5A2 2 0 0 0 8.5 14.1L2.4 12.5a.5.5 0 0 1 0-1l6.1-1.6a2 2 0 0 0 1.4-1.4l1.6-6.1a.5.5 0 0 1 1 0l1.6 6.1a2 2 0 0 0 1.4 1.4l6.1 1.6a.5.5 0 0 1 0 1l-6.1 1.6a2 2 0 0 0-1.4 1.4l-1.6 6.1a.5.5 0 0 1-1 0Z"/></svg>
                 Données de démo</button>
               <div class="menu-demo" id="menu-demo" hidden></div>
             </div>
-            <button type="button" class="bouton second" id="nouvelle-situation">
+            <button type="button" class="bouton sur-fond" id="nouvelle-situation">
               <svg class="icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
               Nouvelle situation</button>
 
@@ -73,6 +80,10 @@
         </div>
         <div class="barre-saisie" id="barre-saisie" role="region" aria-label="Résumé du budget et sections">
           <div class="ligne-resume">
+            <div class="progression" id="progression" role="img" aria-label="Sections renseignées">
+              <span class="anneau" id="anneau"><span id="progression-texte">0/9</span></span>
+              <span class="progression-libelle">sections<br>renseignées</span>
+            </div>
             <dl class="resume">
               <div><dt>Ressources</dt><dd id="r-ressources">—</dd></div>
               <div><dt>Charges</dt><dd id="r-charges">—</dd></div>
@@ -130,7 +141,7 @@
       if (z) z.prepend(d);
     }, 6000);
   </script>
-  <script src="js/bouton-theme.js?v=6e18913daa"></script>
-  <script type="module" src="js/app.js?v=6e18913daa"></script>
+  <script src="js/bouton-theme.js?v=b0bda1646f"></script>
+  <script type="module" src="js/app.js?v=b0bda1646f"></script>
 </body>
 </html>

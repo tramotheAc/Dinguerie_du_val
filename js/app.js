@@ -7,16 +7,16 @@
    l'onglet efface tout - c'est voulu.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer } from './dom.js?v=6e18913daa';
-import { chargerConfig } from './config.js?v=6e18913daa';
-import { calculerTout } from './moteur.js?v=6e18913daa';
-import { formater } from './format.js?v=6e18913daa';
-import { lirePrerempli } from './url.js?v=6e18913daa';
-import { creerSaisie, etatVide, avancement } from './saisie.js?v=6e18913daa';
-import { dessinIcone, nomIcone } from './icones.js?v=6e18913daa';
-import { rendreSynthese, saisieVide, identite } from './synthese.js?v=6e18913daa';
-import { apparaitre, signaler, cascade } from './animations.js?v=6e18913daa';
-import { versionPerimee } from './version.js?v=6e18913daa';
+import { h, icone, vider, confirmer, annoncer } from './dom.js?v=b0bda1646f';
+import { chargerConfig } from './config.js?v=b0bda1646f';
+import { calculerTout } from './moteur.js?v=b0bda1646f';
+import { formater } from './format.js?v=b0bda1646f';
+import { lirePrerempli } from './url.js?v=b0bda1646f';
+import { creerSaisie, etatVide, avancement } from './saisie.js?v=b0bda1646f';
+import { dessinIcone, nomIcone } from './icones.js?v=b0bda1646f';
+import { rendreSynthese, saisieVide, identite } from './synthese.js?v=b0bda1646f';
+import { apparaitre, signaler, cascade } from './animations.js?v=b0bda1646f';
+import { versionPerimee } from './version.js?v=b0bda1646f';
 
 let config;
 let etat = etatVide();
@@ -120,11 +120,19 @@ function construireEtapes() {
 }
 
 function majEtapes() {
+  let faites = 0;
   for (const a of document.querySelectorAll('#etapes .etape')) {
     const s = config.sections.find((x) => x.id === a.dataset.section);
     const { remplis } = avancement(s, etat);
     a.classList.toggle('rempli', remplis > 0);
+    if (remplis > 0) faites++;
   }
+  // L'anneau de progression : la part des sections qui ont au moins une valeur.
+  const total = config.sections.length || 1;
+  const angle = Math.round((faites / total) * 360);
+  $('anneau').style.background = `conic-gradient(var(--vert) ${angle}deg, var(--surface-3) 0)`;
+  $('progression-texte').textContent = `${faites}/${total}`;
+  $('progression').setAttribute('aria-label', `${faites} sections renseignées sur ${total}`);
 }
 
 /* ------------------------------------------------------------------ demo */
@@ -206,7 +214,7 @@ function recalculer() {
 }
 
 function dessinerSynthese(animer = true) {
-  const id = identite(config, etat);
+  const id = identite(config, etat, { court: true });
   $('identite-synthese').textContent = id.length ? id.map((x) => x.valeur).join(' · ') : 'Analyse automatique et aide à la décision.';
   if (saisieVide(etat)) {
     vider($('synthese'), h('div', { class: 'carte vide-synthese' },
@@ -260,7 +268,7 @@ async function telechargerPdf() {
   const voile = h('div', { class: 'voile-pdf' }, h('div', { class: 'carte' }, h('span', { class: 'roue', 'aria-hidden': 'true' }), 'Fabrication du PDF…'));
   document.body.append(voile);
   try {
-    const { exporterPdf } = await import('./pdf.js?v=6e18913daa');
+    const { exporterPdf } = await import('./pdf.js?v=b0bda1646f');
     await exporterPdf({ config, resultat, etat });
     annoncer('PDF téléchargé.', 'ok');
   } catch (e) {

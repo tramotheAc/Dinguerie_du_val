@@ -7,10 +7,10 @@
    foyer, et un compteur de lignes renseignees par section.
    =========================================================================== */
 
-import { h, icone, vider } from './dom.js?v=6e18913daa';
-import { formater } from './format.js?v=6e18913daa';
-import { signaler } from './animations.js?v=6e18913daa';
-import { dessinIcone, nomIcone } from './icones.js?v=6e18913daa';
+import { h, icone, vider } from './dom.js?v=b0bda1646f';
+import { formater } from './format.js?v=b0bda1646f';
+import { signaler } from './animations.js?v=b0bda1646f';
+import { dessinIcone, nomIcone } from './icones.js?v=b0bda1646f';
 
 const LIGNES_DETTES_INITIALES = 3;
 const FRISE_MAX = 8; // au-dela, la frise ecrit « +n »
@@ -49,6 +49,7 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement }) 
   const totaux = [];      // [{ el, variable }]
   const compteurs = [];   // [{ el, section }]
   const frises = [];      // [{ el, section }]
+  const lignes = [];      // [{ el, champ }] : lignes de budget, colorees une fois remplies
   const formats = {};
   for (const i of config.indicateurs) formats[i.id] = i.format;
   const marques = new Set((prerempli?.appliques ?? []).map((c) => c.id));
@@ -114,12 +115,14 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement }) 
   function champ(c, section) {
     const id = `champ-${c.id}`;
     if (section.type === 'budget') {
-      return h('div', { class: 'champ ligne-budget' },
+      const ligne = h('div', { class: 'champ ligne-budget' },
         h('label', { for: id },
           h('span', { class: 'puce-icone' }, dessinIcone(nomIcone(c))),
           h('span', { class: 'texte-label' }, c.libelle), marqueLien(c)),
         champMontant(c, id),
         c.aide ? h('small', { id: `${id}-aide`, class: 'aide' }, c.aide) : null);
+      lignes.push({ el: ligne, champ: c });
+      return ligne;
     }
     let saisie;
     if (c.type === 'texte' || c.type === 'date') saisie = champTexte(c, section, id);
@@ -205,6 +208,50 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement }) 
     vider(el, morceaux, n ? h('span', { class: 'frise-total' }, `${n} personne${n > 1 ? 's' : ''}`) : null);
   }
 
+  /* L'equilibre du mois : ou va chaque euro de ressources. Memes categories
+     et memes couleurs que la repartition de la synthese. */
+  function equilibre() {
+    const bandeEl = h('div', { class: 'bande bande-equilibre' });
+    const legende = h('ul', { class: 'legende-equilibre' });
+    const statut = h('span', { class: 'jeton' });
+    const phrase = h('p', { class: 'phrase-equilibre' });
+    const el = h('section', { class: 'carte equilibre', 'aria-label': 'Équilibre du mois' },
+      h('header', {},
+        h('span', { class: 'medaillon m-dossier' }, dessinIcone('calculette')),
+        h('div', { class: 'titres' }, h('h3', {}, 'Équilibre du mois'), h('p', {}, 'Où vont les ressources du ménage, mis à jour à la frappe')),
+        statut),
+      h('div', { class: 'corps' }, bandeEl, phrase, legende));
+    return {
+      el,
+      rafraichir(resultat) {
+        const v = resultat.valeurs;
+        const ressources = Math.max(0, v.total_ressources ?? 0);
+        const cats = (config.repartition ?? []).map((r, n) => ({ libelle: r.libelle, valeur: Math.max(0, v[r.indicateur] ?? 0), couleur: `var(--cat-${(n % 5) + 1})` }));
+        const depenses = cats.reduce((t, c) => t + c.valeur, 0);
+        const echelle = Math.max(ressources, depenses);
+        const reste = ressources - depenses;
+        const vide = !ressources && !depenses;
+        vider(bandeEl,
+          vide ? h('span', { class: 'segment reste', style: { flexGrow: '1' } }) : null,
+          cats.filter((c) => c.valeur > 0).map((c) => h('span', {
+            class: 'segment', title: `${c.libelle} : ${formater(c.valeur, 'euro')}`, style: { flexGrow: String(c.valeur), background: c.couleur },
+          })),
+          reste > 0 ? h('span', { class: 'segment reste', title: `Reste : ${formater(reste, 'euro')}`, style: { flexGrow: String(reste) } }) : null,
+          // Les ressources marquees d'un trait quand les depenses les depassent
+          reste < 0 && echelle ? h('span', { class: 'repere-ressources', style: { left: `${(ressources / echelle) * 100}%` }, title: `Ressources : ${formater(ressources, 'euro')}` }) : null);
+        statut.className = `jeton ${vide ? '' : reste < 0 ? 'rouge' : 'vert'}`;
+        statut.textContent = vide ? 'À compléter' : reste < 0 ? `Déficit ${formater(-reste, 'euro')}` : `Reste ${formater(reste, 'euro')}`;
+        phrase.textContent = vide ? 'Saisissez les ressources et les dépenses : la répartition se dessine ici.'
+          : reste < 0 ? `Les dépenses (${formater(depenses, 'euro')}) dépassent les ressources (${formater(ressources, 'euro')}) : le trait marque où elles s’arrêtent.`
+            : `Sur ${formater(ressources, 'euro')} de ressources, ${formater(depenses, 'euro')} partent en dépenses et remboursements.`;
+        vider(legende, cats.map((c) => h('li', {},
+          h('span', { class: 'pastille-legende', style: { background: c.couleur } }),
+          h('span', { class: 'nom' }, c.libelle),
+          h('strong', {}, formater(c.valeur, 'euro')))));
+      },
+    };
+  }
+
   function carte(section) {
     const ton = section.colonne === 'budget' ? (section.id === 'ressources' ? 'entree' : 'sortie') : 'dossier';
     let total = null;
@@ -237,9 +284,12 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement }) 
 
   const dossier = config.sections.filter((s) => s.colonne !== 'budget');
   const budget = config.sections.filter((s) => s.colonne === 'budget');
+  const titreColonne = (n, titre, sous) => h('div', { class: 'titre-colonne' },
+    h('span', { class: 'numero' }, n), h('div', {}, h('h3', {}, titre), h('p', {}, sous)));
+  const balance = equilibre();
   vider(racine,
-    h('div', { class: 'colonne-saisie' }, h('h3', { class: 'titre-colonne' }, h('span', { class: 'numero' }, '1'), 'Le dossier'), dossier.map(carte)),
-    h('div', { class: 'colonne-saisie' }, h('h3', { class: 'titre-colonne' }, h('span', { class: 'numero' }, '2'), 'Le budget du mois'), budget.map(carte)));
+    h('div', { class: 'colonne-saisie' }, titreColonne('1', 'Le dossier', 'Qui est le ménage, où il vit, ce qu’il doit'), dossier.map(carte)),
+    h('div', { class: 'colonne-saisie' }, titreColonne('2', 'Le budget du mois', 'Ce qui entre et ce qui sort chaque mois'), balance.el, budget.map(carte)));
 
   const precedents = new Map();
   return {
@@ -259,6 +309,8 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement }) 
         el.classList.toggle('complet', total !== null && remplis === total);
       }
       for (const { el, section } of frises) dessinerFrise(el, section);
+      for (const { el, champ: c } of lignes) el.classList.toggle('rempli', renseigne(etat.valeurs[c.id]));
+      balance.rafraichir(resultat);
     },
   };
 }

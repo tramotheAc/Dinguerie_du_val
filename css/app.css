@@ -61,14 +61,41 @@
 .formulaire { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
 @media (max-width: 1180px) { .formulaire { grid-template-columns: 1fr; } }
 .colonne-saisie { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.titre-colonne {
-  display: flex; align-items: center; gap: 10px; font-size: 12px; text-transform: uppercase;
-  letter-spacing: .09em; color: var(--encre-doux); font-weight: 700; margin: 2px 0 -2px;
-}
+.titre-colonne { display: flex; align-items: center; gap: 12px; margin: 4px 0 0; }
+.titre-colonne h3 { font-size: 16px; letter-spacing: -.005em; }
+.titre-colonne p { margin: 1px 0 0; font-size: 12.5px; color: var(--encre-doux); }
 .numero {
-  display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
-  background: var(--nuit); color: #fff; font-size: 12px; letter-spacing: 0;
+  display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--nuit)); background-color: var(--nuit); color: #fff; font-size: 14px; font-weight: 700;
+  box-shadow: 0 4px 10px rgb(20 40 80 / 18%);
 }
+
+/* Bandeau d'accueil de la saisie, aux couleurs du rail. Les facettes sont
+   une image de fond : pas de debordement cache, le menu de demo peut sortir
+   du bandeau. */
+.hero {
+  position: relative; padding: 22px 24px; border-radius: var(--radius-md); color: #fff; align-items: center;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 220' preserveAspectRatio='xMaxYMid slice'%3E%3Cpolygon points='800,0 800,220 600,220' fill='%23ffffff' opacity='0.06'/%3E%3Cpolygon points='800,0 660,0 800,120' fill='%23ffffff' opacity='0.07'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='24'%3E%3Cpath d='M520 30 L600 110 L520 190' opacity='0.05'/%3E%3Cpath d='M565 30 L645 110 L565 190' opacity='0.04'/%3E%3C/g%3E%3C/svg%3E") right center / cover no-repeat,
+    linear-gradient(125deg, var(--nuit) 0%, var(--nuit-2) 45%, var(--accent) 100%);
+  /* Couleur de repli sous le degrade : le texte blanc reste lisible si le
+     degrade ne s'affiche pas, et les outils de contraste la mesurent. */
+  background-color: var(--nuit);
+  box-shadow: var(--ombre);
+}
+/* Menu de demo ouvert : le bandeau passe devant la barre collee, le temps du choix. */
+.hero:has(.menu-demo:not([hidden])) { z-index: 31; }
+.hero .surtitre { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #d7e2f2; }
+.hero h2 { font-size: 24px; margin-top: 4px; }
+.hero .hero-texte > p:not(.surtitre) { color: #e8eef8; max-width: 64ch; margin-top: 6px; }
+.parcours { list-style: none; margin: 14px 0 0; padding: 0; display: flex; gap: 6px 18px; flex-wrap: wrap; font-size: 12.5px; font-weight: 600; color: #e8eef8; }
+.parcours li { display: inline-flex; align-items: center; gap: 7px; }
+.parcours span {
+  display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: rgb(255 255 255 / 16%); border: 1px solid rgb(255 255 255 / 35%); font-size: 11px;
+}
+.bouton.sur-fond { background: rgb(255 255 255 / 12%); border-color: rgb(255 255 255 / 40%); color: #fff; }
+.bouton.sur-fond:hover { background: rgb(255 255 255 / 22%); border-color: #fff; }
 
 /* Barre du haut : le resume du budget et les sections, collee sous le haut
    de l'ecran. Elle ne recouvre rien : elle est dans le flux, et les sections
@@ -81,7 +108,15 @@
   box-shadow: var(--ombre), 0 8px 24px rgb(20 40 80 / 8%);
 }
 .ligne-resume { display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; padding: 0 6px; }
-.resume { display: flex; gap: 8px 28px; margin: 0; flex-wrap: wrap; }
+.progression { display: flex; align-items: center; gap: 8px; padding-right: 16px; border-right: 1px solid var(--bord); }
+.anneau {
+  position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--surface-3); transition: background .3s;
+}
+.anneau::after { content: ''; position: absolute; inset: 5px; border-radius: 50%; background: var(--surface); }
+.anneau span { position: relative; z-index: 1; font-size: 12px; font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; }
+.progression-libelle { font-size: 10.5px; line-height: 1.25; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--encre-tres-doux); }
+.resume { display: flex; gap: 8px 28px; margin: 0 auto 0 0; flex-wrap: wrap; }
 .resume div { display: flex; flex-direction: column; min-width: 0; }
 .resume dt { font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--encre-tres-doux); font-weight: 700; white-space: nowrap; }
 .resume dd { margin: 0; font-size: 17px; font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -111,20 +146,34 @@
 .etape.rempli .coche { display: grid; }
 .etape[aria-current] .coche { background: var(--surface); color: var(--accent); }
 .section-saisie { scroll-margin-top: 136px; }
+/* Sur grand ecran, toutes les etapes tiennent : elles passent a la ligne
+   plutot que de defiler. */
+@media (min-width: 1280px) {
+  .etapes-saisie { flex-wrap: wrap; overflow: visible; }
+  .section-saisie { scroll-margin-top: 170px; }
+}
 
 /* Cartes de section : un medaillon illustre, un compteur, un total. */
-.section-saisie > header { padding: 12px 16px; background: var(--surface); align-items: flex-start; flex-wrap: nowrap; }
+.section-saisie { border-top: 3px solid var(--petrole); }
+.section-saisie.ton-entree { border-top-color: var(--vert); }
+.section-saisie.ton-sortie { border-top-color: var(--taupe); }
+.section-saisie > header {
+  padding: 13px 16px; align-items: flex-start; flex-wrap: nowrap;
+  background: linear-gradient(180deg, var(--petrole-fond) 0%, var(--surface) 100%);
+}
+.section-saisie.ton-entree > header { background: linear-gradient(180deg, var(--vert-fond) 0%, var(--surface) 100%); }
+.section-saisie.ton-sortie > header { background: linear-gradient(180deg, var(--taupe-fond) 0%, var(--surface) 100%); }
 .section-saisie > header .titres { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .section-saisie > header h3 { font-size: 15px; }
 .section-saisie > header p { margin: 0; }
 .section-saisie .corps { padding: 12px 16px 16px; }
 .medaillon {
   display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 12px;
-  background: var(--petrole-fond); color: var(--petrole);
+  background: var(--surface); color: var(--petrole); box-shadow: 0 0 0 1px var(--bord), 0 3px 8px rgb(20 40 80 / 8%);
 }
 .medaillon .icone { width: 21px; height: 21px; }
-.ton-entree .medaillon { background: var(--vert-fond); color: var(--vert); }
-.ton-sortie .medaillon { background: var(--taupe-fond); color: var(--taupe); }
+.ton-entree .medaillon { color: var(--vert); }
+.ton-sortie .medaillon { color: var(--taupe); }
 .compte-section { font-size: 11.5px; color: var(--encre-tres-doux); font-weight: 600; }
 .compte-section.complet { color: var(--vert); }
 .compte-section.complet::before { content: '✓ '; }
@@ -164,7 +213,7 @@
 .jeton.mini { font-size: 10px; padding: 0 6px; letter-spacing: .02em; flex: none; }
 
 input[type="text"], input[type="date"], input[type="number"], input[type="search"], input:not([type]), textarea {
-  width: 100%; padding: 7px 10px; border-radius: var(--radius-sm);
+  width: 100%; padding: 8px 11px; border-radius: 10px;
   border: 1px solid var(--bord-fort); background: var(--surface); font-size: 13.5px;
   transition: border-color .12s, box-shadow .12s, background .3s;
 }
@@ -211,7 +260,12 @@ input.prerempli { background: var(--petrole-fond); border-color: var(--petrole);
   padding: 5px 0; border-bottom: 1px solid var(--bord);
 }
 .lignes-budget > :last-child { border-bottom: 0; }
+.ligne-budget { margin: 0 -8px; padding: 5px 8px; border-radius: 10px; border-bottom-color: transparent; box-shadow: 0 1px 0 var(--bord); transition: background .15s; }
+.ligne-budget:hover, .ligne-budget:focus-within { background: var(--surface-2); }
 .ligne-budget label { font-size: 13px; font-weight: 500; color: var(--encre); gap: 10px; }
+.ligne-budget.rempli .puce-icone { background: var(--taupe-fond); color: var(--taupe); }
+.ton-entree .ligne-budget.rempli .puce-icone { background: var(--vert-fond); color: var(--vert); }
+.ligne-budget.rempli input { font-weight: 600; color: var(--chiffre); }
 .ligne-budget input { padding: 5px 26px 5px 8px; }
 .ligne-budget .aide { grid-column: 1 / -1; }
 .puce-icone {
@@ -246,6 +300,29 @@ input.prerempli { background: var(--petrole-fond); border-color: var(--petrole);
 }
 .table-dettes tfoot td.num { text-align: right; padding-right: 30px; }
 .ajout { margin-top: 10px; }
+
+/* L'equilibre du mois, en tete de la colonne budget. */
+.equilibre { border-top: 3px solid var(--accent); }
+.equilibre > header { justify-content: flex-start; gap: 12px; flex-wrap: wrap; padding: 13px 16px; }
+.equilibre > header .titres { flex: 1; min-width: 200px; }
+.equilibre > header .titres h3 { font-size: 15px; }
+.equilibre > header .titres p { margin: 1px 0 0; }
+.equilibre > header .jeton { font-size: 12.5px; padding: 3px 10px; }
+.bande-equilibre { position: relative; height: 22px; border-radius: 8px; margin: 0; overflow: visible; }
+.bande-equilibre .segment:first-child { border-radius: 8px 0 0 8px; }
+.bande-equilibre .segment:last-of-type { border-radius: 0 8px 8px 0; }
+.bande-equilibre .segment:only-of-type { border-radius: 8px; }
+.bande-equilibre .segment.reste {
+  background: repeating-linear-gradient(135deg, var(--vert-fond) 0 6px, var(--surface-2) 6px 12px);
+  box-shadow: inset 0 0 0 1px var(--vert-fond);
+}
+.repere-ressources { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--rouge); box-shadow: 0 0 0 2px var(--surface); }
+.phrase-equilibre { margin: 10px 0 12px; font-size: 12.5px; color: var(--encre-doux); }
+.legende-equilibre { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px 16px; }
+.legende-equilibre li { display: flex; align-items: center; gap: 8px; font-size: 12.5px; min-width: 0; }
+.legende-equilibre .nom { flex: 1; min-width: 0; color: var(--encre-doux); overflow-wrap: anywhere; }
+.legende-equilibre strong { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.legende-equilibre .pastille-legende { flex: none; }
 
 /* Menu des donnees de demonstration. */
 .menu-demo-ancre { position: relative; }
@@ -294,6 +371,11 @@ input.prerempli { background: var(--petrole-fond); border-color: var(--petrole);
   .section-saisie .corps { padding: 10px 12px 14px; }
   .medaillon { width: 34px; height: 34px; }
   .actions-entete { width: 100%; }
+  .hero { padding: 18px 16px; }
+  .hero h2 { font-size: 20px; }
+  .progression { padding-right: 8px; }
+  .progression-libelle { display: none; }
+  .anneau { width: 38px; height: 38px; }
   .actions-entete .bouton { flex: 1 1 auto; justify-content: center; }
   .menu-demo-ancre { flex: 1 1 auto; display: flex; }
   .menu-demo { left: 0; right: auto; }
@@ -301,24 +383,83 @@ input.prerempli { background: var(--petrole-fond); border-color: var(--petrole);
 
 /* ----------------------------------------------------------------- synthese */
 .synthese { display: flex; flex-direction: column; gap: 16px; }
-.bloc-synthese > header h3 { font-size: 15px; }
 .synthese .duo { align-items: stretch; }
 .synthese .duo > .carte { display: flex; flex-direction: column; }
 .vide-synthese { padding: 40px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; color: var(--encre-doux); }
+.bloc-synthese > header { justify-content: flex-start; gap: 12px; flex-wrap: nowrap; }
+.bloc-synthese > header .titres { flex: 1; min-width: 0; }
+.bloc-synthese > header h3 { font-size: 15px; }
+.jeton .point { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
 
+/* Medaillons teintes : la teinte est posee sur le medaillon lui-meme, pour
+   qu'un medaillon niche ne prenne pas celle de son bloc. */
+.medaillon.petit { width: 32px; height: 32px; border-radius: 10px; }
+.medaillon.petit .icone { width: 17px; height: 17px; }
+.medaillon.m-dossier { background: var(--petrole-fond); color: var(--petrole); }
+.medaillon.m-entree { background: var(--vert-fond); color: var(--vert); }
+.medaillon.m-sortie { background: var(--taupe-fond); color: var(--taupe); }
+.medaillon.m-alerte { background: var(--rouge-fond); color: var(--rouge); }
+.medaillon.m-vigilance { background: var(--ambre-fond); color: var(--ambre); }
+
+/* Le bandeau de bilan : la situation en une phrase, aux couleurs du rail. */
+.bilan {
+  position: relative; overflow: hidden; isolation: isolate;
+  display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 18px 28px; align-items: center;
+  padding: 22px 26px; border-radius: var(--radius-md); color: #fff; box-shadow: var(--ombre);
+  background: linear-gradient(125deg, var(--nuit) 0%, var(--nuit-2) 42%, var(--accent) 100%);
+  background-color: var(--nuit);
+}
+.bilan::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 260' preserveAspectRatio='xMaxYMid slice'%3E%3Cpolygon points='800,0 800,260 560,260' fill='%23ffffff' opacity='0.06'/%3E%3Cpolygon points='800,0 640,0 800,150' fill='%23ffffff' opacity='0.07'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='26'%3E%3Cpath d='M470 40 L560 130 L470 220' opacity='0.05'/%3E%3Cpath d='M520 40 L610 130 L520 220' opacity='0.04'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover; background-position: right center;
+}
+.bilan .surtitre { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #d7e2f2; }
+.bilan h3 { font-size: 22px; margin: 4px 0 0; letter-spacing: -.01em; }
+.bilan .commentaire { margin: 8px 0 0; font-size: 13.5px; line-height: 1.55; color: #e8eef8; max-width: 72ch; }
+.bilan-faits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 16px 0 0; }
+.bilan-faits > div { padding: 9px 12px; border-radius: 10px; background: rgb(255 255 255 / 11%); border: 1px solid rgb(255 255 255 / 16%); min-width: 0; }
+.bilan-faits dt { font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #cbd8ea; }
+.bilan-faits dd { margin: 2px 0 0; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.bilan-faits .alerte { background: var(--rouge-fond); border-color: transparent; }
+.bilan-faits .alerte dt, .bilan-faits .alerte dd { color: var(--rouge); }
+.bilan-score { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.bilan-score .demi-cercle { width: 200px; }
+.bilan-score .score-centre { top: 50px; }
+.bilan-score .score-chiffre { color: #fff; }
+.bilan .score-centre .sur { color: #d7e2f2; }
+.legende-score { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #d7e2f2; }
+.demi-cercle.clair .graduation { fill: #d7e2f2; }
+@media (max-width: 900px) {
+  .bilan { grid-template-columns: 1fr; padding: 18px; }
+  .bilan-faits { grid-template-columns: 1fr; }
+}
+
+/* Chiffres cles : un filet de couleur et un medaillon par sens de l'argent. */
+.tuiles-cles .tuile { border-top: 3px solid var(--petrole); box-shadow: none; gap: 4px; }
+.tuile.ton-entree { border-top-color: var(--vert); }
+.tuile.ton-sortie { border-top-color: var(--taupe); }
+.tuile.ton-alerte { border-top-color: var(--rouge); }
+.tete-tuile { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .tuile.negatif .valeur { color: var(--rouge); }
 .tuile .valeur { font-size: 25px; }
 
-.jeton .point { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
-
+/* Jauges : le filet et le chiffre prennent la couleur du statut, le statut
+   reste ecrit en toutes lettres a cote. */
 .grille-jauges { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .jauge-carte {
   display: flex; flex-direction: column; gap: 6px; padding: 12px 14px;
-  border: 1px solid var(--bord); border-radius: var(--radius-md); background: var(--surface);
+  border: 1px solid var(--bord); border-left: 4px solid var(--bord-fort); border-radius: var(--radius-md); background: var(--surface);
 }
+.jauge-carte.niveau-vert { border-left-color: var(--vert); }
+.jauge-carte.niveau-ambre { border-left-color: var(--ambre); }
+.jauge-carte.niveau-rouge { border-left-color: var(--rouge); }
 .jauge-tete { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
 .jauge-carte .etiquette { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--encre-tres-doux); font-weight: 700; }
 .jauge-carte .valeur { font-size: 26px; font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.jauge-carte.niveau-vert .valeur { color: var(--vert); }
+.jauge-carte.niveau-ambre .valeur { color: var(--ambre); }
+.jauge-carte.niveau-rouge .valeur { color: var(--rouge); }
 .jauge-zones { width: 100%; height: auto; display: block; overflow: visible; }
 .seuils { margin: 0; font-size: 11.5px; color: var(--encre-doux); line-height: 1.45; }
 
@@ -328,6 +469,27 @@ input.prerempli { background: var(--petrole-fond); border-color: var(--petrole);
 .barre .nombre small { display: block; font-weight: 500; color: var(--encre-doux); font-size: 11.5px; }
 .barre .remplissage { transition: none; }
 .note-graphique { margin: 14px 0 0; font-size: 13px; color: var(--encre-doux); }
+.note-graphique.alerte { color: var(--rouge); font-weight: 600; }
+
+.bande { display: flex; gap: 2px; height: 16px; border-radius: 8px; overflow: hidden; margin: 2px 0 16px; transform-origin: left center; }
+.bande .segment { min-width: 4px; }
+.bande .segment.reste { background: var(--surface-3); }
+
+/* L'equation du mois : ressources − charges = solde. */
+.equation { display: flex; align-items: stretch; gap: 6px; margin-bottom: 16px; }
+.equation .terme { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 1px; }
+.equation .terme span { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--encre-doux); }
+.equation .terme strong { font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.equation .entree { background: var(--vert-fond); }
+.equation .entree strong { color: var(--vert); }
+.equation .sortie { background: var(--taupe-fond); }
+.equation .sortie strong { color: var(--taupe); }
+.equation .reste { background: var(--petrole-fond); }
+.equation .reste strong { color: var(--petrole); }
+.equation .alerte { background: var(--rouge-fond); }
+.equation .alerte strong { color: var(--rouge); }
+.operateur { align-self: center; font-size: 20px; font-weight: 700; color: var(--encre-tres-doux); }
+@media (max-width: 640px) { .equation { flex-wrap: wrap; } .equation .terme { flex-basis: 100%; } .operateur { display: none; } }
 
 .score { display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: center; }
 @media (max-width: 640px) { .score { grid-template-columns: 1fr; } }
@@ -341,29 +503,52 @@ input.prerempli { background: var(--petrole-fond); border-color: var(--petrole);
 .criteres .barre { grid-template-columns: 1fr auto; row-gap: 5px; }
 .criteres .barre .piste { grid-column: 1 / -1; grid-row: 2; height: 9px; }
 .criteres .remplissage { background: var(--taupe); }
+.criteres .remplissage.niveau-vert { background: var(--vert); }
+.criteres .remplissage.niveau-ambre { background: var(--ambre); }
+.criteres .remplissage.niveau-rouge { background: var(--rouge); }
 
 .points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .points li {
-  display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px;
-  border-radius: var(--radius-sm); background: var(--ambre-fond); font-size: 13.5px;
+  display: flex; gap: 10px; align-items: center; padding: 9px 12px;
+  border-radius: var(--radius-sm); background: var(--ambre-fond); font-size: 13.5px; border-left: 3px solid var(--ambre);
 }
-.points li .icone { color: var(--ambre); margin-top: 2px; }
+.puce-alerte { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--surface); color: var(--ambre); }
+.puce-alerte .icone { width: 14px; height: 14px; }
 .rien-a-signaler { display: flex; gap: 8px; align-items: center; margin: 0; color: var(--vert); font-weight: 600; }
 
 .plan { display: flex; flex-direction: column; gap: 14px; }
 .plan-chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
-.plan .tuile { box-shadow: none; }
+.plan .tuile { box-shadow: none; border-color: transparent; }
+.plan .tuile .etiquette { color: var(--encre-doux); }
+.plan .tuile.ton-dossier { background: var(--petrole-fond); }
+.plan .tuile.ton-sortie { background: var(--taupe-fond); }
+.plan .tuile.vedette { background: linear-gradient(135deg, var(--accent) 0%, var(--nuit-2) 100%); background-color: var(--nuit-2); color: #fff; }
+.plan .tuile.vedette .etiquette, .plan .tuile.vedette .note, .plan .tuile.vedette .unite { color: #e1e9f5; }
+.plan .tuile.vedette .valeur { color: #fff; }
 .ligne-valeur { display: flex; align-items: baseline; gap: 6px; }
 .ligne-valeur .valeur { font-size: 28px; }
 .unite { color: var(--encre-doux); font-weight: 600; font-size: 13px; }
 .valeur.fourchette { font-size: 22px; }
+
+.frise-duree { padding-top: 18px; }
+.piste-duree { position: relative; height: 12px; border-radius: 6px; background: var(--surface-3); }
+.piste-duree .remplissage { display: block; height: 100%; border-radius: 6px; }
+.piste-duree .remplissage.dans { background: var(--vert); }
+.piste-duree .remplissage.hors { background: var(--ambre); }
+.cible { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; background: var(--encre); border-radius: 1px; }
+.etiquette-cible { position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: var(--encre-doux); white-space: nowrap; }
+.note-duree { margin: 6px 0 0; font-size: 12.5px; color: var(--encre-doux); }
+
 .qualification {
   display: grid; grid-template-columns: 5px 1fr; gap: 14px; padding: 12px 14px 12px 0;
   background: var(--surface-2); border-radius: var(--radius-md); overflow: hidden;
 }
+.qualification.niveau-vert { background: var(--vert-fond); }
+.qualification.niveau-ambre { background: var(--ambre-fond); }
+.qualification.niveau-rouge { background: var(--rouge-fond); }
 .qualification .barre-niveau { display: block; border-radius: 0 3px 3px 0; }
 .qualification p { margin: 8px 0 0; font-size: 13.5px; line-height: 1.55; }
-.qualification .jeton { font-size: 12.5px; padding: 3px 10px; }
+.qualification .jeton { font-size: 12.5px; padding: 3px 10px; background: var(--surface); }
 .simulation {
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
   padding: 10px 12px; border: 1px dashed var(--bord-fort); border-radius: var(--radius-md);
@@ -371,15 +556,23 @@ input.prerempli { background: var(--petrole-fond); border-color: var(--petrole);
 .simulation label { font-size: 13px; font-weight: 600; }
 .simulation .saisie-nombre { width: 130px; }
 
-.leviers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.leviers li { display: grid; grid-template-columns: 32px 1fr; gap: 12px; align-items: start; }
-.rang {
-  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
-  background: var(--nuit); color: #fff; font-weight: 700; font-size: 13px;
+/* Leviers : une carte par levier, le premier mis en avant. */
+.leviers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+.levier {
+  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start;
+  padding: 12px 14px 12px 12px; border: 1px solid var(--bord); border-radius: var(--radius-md); background: var(--surface);
 }
-.leviers li:first-child .rang { background: var(--accent); box-shadow: 0 0 0 4px var(--blue-100); }
-.levier-tete { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 4px; }
-.leviers p { margin: 3px 0 0; font-size: 12.5px; color: var(--encre-doux); }
+.levier .rang {
+  position: absolute; top: -8px; left: -8px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--chiffre); color: var(--surface); font-weight: 700; font-size: 11.5px; border: 2px solid var(--surface);
+}
+.levier.premier { border-color: var(--accent); box-shadow: 0 0 0 3px var(--blue-100); }
+.levier.premier .rang { background: var(--accent); color: #fff; }
+.levier-corps { min-width: 0; }
+.levier-tete { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.levier-tete strong { font-size: 13.5px; }
+.leviers p { margin: 4px 0 0; font-size: 12.5px; color: var(--encre-doux); }
+.leviers { padding: 8px 0 0 8px; }
 
 .detail-calculs > summary {
   cursor: pointer; padding: 13px 16px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap;
