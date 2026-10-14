@@ -58,65 +58,79 @@
 .bandeau small { color: var(--encre-doux); }
 
 /* ------------------------------------------------------------------- saisie */
-/* La grille des sections en haut, le contenu dessous ; le panneau
+/* Les etapes a gauche, depliees sur place ; le panneau
    d'equilibre colle a droite. */
 .entete-saisie { align-items: flex-end; }
 .surtitre-page { margin: 0 0 2px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--chiffre); }
 .disposition-saisie { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
 .formulaire { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
-/* ------------------------------------------------------ grille des sections */
-/* Deux tuiles par ligne quand les sections se ressemblent (foyer et logement,
-   charges fixes et vie courante...), une pleine ligne sinon. Les tuiles ne
-   bougent jamais : le contenu s'ouvre en dessous de la grille. */
-.grille-sections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.tuile-section {
-  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px;
-  padding: 10px 12px; border: 1px solid var(--bord); border-radius: 12px; background: var(--surface);
-  text-align: left; cursor: pointer; transition: border-color .15s, background .15s, box-shadow .15s;
+/* -------------------------------------------------------- les six etapes */
+/* Une etape se deplie sur place, une seule a la fois. Elle regroupe une ou
+   deux sous-parties ; fermee, elle resume chacune sur une ligne. */
+.etapes-saisie { display: flex; flex-direction: column; gap: 10px; }
+.bloc {
+  background: var(--surface); border: 1px solid var(--bord); border-left: 4px solid var(--petrole);
+  border-radius: var(--radius-md); scroll-margin-top: 16px; transition: box-shadow .2s, border-color .2s;
 }
-.tuile-section.pleine { grid-column: 1 / -1; }
-.tuile-section:hover { border-color: var(--blue-300); }
-.tuile-section.active { border-color: var(--accent); background: var(--blue-100); box-shadow: 0 0 0 1px var(--accent); }
-.tuile-section.facultatif:not(.active) { border-style: dashed; background: transparent; }
+.bloc.ton-entree { border-left-color: var(--vert); }
+.bloc.ton-sortie { border-left-color: var(--taupe); }
+.bloc.facultatif { border-style: dashed; border-left-style: solid; border-left-color: var(--bord-fort); background: transparent; }
+.bloc.facultatif.ouvert { background: var(--surface); }
+.bloc.ouvert { box-shadow: var(--ombre); }
+.h-bloc { margin: 0; font: inherit; }
+.tete-bloc {
+  width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 14px;
+  padding: 14px 16px; border: 0; border-radius: inherit; background: none; color: inherit; font: inherit;
+  text-align: left; cursor: pointer; transition: background .15s;
+}
+.tete-bloc:hover { background: var(--surface-2); }
+.bloc.ouvert .tete-bloc { border-bottom: 1px solid var(--bord); border-radius: var(--radius-md) var(--radius-md) 0 0; }
+.titres-bloc { display: flex; flex-direction: column; min-width: 0; }
+.numero-etape { font-size: 10.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--chiffre); }
+.titre-bloc { font-size: 16px; font-weight: 700; color: var(--encre); }
+.bloc.ouvert .resume-bloc { display: none; }
+.resume-bloc { display: flex; flex-direction: column; gap: 2px; margin-top: 3px; min-width: 0; }
+.ligne-resume { display: block; font-size: 12.5px; color: var(--encre-doux); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne-resume strong { font-weight: 600; color: var(--encre); }
+.puce-sous {
+  display: inline-grid; place-items: center; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px;
+  border-radius: 50%; border: 1.5px solid var(--bord-fort);
+}
+.ligne-resume.faite .puce-sous { background: var(--vert); border-color: var(--vert); color: var(--surface); }
+.puce-sous .icone { width: 9px; height: 9px; stroke-width: 3; }
+.montant-bloc, .montant-volet { font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.montant-bloc { font-size: 16px; }
+.montant-volet { font-size: 14px; }
+.ton-entree .montant-bloc, .ton-entree .montant-volet { color: var(--vert); }
 .chevron { color: var(--encre-tres-doux); transition: transform .2s; }
 .chevron .icone { width: 16px; height: 16px; }
-.tuile-section.active .chevron { color: var(--accent); transform: rotate(180deg); }
-.marque-volet .coche {
-  display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%;
-  background: var(--vert); color: var(--surface);
+.bloc.ouvert .chevron { color: var(--accent); transform: rotate(180deg); }
+.marque-bloc { position: relative; }
+.marque-bloc .medaillon, .marque-bloc .coche { width: 40px; height: 40px; border-radius: 12px; }
+.marque-bloc .medaillon .icone { width: 20px; height: 20px; }
+.coche { display: grid; place-items: center; background: var(--vert); color: var(--surface); }
+.coche .icone { width: 16px; height: 16px; stroke-width: 2.6; }
+.compte-sous {
+  position: absolute; right: -6px; bottom: -6px; padding: 0 5px; border-radius: 999px;
+  border: 1px solid var(--bord-fort); background: var(--surface); color: var(--chiffre); font-size: 10px; font-weight: 700;
 }
-.marque-volet .coche .icone { width: 15px; height: 15px; stroke-width: 2.6; }
-.marque-volet .medaillon { width: 32px; height: 32px; border-radius: 10px; }
-.marque-volet .medaillon .icone { width: 17px; height: 17px; }
-.titres-volet { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.titre-volet { font-size: 14px; font-weight: 700; color: var(--encre); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.resume-volet { font-size: 12.5px; color: var(--encre-doux); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.montant-volet { font-size: 15px; font-weight: 700; color: var(--chiffre); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.ton-entree .montant-volet { color: var(--vert); }
 
-/* ---------------------------------------------------- contenu sous la grille */
-.zone-detail { scroll-margin-top: 16px; }
-.zone-vide { margin: 0; padding: 28px 16px; text-align: center; color: var(--encre-doux); border: 1px dashed var(--bord-fort); border-radius: var(--radius-md); }
-.panneau-rangee { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
-.panneau-rangee.double { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.volet {
-  background: var(--surface); border: 1px solid var(--bord); border-top: 3px solid var(--petrole);
-  border-radius: var(--radius-md); box-shadow: var(--ombre); min-width: 0;
-}
-.volet.ton-entree { border-top-color: var(--vert); }
-.volet.ton-sortie { border-top-color: var(--taupe); }
-.entete-detail { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--bord); }
-.entete-detail .medaillon { width: 36px; height: 36px; border-radius: 11px; }
+/* ------------------------------------------------- les sous-parties dedans */
+.corps-bloc { padding: 4px 16px 16px; }
+.sous-parties { display: grid; grid-template-columns: minmax(0, 1fr); }
+.sous-parties.double { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sous-parties.double > :first-child { padding-right: 16px; border-right: 1px dashed var(--bord-fort); }
+.sous-parties.double > :last-child { padding-left: 16px; }
+.sous-partie-saisie { min-width: 0; padding-top: 12px; }
+.entete-sous { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--bord); }
+.marque-sous .medaillon, .marque-sous .coche { width: 28px; height: 28px; border-radius: 9px; }
+.marque-sous .medaillon .icone, .marque-sous .coche .icone { width: 15px; height: 15px; }
 .titres-detail { flex: 1; min-width: 0; }
-.titres-detail h3 { font-size: 15px; }
-.titres-detail p { margin: 2px 0 0; font-size: 12.5px; color: var(--encre-doux); }
-.corps-volet { padding: 4px 16px 16px; }
-.pied-volet {
-  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
-  margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--bord-fort);
-}
-.note-pied { margin: 0; font-size: 12.5px; color: var(--encre-doux); }
+.titres-detail h4 { margin: 0; font-size: 14px; font-weight: 700; color: var(--encre); }
+.description-sous { margin: 2px 0 0; font-size: 12.5px; color: var(--encre-doux); }
+.note-pied { margin: 12px 0 0; font-size: 12.5px; color: var(--encre-doux); }
+.pied-bloc { display: flex; justify-content: flex-end; margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--bord-fort); }
 .note-cadenas { display: flex; gap: 8px; align-items: center; margin: 12px 0 4px; font-size: 12.5px; color: var(--encre-doux); }
 .note-cadenas .icone { color: var(--ambre); }
 
@@ -226,7 +240,7 @@ input::placeholder { color: var(--encre-tres-doux); }
 .case-mois .mois { max-width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; font-size: 11.5px; font-weight: 600; color: var(--encre-doux); }
 .duo-dette { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: end; }
 .duo-dette .grille-champs { margin-top: 0; }
-.panneau-rangee.double .duo-dette { grid-template-columns: minmax(0, 1fr); }
+.sous-parties.double .duo-dette { grid-template-columns: minmax(0, 1fr); }
 .carte-equivalent { padding: 9px 12px; border-radius: 12px; border: 1px solid var(--bord); display: flex; flex-direction: column; }
 .carte-equivalent span { font-size: 12px; color: var(--encre-doux); font-weight: 600; }
 .carte-equivalent strong { font-size: 18px; color: var(--chiffre); }
@@ -287,7 +301,7 @@ input::placeholder { color: var(--encre-tres-doux); }
 .question-dettes .actions-ligne { margin-top: 6px; justify-content: center; display: flex; gap: 8px; flex-wrap: wrap; }
 .carte-dette { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px; border: 1px solid var(--bord); border-radius: 12px; }
 .champs-dette { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; }
-.panneau-rangee.double .champs-dette { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.sous-parties.double .champs-dette { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .champ-dette { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; font-weight: 600; color: var(--encre-doux); min-width: 0; }
 .champ-dette input { padding: 6px 8px; }
 .champ-dette .saisie-nombre.euro input { padding-right: 24px; }
@@ -395,13 +409,15 @@ input::placeholder { color: var(--encre-tres-doux); }
   }
   .panneau-complet { display: none; }
   .panneau-compact { display: block; }
-  .zone-detail { scroll-margin-top: 100px; }
+  .bloc { scroll-margin-top: 100px; }
 }
 @media (max-width: 900px) {
   .panneau-equilibre { top: calc(var(--rail-replie) + 6px); }
-  .zone-detail { scroll-margin-top: 150px; }
-  .panneau-rangee.double { grid-template-columns: 1fr; }
-  .corps-volet { padding: 4px 14px 14px; }
+  .bloc { scroll-margin-top: 150px; }
+  .sous-parties.double { grid-template-columns: minmax(0, 1fr); }
+  .sous-parties.double > :first-child { padding: 12px 0 16px; border-right: 0; border-bottom: 1px dashed var(--bord-fort); }
+  .sous-parties.double > :last-child { padding-left: 0; }
+  .corps-bloc { padding: 4px 14px 14px; }
   .ligne { grid-template-columns: minmax(0, 1fr) 116px 28px; }
   .ligne .retirer { opacity: 1; }
   .equation-loyer { grid-template-columns: 1fr; }
@@ -415,9 +431,10 @@ input::placeholder { color: var(--encre-tres-doux); }
 }
 @media (max-width: 640px) {
   /* Une tuile par ligne : la paire reste cote a cote dessous. */
-  .grille-sections { grid-template-columns: 1fr; gap: 6px; }
-  .tuile-section { padding: 8px 10px; gap: 10px; }
-  .titre-volet { white-space: normal; }
+  .tete-bloc { grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px; }
+  .tete-bloc .montant-bloc { grid-column: 2; grid-row: 2; font-size: 14px; }
+  .tete-bloc .chevron { grid-column: 3; grid-row: 1; }
+  .marque-bloc { align-self: start; }
 }
 
 /* ----------------------------------------------------------------- synthese */

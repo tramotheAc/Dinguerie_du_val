@@ -6,7 +6,7 @@
    sinon on prend celle de son identifiant, puis celle de sa section.
    =========================================================================== */
 
-import { svg } from './dom.js?v=281db63c74';
+import { svg } from './dom.js?v=4ced75009b';
 
 /* Chaque icone : une liste de traces (path d) dans une grille 24 x 24. */
 export const ICONES = {

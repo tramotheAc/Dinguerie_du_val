@@ -6,9 +6,9 @@
    Memes categories et memes couleurs que la repartition de la synthese.
    =========================================================================== */
 
-import { h, icone, svg, vider } from './dom.js?v=281db63c74';
-import { formater } from './format.js?v=281db63c74';
-import { pastilleNiveau } from './graphiques.js?v=281db63c74';
+import { h, icone, svg, vider } from './dom.js?v=4ced75009b';
+import { formater } from './format.js?v=4ced75009b';
+import { pastilleNiveau } from './graphiques.js?v=4ced75009b';
 
 const R = 64;
 const TOUR = 2 * Math.PI * R;
@@ -100,11 +100,11 @@ export function creerPanneau({ racine, config, surSynthese }) {
         !rienSaisi && sc?.palier ? pastilleNiveau(sc.palier) : null);
 
       const restant = total - faites;
-      avance.textContent = restant ? `${faites} section${faites > 1 ? 's' : ''} sur ${total} complétée${faites > 1 ? 's' : ''} · plus que ${restant} !` : `Les ${total} sections sont complètes.`;
+      avance.textContent = restant ? `${faites} étape${faites > 1 ? 's' : ''} sur ${total} complétée${faites > 1 ? 's' : ''} · plus que ${restant} !` : `Les ${total} étapes sont complètes.`;
 
       compactChiffre.textContent = vide ? '—' : `${negatif ? '−' : ''}${formater(Math.abs(reste ?? 0), 'euro')}`;
       compactChiffre.classList.toggle('negatif', !vide && negatif);
-      compactAvance.textContent = `· ${faites} / ${total} sections`;
+      compactAvance.textContent = `· ${faites} / ${total} étapes`;
       vider(compactBande,
         cats.map((c, i) => (valeurs[i] ? h('span', { class: 'segment', style: { flexGrow: String(valeurs[i]), background: c.couleur } }) : null)),
         ressources > depenses ? h('span', { class: 'segment reste', style: { flexGrow: String(ressources - depenses) } }) : null,

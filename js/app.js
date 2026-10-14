@@ -7,17 +7,17 @@
    l'onglet efface tout - c'est voulu.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer } from './dom.js?v=281db63c74';
-import { chargerConfig } from './config.js?v=281db63c74';
-import { calculerTout } from './moteur.js?v=281db63c74';
-import { formater } from './format.js?v=281db63c74';
-import { lirePrerempli } from './url.js?v=281db63c74';
-import { creerSaisie, etatVide, progression } from './saisie.js?v=281db63c74';
-import { dessinIcone, nomIcone } from './icones.js?v=281db63c74';
-import { rendreSynthese, saisieVide, identite } from './synthese.js?v=281db63c74';
-import { apparaitre, signaler, cascade } from './animations.js?v=281db63c74';
-import { creerPanneau } from './panneau.js?v=281db63c74';
-import { versionPerimee } from './version.js?v=281db63c74';
+import { h, icone, vider, confirmer, annoncer } from './dom.js?v=4ced75009b';
+import { chargerConfig } from './config.js?v=4ced75009b';
+import { calculerTout } from './moteur.js?v=4ced75009b';
+import { formater } from './format.js?v=4ced75009b';
+import { lirePrerempli } from './url.js?v=4ced75009b';
+import { creerSaisie, etatVide, progression } from './saisie.js?v=4ced75009b';
+import { dessinIcone, nomIcone } from './icones.js?v=4ced75009b';
+import { rendreSynthese, saisieVide, identite } from './synthese.js?v=4ced75009b';
+import { apparaitre, signaler, cascade } from './animations.js?v=4ced75009b';
+import { creerPanneau } from './panneau.js?v=4ced75009b';
+import { versionPerimee } from './version.js?v=4ced75009b';
 
 let config;
 let etat = etatVide();
@@ -142,7 +142,7 @@ async function chargerDemo(profil) {
   construireSaisie(null);
   recalculer();
   if (vue !== 'saisie') montrer('saisie');
-  cascade(document.querySelectorAll('.tuile-section'), 20);
+  cascade(document.querySelectorAll('.bloc'), 20);
   annoncer(`Ménage fictif chargé : ${profil.libelle}`, 'ok');
 }
 
@@ -207,7 +207,7 @@ async function telechargerPdf() {
   const voile = h('div', { class: 'voile-pdf' }, h('div', { class: 'carte' }, h('span', { class: 'roue', 'aria-hidden': 'true' }), 'Fabrication du PDF…'));
   document.body.append(voile);
   try {
-    const { exporterPdf } = await import('./pdf.js?v=281db63c74');
+    const { exporterPdf } = await import('./pdf.js?v=4ced75009b');
     await exporterPdf({ config, resultat, etat });
     annoncer('PDF téléchargé.', 'ok');
   } catch (e) {

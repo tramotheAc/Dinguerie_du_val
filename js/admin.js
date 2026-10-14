@@ -8,17 +8,17 @@
    deposer dans le depot, a la place de config/parametres.json.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=281db63c74';
-import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=281db63c74';
-import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=281db63c74';
-import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=281db63c74';
-import { formater, interpoler, FORMATS } from './format.js?v=281db63c74';
-import { champsAutorises, construireLien, genererDax } from './url.js?v=281db63c74';
-import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=281db63c74';
-import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=281db63c74';
-import { apparaitre, cascade } from './animations.js?v=281db63c74';
-import { ICONES, dessinIcone, nomIcone } from './icones.js?v=281db63c74';
-import { versionPerimee } from './version.js?v=281db63c74';
+import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=4ced75009b';
+import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=4ced75009b';
+import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=4ced75009b';
+import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=4ced75009b';
+import { formater, interpoler, FORMATS } from './format.js?v=4ced75009b';
+import { champsAutorises, construireLien, genererDax } from './url.js?v=4ced75009b';
+import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=4ced75009b';
+import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=4ced75009b';
+import { apparaitre, cascade } from './animations.js?v=4ced75009b';
+import { ICONES, dessinIcone, nomIcone } from './icones.js?v=4ced75009b';
+import { versionPerimee } from './version.js?v=4ced75009b';
 
 const PANNEAUX = [
   { id: 'accueil', titre: 'Vue d’ensemble', groupe: 'Paramétrage' },
@@ -268,7 +268,7 @@ function choix(objet, cle, options, surChange) {
 function caseACocher(objet, cle, libelle, attrs = {}) {
   const id = nouvelId();
   return h('label', { class: 'case', for: id },
-    h('input', { id, type: 'checkbox', checked: !!objet[cle], ...attrs, onchange: (e) => { objet[cle] = e.target.checked; modifie(); } }),
+    h('input', { id, type: 'checkbox', checked: !!objet[cle], onchange: (e) => { objet[cle] = e.target.checked; modifie(); }, ...attrs }),
     h('span', {}, libelle));
 }
 
@@ -553,11 +553,12 @@ function carteSection(s, n) {
     h('div', { class: 'pile serree' },
       h('div', { class: 'grille-champs' },
         etiquette('Titre de la section', texte(s, 'titre')),
-        etiquette('Nom court (barre des étapes)', texte(s, 'court', { placeholder: s.titre })),
+        etiquette('Nom court (résumé de l’étape)', texte(s, 'court', { placeholder: s.titre })),
         etiquette('Icône de la section', choixIcone(s, 'dossier')),
         etiquette('Description', texte(s, 'description', { placeholder: '—' })),
         s.type === 'budget' ? etiquette('Total affiché en tête', choix(s, 'total', optionsVariables(true))) : null,
-        n > 0 ? caseACocher(s, 'avec_precedente', `Sur la même ligne que « ${config.sections[n - 1].court || config.sections[n - 1].titre} »`) : null),
+        n > 0 ? caseACocher(s, 'avec_precedente', `Dans la même étape que « ${config.sections[n - 1].court || config.sections[n - 1].titre} »`, { onchange: (e) => { s.avec_precedente = e.target.checked; modifie(true); } }) : null,
+        config.sections[n + 1]?.avec_precedente && !s.avec_precedente ? etiquette('Titre de l’étape (avec la section suivante)', texte(s, 'bloc', { placeholder: `${s.court || s.titre} et ${config.sections[n + 1].court || config.sections[n + 1].titre}` })) : null),
       corps),
     rangement(config.sections, n, {
       supprimer: s.type === 'budget',

@@ -123,7 +123,8 @@
           "url": true
         }
       ],
-      "lignes_calculees": []
+      "lignes_calculees": [],
+      "bloc": "Situation du foyer"
     },
     {
       "id": "logement",
@@ -178,7 +179,8 @@
           "libelle": "Nombre de mois d'impayés",
           "variable": "mois_impayes"
         }
-      ]
+      ],
+      "bloc": "Dettes"
     },
     {
       "id": "dettes",
@@ -317,7 +319,8 @@
           "libelle": "Autres charges fixes",
           "type": "montant"
         }
-      ]
+      ],
+      "bloc": "Charges"
     },
     {
       "id": "vie_courante",
