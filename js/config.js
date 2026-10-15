@@ -11,7 +11,7 @@
    donnee de menage. La saisie, elle, ne quitte pas la memoire de la page.
    =========================================================================== */
 
-import { verifier } from './moteur.js?v=743faf48c0';
+import { verifier } from './moteur.js?v=b69771c4eb';
 
 const CLE = 'dinguerie.parametrage.brouillon';
 
@@ -46,12 +46,14 @@ export function effacerBrouillon() {
 /* Un brouillon fait avant une evolution du parametrage publie n'a pas les
    reglages apparus depuis (sections cote a cote, postes d'office, noms
    courts...). On lui ajoute ce qui lui manque, sans toucher a ce qu'il
-   contient : objets apparies par cle, ou par « id » dans les listes. */
+   contient : objets apparies par cle, ou dans les listes par leur
+   identifiant (« id », sinon « indicateur » ou « variable »). */
 const objet = (x) => x && typeof x === 'object' && !Array.isArray(x);
+const cleDe = (x) => x.id ?? x.indicateur ?? x.variable;
 export function rattraper(brouillon, publie) {
   if (Array.isArray(brouillon) && Array.isArray(publie)) {
-    const parId = new Map(publie.filter((p) => objet(p) && p.id !== undefined).map((p) => [p.id, p]));
-    for (const b of brouillon) if (objet(b) && parId.has(b.id)) rattraper(b, parId.get(b.id));
+    const parCle = new Map(publie.filter((p) => objet(p) && cleDe(p) !== undefined).map((p) => [cleDe(p), p]));
+    for (const b of brouillon) if (objet(b) && parCle.has(cleDe(b))) rattraper(b, parCle.get(cleDe(b)));
   } else if (objet(brouillon) && objet(publie)) {
     for (const [cle, valeur] of Object.entries(publie)) {
       if (!(cle in brouillon)) brouillon[cle] = JSON.parse(JSON.stringify(valeur));

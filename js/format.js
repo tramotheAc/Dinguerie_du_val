@@ -30,7 +30,7 @@ export function formater(v, format = 'nombre') {
     case 'euro': return signe(`${(Math.abs(v) >= 100 || Number.isInteger(Math.round(v * 100) / 100) ? ENTIER : DEUX).format(v)} €`);
     case 'pourcent': return signe(`${UN.format(v * 100)} %`);
     case 'mois': return signe(`${UN.format(v)} mois`);
-    case 'score': return `${ENTIER.format(v)} / 100`;
+    case 'score': return `${ENTIER.format(v)}\u00a0%`;
     case 'decimal': return signe(DEUX.format(v));
     case 'booleen': return v ? 'Oui' : 'Non';
     case 'nombre': return signe(DEUX.format(v));

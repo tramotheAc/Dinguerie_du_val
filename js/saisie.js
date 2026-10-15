@@ -18,11 +18,11 @@
    additions dans un champ (« 25+12+8 »), Entree pour passer au suivant.
    =========================================================================== */
 
-import { h, icone, vider, svg } from './dom.js?v=743faf48c0';
-import { formater } from './format.js?v=743faf48c0';
-import { signaler, apparaitre } from './animations.js?v=743faf48c0';
-import { dessinIcone, nomIcone } from './icones.js?v=743faf48c0';
-import { jaugeZones, pastilleNiveau } from './graphiques.js?v=743faf48c0';
+import { h, icone, vider, svg } from './dom.js?v=b69771c4eb';
+import { formater } from './format.js?v=b69771c4eb';
+import { signaler, apparaitre } from './animations.js?v=b69771c4eb';
+import { dessinIcone, nomIcone } from './icones.js?v=b69771c4eb';
+import { jaugeZones, pastilleNiveau } from './graphiques.js?v=b69771c4eb';
 
 const FREQUENCES = [
   { id: 'sem', libelle: 'Sem.', titre: 'par semaine', vers: (x) => (x * 52) / 12 },
@@ -664,7 +664,7 @@ export function creerSaisie({ config, racine, etat, prerempli, surChangement, su
       h('div', { class: 'puces-fin' },
         h('span', { class: 'jeton taupe' }, `${p.faites} / ${p.total} étapes`),
         h('span', { class: `jeton ${negatif ? 'rouge' : 'vert'}` }, `${negatif ? 'Déficit' : 'Reste à vivre'} ${formater(Math.abs(v.solde_apres_dettes ?? 0), 'euro')}`),
-        r.score ? pastilleNiveau(r.score.palier, `Score ${formater(r.score.valeur, 'nombre')} / ${r.score.max}`) : null),
+        r.score ? pastilleNiveau(r.score.palier, `Score ${formater(Math.round((r.score.valeur / (r.score.max || 1)) * 100), 'nombre')}\u00a0%`) : null),
       h('button', { type: 'button', class: 'bouton grand', 'data-aller': 'synthese', onclick: () => document.querySelector('.nav [data-vue="synthese"]')?.click() }, 'Voir la synthèse et le PDF', icone('suite')));
   }
 

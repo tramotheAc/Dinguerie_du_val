@@ -112,7 +112,7 @@ Corrections faites à la transcription, toutes réglables dans l'admin (détail 
 | Seuils affichés | textes figés, parfois contradictoires | écrits à partir des paliers |
 | Mois d'impayés | dette / (loyer + charges) | dette / loyer résiduel |
 
-Sur l'exemple du classeur, tous les indicateurs et le score (30/100) sont identiques ;
+Sur l'exemple du classeur, tous les indicateurs et le score (30 %) sont identiques ;
 la mensualité conseillée passe de 90 € à 40 € (score critique → bas de fourchette).
 Avec tous les coefficients à 100 %, on retrouve 90 € et 63 mois.
 

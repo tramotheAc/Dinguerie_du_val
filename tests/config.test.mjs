@@ -25,3 +25,11 @@ test('un ancien brouillon recoit les reglages apparus depuis, sans perdre les si
   assert.equal(brouillon.sections[1].avec_precedente, false, 'un choix du brouillon est respecte');
   assert.equal(brouillon.sections.length, 3, 'une liste du brouillon garde sa composition');
 });
+
+test('les jauges et criteres sont apparies par leur indicateur', () => {
+  const publie = { jauges: [{ indicateur: 'taux_effort', critere: 'score_effort', en_clair: 'x' }] };
+  const brouillon = { jauges: [{ indicateur: 'taux_effort', libelle: 'Effort' }] };
+  rattraper(brouillon, publie);
+  assert.equal(brouillon.jauges[0].critere, 'score_effort');
+  assert.equal(brouillon.jauges[0].libelle, 'Effort');
+});

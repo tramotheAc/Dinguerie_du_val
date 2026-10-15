@@ -6,9 +6,9 @@
    Memes categories et memes couleurs que la repartition de la synthese.
    =========================================================================== */
 
-import { h, icone, svg, vider } from './dom.js?v=743faf48c0';
-import { formater } from './format.js?v=743faf48c0';
-import { pastilleNiveau } from './graphiques.js?v=743faf48c0';
+import { h, icone, svg, vider } from './dom.js?v=b69771c4eb';
+import { formater } from './format.js?v=b69771c4eb';
+import { pastilleNiveau } from './graphiques.js?v=b69771c4eb';
 
 const R = 64;
 const TOUR = 2 * Math.PI * R;
@@ -96,7 +96,7 @@ export function creerPanneau({ racine, config, surSynthese }) {
         h('strong', {}, formater(effort?.valeur, 'pourcent')), effort?.palier ? pastilleNiveau(effort.palier) : null);
       const sc = resultat.score;
       vider(tuileScore, h('span', { class: 'etiquette' }, 'Score'),
-        h('strong', {}, rienSaisi || !sc ? '—' : `${formater(sc.valeur, 'nombre')}`, h('small', {}, sc ? ` / ${sc.max}` : '')),
+        h('strong', {}, rienSaisi || !sc ? '—' : formater(Math.round((sc.valeur / (sc.max || 1)) * 100), 'nombre'), h('small', {}, rienSaisi || !sc ? '' : '\u00a0%')),
         !rienSaisi && sc?.palier ? pastilleNiveau(sc.palier) : null);
 
       const restant = total - faites;

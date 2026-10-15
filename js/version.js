@@ -1,7 +1,7 @@
 /* La version du site, posee par outils/version.mjs. La page porte la meme
    dans <meta name="version"> : si elles different, le navigateur a melange
    une page recente et un script garde en cache. */
-export const VERSION = '743faf48c0';
+export const VERSION = 'b69771c4eb';
 
 export function versionPerimee() {
   const page = document.querySelector('meta[name="version"]')?.content;

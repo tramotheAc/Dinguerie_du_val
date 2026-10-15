@@ -567,6 +567,7 @@ input::placeholder { color: var(--encre-tres-doux); }
 .legende-points { list-style: none; margin: 8px 0 0; padding: 0; display: flex; gap: 6px 18px; flex-wrap: wrap; font-size: 13px; }
 .legende-points li { display: inline-flex; align-items: center; gap: 6px; }
 .legende-points .zero { color: var(--rouge); }
+.legende-points small { color: var(--encre-doux); }
 
 .grille-criteres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .carte-critere {

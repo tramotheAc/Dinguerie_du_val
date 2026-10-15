@@ -5,8 +5,8 @@
    tourner dans l'admin sur le jeu d'essai, a chaque frappe.
    =========================================================================== */
 
-import { compiler, evaluer, variablesLues, baremesCites, estNul, vrai, ErreurFormule } from './formules.js?v=743faf48c0';
-import { formater, interpoler } from './format.js?v=743faf48c0';
+import { compiler, evaluer, variablesLues, baremesCites, estNul, vrai, ErreurFormule } from './formules.js?v=b69771c4eb';
+import { formater, interpoler } from './format.js?v=b69771c4eb';
 
 const NUMERIQUES = new Set(['nombre', 'montant']);
 

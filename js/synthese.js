@@ -11,12 +11,12 @@
    d'un tenant et ne le coupe jamais entre deux pages.
    =========================================================================== */
 
-import { h, icone, vider } from './dom.js?v=743faf48c0';
-import { formater, interpoler, echapper } from './format.js?v=743faf48c0';
-import { compter, cascade } from './animations.js?v=743faf48c0';
-import { calculer } from './formules.js?v=743faf48c0';
-import { demiCercle, pastilleNiveau, couleurNiveau, cascadeBudget, barreSur100, jaugeNommee, barrePoints, scenarios } from './graphiques.js?v=743faf48c0';
-import { dessinIcone } from './icones.js?v=743faf48c0';
+import { h, icone, vider } from './dom.js?v=b69771c4eb';
+import { formater, interpoler, echapper } from './format.js?v=b69771c4eb';
+import { compter, cascade } from './animations.js?v=b69771c4eb';
+import { calculer } from './formules.js?v=b69771c4eb';
+import { demiCercle, pastilleNiveau, couleurNiveau, cascadeBudget, barreSur100, jaugeNommee, barrePoints, scenarios } from './graphiques.js?v=b69771c4eb';
+import { dessinIcone } from './icones.js?v=b69771c4eb';
 
 const memoire = new Map(); // derniere valeur affichee par chiffre cle, pour compter depuis elle
 
@@ -26,6 +26,10 @@ function chiffre(el, cle, valeur, format, animer) {
   if (!animer || valeur === null || valeur === undefined) { el.textContent = formater(valeur, format); return; }
   compter(el, de, valeur, (v) => { el.textContent = formater(['nombre', 'score'].includes(format) && v !== valeur ? Math.round(v) : v, format); });
 }
+
+/* Le score et ses points se lisent en pourcentage du maximum. */
+const pct = (x, max) => Math.round(((x ?? 0) / (max || 1)) * 100);
+const enPct = (x, max) => `${formater(pct(x, max), 'nombre')}\u00a0%`;
 
 export function saisieVide(etat) {
   return !Object.entries(etat.valeurs).some(([, v]) => v !== '' && v !== 0 && v !== null && v !== undefined)
@@ -133,7 +137,7 @@ function bilan(config, resultat, etat, animer) {
   const ecartes = etat.ui?.leviersEcartes ?? new Set();
   const piste = resultat.leviersRetenus.find((l) => !ecartes.has(l.id));
   const chiffreScore = h('span', { class: 'score-chiffre' });
-  chiffre(chiffreScore, 'bilan-score', sc?.valeur, 'nombre', animer);
+  chiffre(chiffreScore, 'bilan-score', sc ? pct(sc.valeur, sc.max) : null, 'nombre', animer);
   return h('section', { class: 'bilan', id: 's-bilan', 'data-bloc-pdf': '' },
     h('div', { class: 'bilan-texte' },
       h('p', { class: 'surtitre' }, ['Bilan', ...qui].join(' · ')),
@@ -143,7 +147,7 @@ function bilan(config, resultat, etat, animer) {
     h('div', { class: 'bilan-droite' },
       sc ? h('div', { class: 'bilan-score' },
         demiCercle(sc.valeur, sc.max, sc.palier, { animer, clair: true }),
-        h('div', { class: 'score-centre' }, chiffreScore, h('span', { class: 'sur' }, `/ ${sc.max}`)),
+        h('div', { class: 'score-centre' }, chiffreScore, h('span', { class: 'sur' }, '%')),
         h('span', { class: 'legende-score' }, 'Score de fragilité'),
         pastilleNiveau(sc.palier)) : null,
       piste ? h('div', { class: 'premiere-piste' },
@@ -210,21 +214,21 @@ function score(config, resultat, animer) {
   const v = resultat.valeurs;
   const total = sc.criteres.reduce((t, c) => t + (c.valeur ?? 0), 0);
   const nombre = h('span', { class: 'score-grand' });
-  chiffre(nombre, 'score-grand', sc.valeur, 'nombre', animer);
+  chiffre(nombre, 'score-grand', pct(sc.valeur, sc.max), 'nombre', animer);
   const tete = h('section', { class: 'carte bloc-synthese score-tete', id: 's-score', 'data-bloc-pdf': '' },
     h('div', { class: 'corps grille-score' },
       h('div', { class: 'score-resume' },
         h('p', { class: 'numero-bloc' }, '3 · Pourquoi ce score ?'),
-        h('p', { class: 'ligne-score' }, nombre, h('span', { class: 'sur' }, `/ ${sc.max}`)),
+        h('p', { class: 'ligne-score' }, nombre, h('span', { class: 'sur' }, '%')),
         pastilleNiveau(sc.palier),
         h('p', { class: 'note' }, 'Plus le score est haut, plus la situation est solide.')),
       h('div', { class: 'score-detail' },
-        h('p', { class: 'titre-points' }, h('strong', {}, 'D’où viennent les points ?'), ` · ${total} gagnés sur ${sc.max} possibles`),
+        h('p', { class: 'titre-points' }, h('strong', {}, 'D’où viennent les points ?'), ` · ${enPct(total, sc.max)} des points atteints`),
         barrePoints(sc.criteres, sc.max),
-        h('div', { class: 'graduation-points' }, [0, 25, 50, 75, 100].map((x) => h('span', { style: { left: `${x}%` } }, String(Math.round(sc.max * x / 100))))),
+        h('div', { class: 'graduation-points' }, [0, 25, 50, 75, 100].map((x) => h('span', { style: { left: `${x}%` } }, `${x}\u00a0%`))),
         h('ul', { class: 'legende-points' }, sc.criteres.map((c, n) => h('li', {},
           h('span', { class: 'pastille-legende', style: { background: `var(--cat-${(n % 5) + 1})` } }),
-          c.libelle, ' ', h('strong', { class: (c.valeur ?? 0) === 0 ? 'zero' : '' }, `${c.valeur ?? 0} / ${c.max}`)))))));
+          c.libelle, ' ', h('strong', { class: (c.valeur ?? 0) === 0 ? 'zero' : '' }, enPct(c.valeur, sc.max)), h('small', {}, ` sur ${enPct(c.max, sc.max)}`)))))));
 
   // Une carte par critere, avec la jauge qui le suit (reglage « critere » de la jauge)
   const cartes = sc.criteres.map((c) => {
@@ -235,7 +239,7 @@ function score(config, resultat, animer) {
     return h('div', { class: `carte-critere niveau-${j?.palier?.niveau ?? niveauPts}` },
       h('div', { class: 'tete-critere' },
         h('span', { class: 'nom-critere' }, j?.libelle ?? c.libelle),
-        h('span', { class: `points-critere niveau-${niveauPts}` }, h('strong', {}, String(c.valeur ?? 0)), ` / ${c.max} pts`)),
+        h('span', { class: `points-critere niveau-${niveauPts}`, title: `${c.valeur ?? 0} points sur ${c.max}` }, h('strong', {}, enPct(c.valeur, c.max)), ' des points')),
       j ? [
         h('div', { class: 'valeur-critere' }, h('strong', {}, fmt(j.valeur, format)), pastilleNiveau(j.palier)),
         jaugeNommee(j, format),

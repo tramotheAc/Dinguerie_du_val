@@ -9,9 +9,9 @@
    - un titre (title) sur chaque marque pour le survol.
    =========================================================================== */
 
-import { h, svg } from './dom.js?v=743faf48c0';
-import { formater } from './format.js?v=743faf48c0';
-import { grandir, tracer, sansAnimation } from './animations.js?v=743faf48c0';
+import { h, svg } from './dom.js?v=b69771c4eb';
+import { formater } from './format.js?v=b69771c4eb';
+import { grandir, tracer, sansAnimation } from './animations.js?v=b69771c4eb';
 
 const COULEUR_NIVEAU = { vert: 'var(--vert)', ambre: 'var(--ambre)', rouge: 'var(--rouge)', neutre: 'var(--encre-tres-doux)' };
 const FOND_NIVEAU = { vert: 'var(--vert-fond)', ambre: 'var(--ambre-fond)', rouge: 'var(--rouge-fond)', neutre: 'var(--surface-2)' };
@@ -146,8 +146,8 @@ export function demiCercle(valeur, max, palier, { animer = true, zones = [], cla
   return svg('svg', { viewBox: '0 0 200 112', class: `demi-cercle${clair ? ' clair' : ''}`, role: 'img', 'aria-label': `Score ${formater(valeur, 'nombre')} sur ${m}` },
     piste, encoches,
     p > 0 ? valeurArc : null,
-    svg('text', { x: 18, y: 110, class: 'graduation', 'text-anchor': 'middle' }, '0'),
-    svg('text', { x: 182, y: 110, class: 'graduation', 'text-anchor': 'middle' }, String(m)));
+    svg('text', { x: 18, y: 110, class: 'graduation', 'text-anchor': 'middle' }, '0\u00a0%'),
+    svg('text', { x: 182, y: 110, class: 'graduation', 'text-anchor': 'middle' }, '100\u00a0%'));
 }
 
 /* Zones du score, de gauche a droite, a partir des paliers (sens « haut »). */
@@ -309,11 +309,12 @@ export function jaugeNommee(jauge, format) {
 export function barrePoints(criteres, max) {
   const total = criteres.reduce((t, c) => t + (c.valeur ?? 0), 0);
   const perdus = Math.max(0, max - total);
+  const pc = (x) => `${Math.round(((x ?? 0) / (max || 1)) * 100)}\u00a0%`;
   return h('div', { class: 'barre-points' },
     criteres.map((c, i) => ((c.valeur ?? 0) > 0 ? h('span', {
-      class: 'segment-points', style: { flexGrow: String(c.valeur), background: `var(--cat-${(i % 5) + 1})` }, title: `${c.libelle} : ${c.valeur} / ${c.max}`,
-    }, h('span', { class: 'chiffre-segment' }, String(c.valeur))) : null)),
-    perdus > 0 ? h('span', { class: 'segment-points perdus', style: { flexGrow: String(perdus) } }, `${perdus} points perdus`) : null);
+      class: 'segment-points', style: { flexGrow: String(c.valeur), background: `var(--cat-${(i % 5) + 1})` }, title: `${c.libelle} : ${pc(c.valeur)} sur ${pc(c.max)}`,
+    }, h('span', { class: 'chiffre-segment' }, pc(c.valeur))) : null)),
+    perdus > 0 ? h('span', { class: 'segment-points perdus', style: { flexGrow: String(perdus) } }, `${pc(perdus)} perdus`) : null);
 }
 
 /* ------------------------------------------- scenarios de plan compares */
