@@ -10,9 +10,9 @@
    ne sort du poste - le PDF est fabrique dans le navigateur.
    =========================================================================== */
 
-import { h } from './dom.js?v=b602aab638';
-import { couperAnimations } from './animations.js?v=b602aab638';
-import { rendreSynthese, identite } from './synthese.js?v=b602aab638';
+import { h } from './dom.js?v=a070dc9404';
+import { couperAnimations } from './animations.js?v=a070dc9404';
+import { rendreSynthese, identite } from './synthese.js?v=a070dc9404';
 
 const chargees = {};
 function charger(src) {
@@ -56,7 +56,7 @@ const nomFichier = (config, etat) => {
 };
 
 export async function exporterPdf({ config, resultat, etat }) {
-  await Promise.all([charger('vendor/jspdf.umd.min.js?v=b602aab638'), charger('vendor/html2canvas-pro.min.js?v=b602aab638')]);
+  await Promise.all([charger('vendor/jspdf.umd.min.js?v=a070dc9404'), charger('vendor/html2canvas-pro.min.js?v=a070dc9404')]);
   const { jsPDF } = window.jspdf;
   const capturer = window.html2canvas;
 

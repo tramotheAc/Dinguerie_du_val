@@ -18,11 +18,11 @@
    additions dans un champ (« 25+12+8 »), Entree pour passer au suivant.
    =========================================================================== */
 
-import { h, icone, vider, svg } from './dom.js?v=b602aab638';
-import { formater } from './format.js?v=b602aab638';
-import { signaler, apparaitre } from './animations.js?v=b602aab638';
-import { dessinIcone, nomIcone } from './icones.js?v=b602aab638';
-import { jaugeZones, pastilleNiveau } from './graphiques.js?v=b602aab638';
+import { h, icone, vider, svg } from './dom.js?v=a070dc9404';
+import { formater } from './format.js?v=a070dc9404';
+import { signaler, apparaitre } from './animations.js?v=a070dc9404';
+import { dessinIcone, nomIcone } from './icones.js?v=a070dc9404';
+import { jaugeZones, pastilleNiveau } from './graphiques.js?v=a070dc9404';
 
 const FREQUENCES = [
   { id: 'sem', libelle: 'Sem.', titre: 'par semaine', vers: (x) => (x * 52) / 12 },

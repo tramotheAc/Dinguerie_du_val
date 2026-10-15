@@ -8,18 +8,18 @@
    deposer dans le depot, a la place de config/parametres.json.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=b602aab638';
-import { chargerPublie, lireBrouillon, lireBase, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=b602aab638';
-import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=b602aab638';
-import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=b602aab638';
-import { formater, interpoler, FORMATS } from './format.js?v=b602aab638';
-import { champsAutorises, construireLien, genererDax } from './url.js?v=b602aab638';
-import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=b602aab638';
-import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=b602aab638';
-import { apparaitre, cascade } from './animations.js?v=b602aab638';
-import { ICONES, dessinIcone, nomIcone } from './icones.js?v=b602aab638';
-import { versionPerimee } from './version.js?v=b602aab638';
-import { brancherBoutonPresentation } from './presentation.js?v=b602aab638';
+import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=a070dc9404';
+import { chargerPublie, lireBrouillon, lireBase, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=a070dc9404';
+import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=a070dc9404';
+import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=a070dc9404';
+import { formater, interpoler, FORMATS } from './format.js?v=a070dc9404';
+import { champsAutorises, construireLien, genererDax } from './url.js?v=a070dc9404';
+import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=a070dc9404';
+import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=a070dc9404';
+import { apparaitre, cascade } from './animations.js?v=a070dc9404';
+import { ICONES, dessinIcone, nomIcone } from './icones.js?v=a070dc9404';
+import { versionPerimee } from './version.js?v=a070dc9404';
+import { brancherBoutonPresentation } from './presentation.js?v=a070dc9404';
 
 const PANNEAUX = [
   { id: 'accueil', titre: 'Vue d’ensemble', groupe: 'Paramétrage' },

@@ -7,18 +7,18 @@
    l'onglet efface tout - c'est voulu.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer } from './dom.js?v=b602aab638';
-import { chargerConfig } from './config.js?v=b602aab638';
-import { calculerTout } from './moteur.js?v=b602aab638';
-import { formater } from './format.js?v=b602aab638';
-import { lirePrerempli } from './url.js?v=b602aab638';
-import { creerSaisie, etatVide, progression } from './saisie.js?v=b602aab638';
-import { dessinIcone, nomIcone } from './icones.js?v=b602aab638';
-import { rendreSynthese, saisieVide, identite } from './synthese.js?v=b602aab638';
-import { apparaitre, signaler, cascade } from './animations.js?v=b602aab638';
-import { creerPanneau } from './panneau.js?v=b602aab638';
-import { versionPerimee } from './version.js?v=b602aab638';
-import { lancerPresentation, brancherBoutonPresentation } from './presentation.js?v=b602aab638';
+import { h, icone, vider, confirmer, annoncer } from './dom.js?v=a070dc9404';
+import { chargerConfig } from './config.js?v=a070dc9404';
+import { calculerTout } from './moteur.js?v=a070dc9404';
+import { formater } from './format.js?v=a070dc9404';
+import { lirePrerempli } from './url.js?v=a070dc9404';
+import { creerSaisie, etatVide, progression } from './saisie.js?v=a070dc9404';
+import { dessinIcone, nomIcone } from './icones.js?v=a070dc9404';
+import { rendreSynthese, saisieVide, identite } from './synthese.js?v=a070dc9404';
+import { apparaitre, signaler, cascade } from './animations.js?v=a070dc9404';
+import { creerPanneau } from './panneau.js?v=a070dc9404';
+import { versionPerimee } from './version.js?v=a070dc9404';
+import { lancerPresentation, brancherBoutonPresentation } from './presentation.js?v=a070dc9404';
 
 let config;
 let etat = etatVide();
@@ -208,7 +208,7 @@ async function telechargerPdf() {
   const voile = h('div', { class: 'voile-pdf' }, h('div', { class: 'carte' }, h('span', { class: 'roue', 'aria-hidden': 'true' }), 'Fabrication du PDF…'));
   document.body.append(voile);
   try {
-    const { exporterPdf } = await import('./pdf.js?v=b602aab638');
+    const { exporterPdf } = await import('./pdf.js?v=a070dc9404');
     await exporterPdf({ config, resultat, etat });
     annoncer('PDF téléchargé.', 'ok');
   } catch (e) {

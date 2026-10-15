@@ -13,8 +13,8 @@
    tout (animations, compteurs, progression) d'un seul geste.
    =========================================================================== */
 
-import { h, svg, vider } from './dom.js?v=b602aab638';
-import { dessinIcone } from './icones.js?v=b602aab638';
+import { h, svg, vider } from './dom.js?v=a070dc9404';
+import { dessinIcone } from './icones.js?v=a070dc9404';
 
 const LARGEUR = 1280;
 const HAUTEUR = 720;
@@ -421,9 +421,8 @@ function powerBi() {
   const champs = [['Adultes', '2'], ['Loyer', '650 €'], ['Dette locative', '1 200 €']]
     .map(([l, v]) => h('div', { class: 'champ-pbi verre' }, h('small', {}, l, h('i', {}, 'lien')), h('strong', {}, v)));
   const sansNom = h('p', { class: 'sans-nom' }, trait('cadenas'), 'Composition, logement, dette : jamais de nom dans le lien.');
-  const legende = h('p', { class: 'sc-legende' }, 'L’administration écrit pour vous la ', h('strong', {}, 'formule DAX'), ' qui fabrique ces liens dans Power BI.');
   const racine = h('div', { class: 'sc' }, sur, titre,
-    h('div', { class: 'grille-pbi' }, tableau, h('div', { class: 'droite-pbi' }, url, h('div', { class: 'champs-pbi' }, champs), sansNom)), legende);
+    h('div', { class: 'grille-pbi' }, tableau, h('div', { class: 'droite-pbi' }, url, h('div', { class: 'champs-pbi' }, champs), sansNom)));
   return {
     racine,
     animer() {
@@ -439,7 +438,6 @@ function powerBi() {
         jouer(c, [{ boxShadow: '0 0 0 0 rgba(159,224,189,.9)' }, { boxShadow: '0 0 0 14px rgba(159,224,189,0)' }], { delai: 4700 + i * 300, duree: 800 });
       });
       entrer(sansNom, 5600);
-      entrer(legende, 6300);
     },
   };
 }
@@ -528,12 +526,15 @@ export function lancerPresentation() {
     bPause,
     h('button', { type: 'button', class: 'pres-bouton', 'aria-label': 'Scène suivante', onclick: () => aller(Math.min(SCENES.length - 1, index + 1)) }, trait('suivant')),
     document.fullscreenEnabled ? h('button', { type: 'button', class: 'pres-bouton', 'aria-label': 'Plein écran', title: 'Plein écran', onclick: () => pleinEcran() }, trait('ecran')) : null);
-  const racine = h('div', { class: 'presentation', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Présentation de La dinguerie de val' },
+  // Une fenetre posee sur la page (environ les deux tiers de l'ecran) : on
+  // voit que c'est une fenetre, et la page reste devinee derriere le voile.
+  const fenetre = h('div', { class: 'presentation', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Présentation de La dinguerie de val' },
     decor(),
     h('div', { class: 'pres-haut' }, h('div', { class: 'pres-segments' }, segments), passer),
     cadre,
     h('div', { class: 'pres-bas' }, titreScene, commandes, h('span', { class: 'pres-titre-scene', 'aria-hidden': 'true', style: { visibility: 'hidden' } }, '')),
     h('p', { class: 'pres-astuce' }, 'Tournez le téléphone pour agrandir la vidéo.'));
+  const racine = h('div', { class: 'pres-voile' }, fenetre);
 
   const ajuster = () => {
     const l = cadre.clientWidth - 24;
@@ -582,7 +583,7 @@ export function lancerPresentation() {
 
   function pleinEcran() {
     if (document.fullscreenElement) document.exitFullscreen?.();
-    else racine.requestFullscreen?.().catch(() => {});
+    else fenetre.requestFullscreen?.().catch(() => {});
   }
 
   function clavier(e) {
@@ -602,6 +603,7 @@ export function lancerPresentation() {
   function fermer() {
     if (!racine.isConnected) return;
     window.removeEventListener('resize', ajuster);
+    document.removeEventListener('fullscreenchange', ajuster);
     document.removeEventListener('keydown', clavier, true);
     compteurs.forEach((c) => { c.actif = false; });
     if (document.fullscreenElement) document.exitFullscreen?.();
@@ -614,8 +616,11 @@ export function lancerPresentation() {
   }
 
   document.body.append(racine);
+  racine.animate([{ opacity: 0 }, { opacity: 1 }], { duration: reduit() ? 1 : 250 });
+  fenetre.animate([{ opacity: 0, transform: 'translateY(16px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: reduit() ? 1 : 380, easing: DOUX });
   document.documentElement.style.overflow = 'hidden';
   window.addEventListener('resize', ajuster);
+  document.addEventListener('fullscreenchange', ajuster);
   document.addEventListener('keydown', clavier, true);
   ajuster();
   majPause();

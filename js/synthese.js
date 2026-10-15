@@ -11,12 +11,12 @@
    d'un tenant et ne le coupe jamais entre deux pages.
    =========================================================================== */
 
-import { h, icone, vider } from './dom.js?v=b602aab638';
-import { formater, interpoler, echapper } from './format.js?v=b602aab638';
-import { compter, cascade } from './animations.js?v=b602aab638';
-import { calculer } from './formules.js?v=b602aab638';
-import { demiCercle, pastilleNiveau, couleurNiveau, cascadeBudget, barreSur100, jaugeNommee, barrePoints, scenarios } from './graphiques.js?v=b602aab638';
-import { dessinIcone } from './icones.js?v=b602aab638';
+import { h, icone, vider } from './dom.js?v=a070dc9404';
+import { formater, interpoler, echapper } from './format.js?v=a070dc9404';
+import { compter, cascade } from './animations.js?v=a070dc9404';
+import { calculer } from './formules.js?v=a070dc9404';
+import { demiCercle, pastilleNiveau, couleurNiveau, cascadeBudget, barreSur100, jaugeNommee, barrePoints, scenarios } from './graphiques.js?v=a070dc9404';
+import { dessinIcone } from './icones.js?v=a070dc9404';
 
 const memoire = new Map(); // derniere valeur affichee par chiffre cle, pour compter depuis elle
 
