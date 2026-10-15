@@ -7,17 +7,18 @@
    l'onglet efface tout - c'est voulu.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer } from './dom.js?v=643c072a0f';
-import { chargerConfig } from './config.js?v=643c072a0f';
-import { calculerTout } from './moteur.js?v=643c072a0f';
-import { formater } from './format.js?v=643c072a0f';
-import { lirePrerempli } from './url.js?v=643c072a0f';
-import { creerSaisie, etatVide, progression } from './saisie.js?v=643c072a0f';
-import { dessinIcone, nomIcone } from './icones.js?v=643c072a0f';
-import { rendreSynthese, saisieVide, identite } from './synthese.js?v=643c072a0f';
-import { apparaitre, signaler, cascade } from './animations.js?v=643c072a0f';
-import { creerPanneau } from './panneau.js?v=643c072a0f';
-import { versionPerimee } from './version.js?v=643c072a0f';
+import { h, icone, vider, confirmer, annoncer } from './dom.js?v=b602aab638';
+import { chargerConfig } from './config.js?v=b602aab638';
+import { calculerTout } from './moteur.js?v=b602aab638';
+import { formater } from './format.js?v=b602aab638';
+import { lirePrerempli } from './url.js?v=b602aab638';
+import { creerSaisie, etatVide, progression } from './saisie.js?v=b602aab638';
+import { dessinIcone, nomIcone } from './icones.js?v=b602aab638';
+import { rendreSynthese, saisieVide, identite } from './synthese.js?v=b602aab638';
+import { apparaitre, signaler, cascade } from './animations.js?v=b602aab638';
+import { creerPanneau } from './panneau.js?v=b602aab638';
+import { versionPerimee } from './version.js?v=b602aab638';
+import { lancerPresentation, brancherBoutonPresentation } from './presentation.js?v=b602aab638';
 
 let config;
 let etat = etatVide();
@@ -207,7 +208,7 @@ async function telechargerPdf() {
   const voile = h('div', { class: 'voile-pdf' }, h('div', { class: 'carte' }, h('span', { class: 'roue', 'aria-hidden': 'true' }), 'Fabrication du PDF…'));
   document.body.append(voile);
   try {
-    const { exporterPdf } = await import('./pdf.js?v=643c072a0f');
+    const { exporterPdf } = await import('./pdf.js?v=b602aab638');
     await exporterPdf({ config, resultat, etat });
     annoncer('PDF téléchargé.', 'ok');
   } catch (e) {
@@ -252,4 +253,8 @@ function brancher() {
 }
 
 window.dinguerieDemarree = true;
+// La presentation s'ouvre a chaque visite (rien n'est retenu) ; « Passer »
+// la ferme, le bouton du rail la relance.
+brancherBoutonPresentation();
+lancerPresentation();
 demarrer();

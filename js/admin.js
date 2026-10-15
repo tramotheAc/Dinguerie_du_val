@@ -8,17 +8,18 @@
    deposer dans le depot, a la place de config/parametres.json.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=643c072a0f';
-import { chargerPublie, lireBrouillon, lireBase, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=643c072a0f';
-import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=643c072a0f';
-import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=643c072a0f';
-import { formater, interpoler, FORMATS } from './format.js?v=643c072a0f';
-import { champsAutorises, construireLien, genererDax } from './url.js?v=643c072a0f';
-import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=643c072a0f';
-import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=643c072a0f';
-import { apparaitre, cascade } from './animations.js?v=643c072a0f';
-import { ICONES, dessinIcone, nomIcone } from './icones.js?v=643c072a0f';
-import { versionPerimee } from './version.js?v=643c072a0f';
+import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=b602aab638';
+import { chargerPublie, lireBrouillon, lireBase, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=b602aab638';
+import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=b602aab638';
+import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=b602aab638';
+import { formater, interpoler, FORMATS } from './format.js?v=b602aab638';
+import { champsAutorises, construireLien, genererDax } from './url.js?v=b602aab638';
+import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=b602aab638';
+import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=b602aab638';
+import { apparaitre, cascade } from './animations.js?v=b602aab638';
+import { ICONES, dessinIcone, nomIcone } from './icones.js?v=b602aab638';
+import { versionPerimee } from './version.js?v=b602aab638';
+import { brancherBoutonPresentation } from './presentation.js?v=b602aab638';
 
 const PANNEAUX = [
   { id: 'accueil', titre: 'Vue d’ensemble', groupe: 'Paramétrage' },
@@ -1000,4 +1001,5 @@ RENDUS.liens = () => {
 };
 
 window.dinguerieDemarree = true;
+brancherBoutonPresentation();
 demarrer();

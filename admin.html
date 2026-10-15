@@ -4,19 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta name="version" content="643c072a0f">
+  <meta name="version" content="b602aab638">
   <title>Administration – La dinguerie de val</title>
   <meta name="description" content="Paramétrage du calculateur : barèmes, seuils, formules de calcul, liens pré-remplis.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2329467b'/%3E%3Ctext x='16' y='21' font-family='Arial' font-weight='700' font-size='13' fill='white' text-anchor='middle'%3EDV%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/charte/jetons.css?v=643c072a0f">
-  <link rel="stylesheet" href="css/charte/bandeau.css?v=643c072a0f">
-  <link rel="stylesheet" href="css/charte/socle.css?v=643c072a0f">
-  <link rel="stylesheet" href="css/charte/composants.css?v=643c072a0f">
-  <link rel="stylesheet" href="css/charte/bouton-theme.css?v=643c072a0f">
-  <link rel="stylesheet" href="css/charte/motif-rail.css?v=643c072a0f">
-  <link rel="stylesheet" href="css/categories.css?v=643c072a0f">
-  <link rel="stylesheet" href="css/app.css?v=643c072a0f">
-  <link rel="stylesheet" href="css/admin.css?v=643c072a0f">
+  <link rel="stylesheet" href="css/charte/jetons.css?v=b602aab638">
+  <link rel="stylesheet" href="css/charte/bandeau.css?v=b602aab638">
+  <link rel="stylesheet" href="css/charte/socle.css?v=b602aab638">
+  <link rel="stylesheet" href="css/charte/composants.css?v=b602aab638">
+  <link rel="stylesheet" href="css/charte/bouton-theme.css?v=b602aab638">
+  <link rel="stylesheet" href="css/charte/motif-rail.css?v=b602aab638">
+  <link rel="stylesheet" href="css/categories.css?v=b602aab638">
+  <link rel="stylesheet" href="css/presentation.css?v=b602aab638">
+  <link rel="stylesheet" href="css/app.css?v=b602aab638">
+  <link rel="stylesheet" href="css/admin.css?v=b602aab638">
 </head>
 <body class="page-admin">
   <div class="app">
@@ -27,6 +28,10 @@
           <h1 id="titre-app">La dinguerie de val</h1>
           <p>Administration du paramétrage</p>
         </div>
+        <button type="button" class="bouton-presentation" id="bouton-presentation" aria-label="Lancer la présentation de l’outil" title="Lancer la présentation de l’outil">
+          <span class="lecture"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5-12-7.5Z" fill="currentColor"/></svg></span>
+          <span class="texte-presentation">Présentation</span>
+        </button>
         <button type="button" class="bascule-nav" aria-expanded="false" aria-controls="nav-admin">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
           Menu
@@ -66,7 +71,7 @@
       if (z) z.prepend(d);
     }, 6000);
   </script>
-  <script src="js/bouton-theme.js?v=643c072a0f"></script>
-  <script type="module" src="js/admin.js?v=643c072a0f"></script>
+  <script src="js/bouton-theme.js?v=b602aab638"></script>
+  <script type="module" src="js/admin.js?v=b602aab638"></script>
 </body>
 </html>

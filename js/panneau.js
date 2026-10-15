@@ -6,9 +6,9 @@
    Memes categories et memes couleurs que la repartition de la synthese.
    =========================================================================== */
 
-import { h, icone, svg, vider } from './dom.js?v=643c072a0f';
-import { formater } from './format.js?v=643c072a0f';
-import { pastilleNiveau } from './graphiques.js?v=643c072a0f';
+import { h, icone, svg, vider } from './dom.js?v=b602aab638';
+import { formater } from './format.js?v=b602aab638';
+import { pastilleNiveau } from './graphiques.js?v=b602aab638';
 
 const R = 64;
 const TOUR = 2 * Math.PI * R;
