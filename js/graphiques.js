@@ -9,9 +9,9 @@
    - un titre (title) sur chaque marque pour le survol.
    =========================================================================== */
 
-import { h, svg } from './dom.js?v=b69771c4eb';
-import { formater } from './format.js?v=b69771c4eb';
-import { grandir, tracer, sansAnimation } from './animations.js?v=b69771c4eb';
+import { h, svg } from './dom.js?v=643c072a0f';
+import { formater } from './format.js?v=643c072a0f';
+import { grandir, tracer, sansAnimation } from './animations.js?v=643c072a0f';
 
 const COULEUR_NIVEAU = { vert: 'var(--vert)', ambre: 'var(--ambre)', rouge: 'var(--rouge)', neutre: 'var(--encre-tres-doux)' };
 const FOND_NIVEAU = { vert: 'var(--vert-fond)', ambre: 'var(--ambre-fond)', rouge: 'var(--rouge-fond)', neutre: 'var(--surface-2)' };
@@ -49,7 +49,10 @@ export function barres(items, { format = 'euro', total = null, animer = true, co
 export function jaugeZones(jauge, { animer = true } = {}) {
   const max = Number(jauge.echelle_max) || Math.max(...jauge.paliers.map((p) => p.seuil ?? 0)) * 1.5 || 1;
   const larg = 300, haut = 30, y = 9, ep = 10;
-  const x = (v) => Math.max(0, Math.min(larg, (v / max) * larg));
+  // Le mauvais a gauche, le bon a droite : quand « plus bas = mieux »,
+  // l'axe est retourne (le maximum a gauche).
+  const inverse = jauge.sens !== 'haut';
+  const x = (v) => { const d = Math.max(0, Math.min(larg, (v / max) * larg)); return inverse ? larg - d : d; };
   // Les seuils ordonnes de gauche a droite, quel que soit le sens
   const bornes = jauge.paliers.filter((p) => p.seuil !== null && p.seuil !== '' && p.seuil !== undefined).map((p) => Number(p.seuil));
   const zones = [];
@@ -72,7 +75,7 @@ export function jaugeZones(jauge, { animer = true } = {}) {
   const v = jauge.valeur;
   const dessin = svg('svg', { viewBox: `0 0 ${larg} ${haut}`, class: 'jauge-zones', role: 'img', 'aria-label': `${jauge.libelle} : ${formater(v, formatJauge(jauge))}` },
     zones.map((z) => svg('rect', {
-      x: x(z.de), y, width: Math.max(0, x(z.a) - x(z.de)), height: ep,
+      x: Math.min(x(z.de), x(z.a)), y, width: Math.abs(x(z.a) - x(z.de)), height: ep,
       fill: FOND_NIVEAU[z.p.niveau] ?? FOND_NIVEAU.neutre,
     }, svg('title', {}, z.p.libelle))),
     bornes.map((b) => svg('line', { x1: x(b), x2: x(b), y1: y, y2: y + ep, stroke: 'var(--surface)', 'stroke-width': 2 })),
@@ -83,7 +86,7 @@ export function jaugeZones(jauge, { animer = true } = {}) {
       svg('circle', { cx: 0, cy: y - 6, r: 3.2, fill: 'var(--encre)' })));
   if (animer && v !== null && v !== undefined && !sansAnimation()) {
     const g = dessin.querySelector('.repere');
-    g?.animate?.([{ transform: 'translateX(0px)' }, { transform: `translateX(${x(v)}px)` }], { duration: 700, easing: 'cubic-bezier(.22,.8,.3,1)' });
+    g?.animate?.([{ transform: `translateX(${inverse ? larg : 0}px)` }, { transform: `translateX(${x(v)}px)` }], { duration: 700, easing: 'cubic-bezier(.22,.8,.3,1)' });
   }
   return dessin;
 }
@@ -280,7 +283,11 @@ export function jaugeNommee(jauge, format) {
     }
   }
   const v = jauge.valeur;
+  // Le mauvais a gauche, le bon a droite : quand « plus bas = mieux », l'axe
+  // est retourne et les zones dessinees de la pire a la meilleure.
+  const inverse = jauge.sens !== 'haut';
   const pos = (x) => Math.max(0, Math.min(100, (x / max) * 100));
+  const place = (x) => (inverse ? 100 - pos(x) : pos(x));
   const actif = jauge.palier;
   // « Situation favorable » -> « Favorable » : dans la jauge, le mot suffit.
   const court = (t) => String(t).replace(/^situation\s+/i, '').replace(/^./, (x) => x.toUpperCase());
@@ -293,16 +300,16 @@ export function jaugeNommee(jauge, format) {
     return true;
   });
   return h('div', { class: 'jauge-nommee' },
-    h('div', { class: 'zones' }, zones.map((z) => {
+    h('div', { class: 'zones' }, (inverse ? [...zones].reverse() : zones).map((z) => {
       const largeur = pos(z.a) - pos(z.de);
       return h('span', {
         class: `zone niveau-${z.p.niveau ?? 'neutre'}${actif && z.p.libelle === actif.libelle && z.p.seuil === actif.seuil ? ' active' : ''}`,
         style: { width: `${largeur}%` }, title: z.p.libelle,
       }, largeur >= 17 ? h('span', { class: 'nom-zone' }, court(z.p.libelle)) : null);
     })),
-    v === null || v === undefined ? null : h('span', { class: 'repere-valeur', style: { left: `${pos(v)}%` } },
+    v === null || v === undefined ? null : h('span', { class: 'repere-valeur', style: { left: `${place(v)}%` } },
       h('span', { class: 'etiquette-valeur' }, formater(v, format))),
-    h('div', { class: 'graduations' }, graduations.map((x) => h('span', { style: { left: `${x}%` } }, formater(x / 100 * max, format)))));
+    h('div', { class: 'graduations' }, graduations.map((x) => h('span', { style: { left: `${inverse ? 100 - x : x}%` } }, formater(x / 100 * max, format)))));
 }
 
 /* ------------------------------------------------ points du score */

@@ -604,7 +604,7 @@ input::placeholder { color: var(--encre-tres-doux); }
 .jauge-nommee .zone.active.niveau-ambre { background: var(--ambre); color: var(--surface); }
 .jauge-nommee .zone.active.niveau-rouge { background: var(--rouge); color: var(--surface); }
 .nom-zone { font-size: 11.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
-.repere-valeur { position: absolute; top: 18px; bottom: 14px; width: 2px; margin-left: -1px; background: var(--encre); border-radius: 1px; }
+.repere-valeur { position: absolute; top: 18px; height: 35px; width: 2px; margin-left: -1px; background: var(--encre); border-radius: 1px; }
 .etiquette-valeur {
   position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 2px;
   padding: 1px 7px; border-radius: 6px; background: var(--encre); color: var(--surface); font-size: 11.5px; font-weight: 700; white-space: nowrap;

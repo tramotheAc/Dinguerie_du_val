@@ -8,17 +8,17 @@
    deposer dans le depot, a la place de config/parametres.json.
    =========================================================================== */
 
-import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=b69771c4eb';
-import { chargerPublie, lireBrouillon, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=b69771c4eb';
-import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=b69771c4eb';
-import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=b69771c4eb';
-import { formater, interpoler, FORMATS } from './format.js?v=b69771c4eb';
-import { champsAutorises, construireLien, genererDax } from './url.js?v=b69771c4eb';
-import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=b69771c4eb';
-import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=b69771c4eb';
-import { apparaitre, cascade } from './animations.js?v=b69771c4eb';
-import { ICONES, dessinIcone, nomIcone } from './icones.js?v=b69771c4eb';
-import { versionPerimee } from './version.js?v=b69771c4eb';
+import { h, icone, vider, confirmer, annoncer, telechargerTexte, copier } from './dom.js?v=643c072a0f';
+import { chargerPublie, lireBrouillon, lireBase, ecrireBrouillon, effacerBrouillon, cloner, rattraper } from './config.js?v=643c072a0f';
+import { calculerTout, catalogue, verifier, ordonner } from './moteur.js?v=643c072a0f';
+import { compiler, evaluer, variablesLues, FONCTIONS, chercherBareme } from './formules.js?v=643c072a0f';
+import { formater, interpoler, FORMATS } from './format.js?v=643c072a0f';
+import { champsAutorises, construireLien, genererDax } from './url.js?v=643c072a0f';
+import { jaugeZones, legendeSeuils, pastilleNiveau } from './graphiques.js?v=643c072a0f';
+import { identifiant, identifiantLibre, usages, renommer, renommerBareme, baremeUtilisePar } from './admin-outils.js?v=643c072a0f';
+import { apparaitre, cascade } from './animations.js?v=643c072a0f';
+import { ICONES, dessinIcone, nomIcone } from './icones.js?v=643c072a0f';
+import { versionPerimee } from './version.js?v=643c072a0f';
 
 const PANNEAUX = [
   { id: 'accueil', titre: 'Vue d’ensemble', groupe: 'Paramétrage' },
@@ -60,7 +60,8 @@ async function demarrer() {
   }
   completer(publie);
   const brouillon = lireBrouillon();
-  config = brouillon ? rattraper(brouillon, publie) : cloner(publie);
+  config = brouillon ? rattraper(brouillon, publie, lireBase()) : cloner(publie);
+  if (brouillon) ecrireBrouillon(config, publie);
   completer(config);
   dessinerNav();
   brancherRail();
@@ -103,7 +104,7 @@ function modifie(redessiner = false) {
 
 function sauver() {
   if (JSON.stringify(config) === JSON.stringify(publie)) effacerBrouillon();
-  else if (!ecrireBrouillon(config)) annoncer('Le navigateur refuse l’enregistrement local : téléchargez le fichier pour ne rien perdre.', 'alerte');
+  else if (!ecrireBrouillon(config, publie)) annoncer('Le navigateur refuse l’enregistrement local : téléchargez le fichier pour ne rien perdre.', 'alerte');
 }
 
 function recalculer() {

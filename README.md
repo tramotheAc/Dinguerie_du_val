@@ -91,7 +91,7 @@ conditions et libellés.
 4. GitHub Pages republie le site en une à deux minutes. Dans l'admin, « Revenir au
    publié » efface alors le brouillon.
 
-Un brouillon qui contient une erreur n'est jamais utilisé par le calculateur : il
+Un brouillon fait avant une mise à jour du paramétrage publié reçoit ce qui a été ajouté depuis (une jauge, un indicateur, un réglage), sans perdre ses modifications ni ressusciter ce qu’on y a supprimé. Un brouillon qui contient une erreur n’est jamais utilisé par le calculateur : il
 revient au paramétrage publié et le signale.
 
 ---
